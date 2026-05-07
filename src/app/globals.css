@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 247 247 248;
+  --foreground: 11 11 13;
+  --muted: 161 161 170;
+  --border: 228 228 231;
+  --card: 255 255 255;
+  --accent: 59 130 246;
+}
+
+.dark {
+  --background: 5 5 7;
+  --foreground: 247 247 248;
+  --muted: 113 113 122;
+  --border: 39 39 42;
+  --card: 11 11 13;
+  --accent: 96 165 250;
+}
+
+* {
+  border-color: rgb(var(--border));
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: rgb(var(--background));
+  color: rgb(var(--foreground));
+  font-feature-settings: "rlig" 1, "calt" 1;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Glassmorphism utility */
+@layer components {
+  .glass {
+    @apply bg-white/60 dark:bg-ink-900/60 backdrop-blur-xl backdrop-saturate-150 border border-ink-200/60 dark:border-ink-800/60;
+  }
+
+  .glass-strong {
+    @apply bg-white/80 dark:bg-ink-900/80 backdrop-blur-2xl backdrop-saturate-150 border border-ink-200/60 dark:border-ink-800/60;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-soft;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-br from-ink-900 via-ink-700 to-accent-600 dark:from-white dark:via-ink-100 dark:to-accent-400;
+  }
+
+  .container-page {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-pad {
+    @apply py-16 md:py-24;
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--border));
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--muted));
+}
+
+/* Selection */
+::selection {
+  background: rgb(var(--accent) / 0.25);
+}
