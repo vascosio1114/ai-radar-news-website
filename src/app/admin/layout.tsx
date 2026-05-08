@@ -17,8 +17,10 @@ export default function AdminLayout({
     <div className="container-page py-12">
       <div className="grid gap-8 lg:grid-cols-[240px_1fr]">
         <aside className="space-y-1">
-          <div className="mb-4 px-3 text-xs font-semibold uppercase tracking-widest text-ink-500 dark:text-ink-400">
-            Admin
+          <div className="mb-4 px-3">
+            <span className="text-xs font-semibold uppercase tracking-widest text-ink-500 dark:text-ink-400">
+              Admin
+            </span>
           </div>
           {ADMIN_NAV.map((item) => (
             <Link

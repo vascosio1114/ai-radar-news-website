@@ -1,18 +1,19 @@
-"use client";
+import type { Metadata } from "next";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { ToolsPageClient } from "@/components/tools/ToolsPageClient";
 
-import * as React from "react";
-import { ToolCard } from "@/components/cards/ToolCard";
-import { TOOL_CATEGORIES, type ToolCategorySlug } from "@/lib/site";
-import { MOCK_TOOLS } from "@/data/mock";
-import { cn } from "@/lib/utils";
+export const metadata: Metadata = {
+  title: "AI 工具",
+  description: "每星期評測，分類齊全。揀岩你嘅工具，由免費到 enterprise 都有。",
+};
 
-export default function ToolsPage() {
-  const [active, setActive] = React.useState<ToolCategorySlug>("all");
-
-  const tools =
-    active === "all"
-      ? MOCK_TOOLS
-      : MOCK_TOOLS.filter((t) => t.category === active);
+export default async function ToolsPage() {
+  const supabase = createSupabaseServerClient();
+  const { data: tools } = await supabase
+    .from("tools")
+    .select("*")
+    .order("is_trending", { ascending: false })
+    .order("rating", { ascending: false });
 
   return (
     <div className="container-page section-pad">
@@ -28,36 +29,7 @@ export default function ToolsPage() {
         </p>
       </header>
 
-      {/* Category tabs */}
-      <div className="mb-10 flex flex-wrap gap-2">
-        {TOOL_CATEGORIES.map((cat) => (
-          <button
-            key={cat.slug}
-            type="button"
-            onClick={() => setActive(cat.slug)}
-            className={cn(
-              "rounded-full border px-4 py-2 text-sm font-medium transition",
-              active === cat.slug
-                ? "border-ink-900 bg-ink-900 text-white dark:border-white dark:bg-white dark:text-ink-900"
-                : "border-ink-200 bg-white/60 text-ink-600 hover:border-accent-400 hover:text-accent-600 dark:border-ink-800 dark:bg-ink-900/60 dark:text-ink-300 dark:hover:text-accent-400"
-            )}
-          >
-            {cat.label}
-          </button>
-        ))}
-      </div>
-
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {tools.map((t) => (
-          <ToolCard key={t.id} tool={t} />
-        ))}
-      </div>
-
-      {tools.length === 0 && (
-        <p className="mt-10 text-center text-sm text-ink-500 dark:text-ink-400">
-          呢個分類仲未有工具，stay tuned。
-        </p>
-      )}
+      <ToolsPageClient tools={tools ?? []} />
     </div>
   );
 }

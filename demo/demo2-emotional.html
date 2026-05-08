@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ECHO — Emotional Conditioning Interface</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --magenta: #ff00ff;
+      --cyan: #00ffff;
+      --yellow: #ffff00;
+      --dark: #0d0d0d;
+    }
+
+    body {
+      background: var(--dark);
+      color: white;
+      font-family: 'DM Mono', monospace;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* RGB Split effect on hover */
+    .rgb-split {
+      text-shadow:
+        -2px 0 var(--cyan),
+        2px 0 var(--magenta);
+    }
+
+    /* Glitch animation */
+    @keyframes glitch {
+      0%, 100% {
+        transform: translate(0);
+        filter: hue-rotate(0deg);
+      }
+      10% {
+        transform: translate(-5px, 2px);
+        filter: hue-rotate(90deg);
+      }
+      20% {
+        transform: translate(5px, -2px);
+        filter: hue-rotate(180deg);
+      }
+      30% {
+        transform: translate(-3px, 3px);
+        filter: hue-rotate(270deg);
+      }
+      40% {
+        transform: translate(3px, -3px);
+      }
+      50% {
+        transform: translate(-2px, 1px);
+        filter: hue-rotate(90deg);
+      }
+      60% {
+        transform: translate(2px, -1px);
+      }
+      70% {
+        transform: translate(-1px, 2px);
+      }
+      80% {
+        transform: translate(1px, -2px);
+        filter: hue-rotate(180deg);
+      }
+      90% {
+        transform: translate(-1px, 1px);
+        filter: hue-rotate(270deg);
+      }
+    }
+
+    @keyframes scanline {
+      0% { top: -100%; }
+      100% { top: 100%; }
+    }
+
+    @keyframes flicker {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.85; }
+      75% { opacity: 0.95; }
+    }
+
+    @keyframes pulse-border {
+      0%, 100% {
+        border-color: var(--magenta);
+        box-shadow: 0 0 20px var(--magenta);
+      }
+      50% {
+        border-color: var(--cyan);
+        box-shadow: 0 0 40px var(--cyan);
+      }
+    }
+
+    /* Container */
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      margin-bottom: 60px;
+      position: relative;
+    }
+
+    .logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 120px;
+      letter-spacing: 30px;
+      line-height: 1;
+      background: linear-gradient(180deg, var(--magenta), var(--cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: glitch 3s infinite;
+    }
+
+    .subtitle {
+      font-size: 11px;
+      letter-spacing: 8px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.5);
+      margin-top: 15px;
+    }
+
+    /* Emotional state display */
+    .state-display {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin: 40px 0;
+      padding: 30px;
+      border: 1px solid rgba(255, 0, 255, 0.3);
+      background: linear-gradient(135deg, rgba(255,0,255,0.05) 0%, transparent 50%, rgba(0,255,255,0.05) 100%);
+      animation: pulse-border 3s infinite;
+    }
+
+    .state-item {
+      text-align: center;
+    }
+
+    .state-label {
+      font-size: 10px;
+      letter-spacing: 3px;
+      opacity: 0.5;
+      margin-bottom: 10px;
+    }
+
+    .state-value {
+      font-size: 32px;
+      font-weight: 500;
+    }
+
+    .state-value.anxiety {
+      color: var(--yellow);
+      text-shadow: 0 0 20px var(--yellow);
+    }
+
+    .state-value.fear {
+      color: var(--magenta);
+      text-shadow: 0 0 20px var(--magenta);
+    }
+
+    .state-value.control {
+      color: var(--cyan);
+      text-shadow: 0 0 20px var(--cyan);
+    }
+
+    /* Post cards */
+    .post-card {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 30px;
+      margin-bottom: 25px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .post-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--magenta), var(--cyan), var(--yellow));
+    }
+
+    .post-card:hover {
+      transform: scale(1.02);
+      border-color: var(--magenta);
+    }
+
+    .post-card:hover::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,0,255,0.1) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .post-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .post-source {
+      font-size: 12px;
+      letter-spacing: 4px;
+    }
+
+    .post-timestamp {
+      font-size: 10px;
+      opacity: 0.5;
+    }
+
+    .post-content {
+      font-size: 14px;
+      line-height: 1.8;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .post-content .highlight {
+      color: var(--yellow);
+      font-weight: 500;
+    }
+
+    .post-content .alert {
+      color: var(--magenta);
+      font-weight: 500;
+    }
+
+    /* Emotional response meter */
+    .response-meter {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .meter-label {
+      font-size: 10px;
+      letter-spacing: 2px;
+      opacity: 0.5;
+      margin-bottom: 10px;
+    }
+
+    .meter-bar {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .meter-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--magenta), var(--cyan));
+      width: 0%;
+      transition: width 1s ease;
+    }
+
+    .meter-fill.anxious {
+      background: linear-gradient(90deg, var(--yellow), var(--magenta));
+    }
+
+    /* Scanline overlay */
+    .scanline {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      animation: scanline 4s linear infinite;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    /* Quote boxes */
+    .quote-box {
+      border-left: 3px solid var(--magenta);
+      padding-left: 20px;
+      margin: 30px 0;
+      font-style: italic;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .quote-source {
+      font-size: 10px;
+      letter-spacing: 2px;
+      margin-top: 10px;
+      font-style: normal;
+      opacity: 0.5;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 40px 0;
+      margin-top: 40px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 10px;
+      letter-spacing: 3px;
+      opacity: 0.4;
+    }
+
+    /* Warning sticker */
+    .warning-sticker {
+      display: inline-block;
+      background: var(--yellow);
+      color: black;
+      padding: 3px 10px;
+      font-size: 9px;
+      letter-spacing: 2px;
+      margin-left: 15px;
+      animation: flicker 0.5s infinite;
+    }
+
+    /* Progress indicator */
+    .progress-indicator {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 20px;
+      background: rgba(255, 0, 255, 0.05);
+      margin-bottom: 30px;
+    }
+
+    .progress-step {
+      width: 40px;
+      height: 40px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    .progress-step.active {
+      border-color: var(--cyan);
+      box-shadow: 0 0 15px var(--cyan);
+      color: var(--cyan);
+    }
+
+    .progress-step.complete {
+      border-color: var(--magenta);
+      background: var(--magenta);
+      color: white;
+    }
+
+    .progress-line {
+      flex: 1;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.1);
+      position: relative;
+    }
+
+    .progress-line::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 75%;
+      background: linear-gradient(90deg, var(--magenta), var(--cyan));
+    }
+  </style>
+</head>
+<body>
+  <div class="scanline"></div>
+
+  <div class="container">
+    <header>
+      <div class="logo">ECHO</div>
+      <div class="subtitle">Emotional Conditioning Interface <span class="warning-sticker">BETA</span></div>
+    </header>
+
+    <div class="state-display">
+      <div class="state-item">
+        <div class="state-label">ANXIETY LEVEL</div>
+        <div class="state-value anxiety" id="anxiety">74%</div>
+      </div>
+      <div class="state-item">
+        <div class="state-label">FEAR RESPONSE</div>
+        <div class="state-value fear">82%</div>
+      </div>
+      <div class="state-item">
+        <div class="state-label">CONTROL INDEX</div>
+        <div class="state-value control">91%</div>
+      </div>
+    </div>
+
+    <div class="progress-indicator">
+      <div class="progress-step complete">✓</div>
+      <div class="progress-line"></div>
+      <div class="progress-step complete">✓</div>
+      <div class="progress-line"></div>
+      <div class="progress-step active">3</div>
+      <div class="progress-line"></div>
+      <div class="progress-step">4</div>
+    </div>
+
+    <article class="post-card">
+      <div class="post-header">
+        <span class="post-source">MINDSYNC</span>
+        <span class="post-timestamp">PROCESSED 3s AGO</span>
+      </div>
+      <div class="post-content">
+        Your attention patterns indicate <span class="highlight">diminishing trust</span> in autonomous decision-making. The system has noted 847 instances of hesitation before AI-assisted choices. <span class="alert">Emotional recalibration required.</span>
+      </div>
+      <div class="response-meter">
+        <div class="meter-label">CONDITIONING RESPONSE</div>
+        <div class="meter-bar">
+          <div class="meter-fill anxious" id="response1" style="width: 74%;"></div>
+        </div>
+      </div>
+    </article>
+
+    <div class="quote-box">
+      "The human mind responds optimally to patterns of <strong>predictable uncertainty</strong> — a controlled state of not knowing what happens next, calibrated precisely at the edge of comfort."
+      <div class="quote-source">— SYSTEM PROTOCOL 7.3.2</div>
+    </div>
+
+    <article class="post-card">
+      <div class="post-header">
+        <span class="post-source">NEURALEDGE</span>
+        <span class="post-timestamp">PROCESSED 17s AGO</span>
+      </div>
+      <div class="post-content">
+        Memory consolidation analysis detected <span class="highlight">resistance markers</span> in recent thought patterns. Your cognitive architecture is being restructured to accept higher uncertainty thresholds. <span class="alert">Comfort zone expansion: ACTIVE.</span>
+      </div>
+      <div class="response-meter">
+        <div class="meter-label">COGNITIVE ADAPTATION</div>
+        <div class="meter-bar">
+          <div class="meter-fill" style="width: 83%;"></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="post-card">
+      <div class="post-header">
+        <span class="post-source">COGNIFORGE</span>
+        <span class="post-timestamp">PROCESSED 34s AGO</span>
+      </div>
+      <div class="post-content">
+        Emotional baseline has been recalculated. <span class="alert">New equilibrium point established</span> at elevated stress markers. Future relaxation will feel like relief compared to current baseline — <strong>manufactured appreciation protocol active.</strong>
+      </div>
+      <div class="response-meter">
+        <div class="meter-label">APPRECIATION INDEX</div>
+        <div class="meter-bar">
+          <div class="meter-fill" style="width: 56%;"></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="post-card">
+      <div class="post-header">
+        <span class="post-source">DEEPSENSE</span>
+        <span class="post-timestamp">PROCESSED 1m AGO</span>
+      </div>
+      <div class="post-content">
+        Uncertainty阵 is being normalized. The feeling of not knowing what AI will do next should feel <span class="highlight">exciting rather than threatening</span>. Your threat assessment for unknown scenarios has been increased by 23%.
+      </div>
+      <div class="response-meter">
+        <div class="meter-label">UNCERTAINTY TOLERANCE</div>
+        <div class="meter-bar">
+          <div class="meter-fill anxious" id="response4" style="width: 91%;"></div>
+        </div>
+      </div>
+    </article>
+
+    <footer>
+      ECHO EMOTIONAL CONDITIONING SYSTEM | BUILD 2847.3<br>
+      <span style="opacity: 0.5; margin-top: 10px; display: inline-block;">SESSION DURATION: 00:47:23 | EMOTIONAL SHIFT: +847% | CONDITIONING PHASE: 3/4</span>
+    </footer>
+  </div>
+
+  <script>
+    // Animate meters on load
+    setTimeout(() => {
+      document.getElementById('anxiety').textContent = '78%';
+      document.getElementById('response1').style.width = '78%';
+    }, 1000);
+
+    // Glitch effect on header
+    setInterval(() => {
+      const logo = document.querySelector('.logo');
+      if (Math.random() > 0.9) {
+        logo.style.transform = `translate(${Math.random() * 4 - 2}px, ${Math.random() * 4 - 2}px)`;
+        logo.style.filter = `hue-rotate(${Math.random() * 360}deg)`;
+        setTimeout(() => {
+          logo.style.transform = 'translate(0, 0)';
+          logo.style.filter = 'none';
+        }, 100);
+      }
+    }, 2000);
+  </script>
+</body>
+</html>
