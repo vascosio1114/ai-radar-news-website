@@ -1,15 +1,21 @@
 import type { Metadata } from "next";
 import { ArticleCard } from "@/components/cards/ArticleCard";
-import { MOCK_ARTICLES } from "@/data/mock";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "AI 新聞",
   description: "最新 AI 業界動向，每日更新。",
 };
 
-export default function NewsPage() {
-  // TODO: 用 Supabase server client 取代
-  const articles = MOCK_ARTICLES;
+export default async function NewsPage() {
+  const supabase = createSupabaseServerClient();
+  const { data: articles } = await supabase
+    .from("articles")
+    .select("id,slug,title,excerpt,cover_image,category,tags,author,published_at,reading_time,views,is_featured")
+    .eq("is_published", true)
+    .order("published_at", { ascending: false });
+
+  const articleList = articles ?? [];
 
   return (
     <div className="container-page section-pad">
@@ -26,7 +32,7 @@ export default function NewsPage() {
       </header>
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {articles.map((a) => (
+        {articleList.map((a) => (
           <ArticleCard key={a.id} article={a} />
         ))}
       </div>

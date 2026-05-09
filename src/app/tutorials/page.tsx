@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Clock, GraduationCap } from "lucide-react";
-import { MOCK_TUTORIALS } from "@/data/mock";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "AI 教學",
@@ -15,8 +15,15 @@ const LEVEL_STYLE: Record<string, string> = {
   進階: "bg-rose-500/10 text-rose-600 dark:text-rose-400",
 };
 
-export default function TutorialsPage() {
-  const tutorials = MOCK_TUTORIALS;
+export default async function TutorialsPage() {
+  const supabase = createSupabaseServerClient();
+  const { data: tutorials } = await supabase
+    .from("tutorials")
+    .select("id,slug,title,level,duration,cover_image,excerpt")
+    .eq("is_published", true)
+    .order("created_at", { ascending: false });
+
+  const tutorialList = tutorials ?? [];
 
   return (
     <div className="container-page section-pad">
@@ -33,7 +40,7 @@ export default function TutorialsPage() {
       </header>
 
       <div className="grid gap-6 md:grid-cols-2">
-        {tutorials.map((t) => (
+        {tutorialList.map((t) => (
           <Link
             key={t.id}
             href={`/tutorials/${t.slug}`}

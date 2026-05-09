@@ -3,33 +3,43 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Clock, Eye } from "lucide-react";
-import { MOCK_ARTICLES } from "@/data/mock";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { formatDate } from "@/lib/utils";
 
 type Props = { params: { slug: string } };
 
-export async function generateStaticParams() {
-  return MOCK_ARTICLES.map((a) => ({ slug: a.slug }));
-}
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const article = MOCK_ARTICLES.find((a) => a.slug === params.slug);
-  if (!article) return {};
+  const supabase = createSupabaseServerClient();
+  const { data } = await supabase
+    .from("articles")
+    .select("title,excerpt,cover_image,published_at")
+    .eq("slug", params.slug)
+    .eq("is_published", true)
+    .single();
+
+  if (!data) return {};
   return {
-    title: article.title,
-    description: article.excerpt,
+    title: data.title,
+    description: data.excerpt,
     openGraph: {
-      title: article.title,
-      description: article.excerpt,
-      images: [article.cover_image],
+      title: data.title,
+      description: data.excerpt,
+      images: [data.cover_image],
       type: "article",
-      publishedTime: article.published_at,
+      publishedTime: data.published_at,
     },
   };
 }
 
-export default function ArticlePage({ params }: Props) {
-  const article = MOCK_ARTICLES.find((a) => a.slug === params.slug);
+export default async function ArticlePage({ params }: Props) {
+  const supabase = createSupabaseServerClient();
+  const { data: article } = await supabase
+    .from("articles")
+    .select("id,slug,title,excerpt,cover_image,category,author,published_at,reading_time,views,content,tags")
+    .eq("slug", params.slug)
+    .eq("is_published", true)
+    .single();
+
   if (!article) notFound();
 
   return (
