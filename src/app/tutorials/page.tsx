@@ -17,13 +17,13 @@ const LEVEL_STYLE: Record<string, string> = {
 
 export default async function TutorialsPage() {
   const supabase = createSupabaseServerClient();
-  const { data: tutorials } = await supabase
+  const { data } = await supabase
     .from("tutorials")
-    .select("id,slug,title,level,duration,cover_image,excerpt")
+    .select("*")
     .eq("is_published", true)
     .order("created_at", { ascending: false });
 
-  const tutorialList = tutorials ?? [];
+  const tutorials = data ?? [];
 
   return (
     <div className="container-page section-pad">
@@ -40,7 +40,7 @@ export default async function TutorialsPage() {
       </header>
 
       <div className="grid gap-6 md:grid-cols-2">
-        {tutorialList.map((t) => (
+        {tutorials.map((t) => (
           <Link
             key={t.id}
             href={`/tutorials/${t.slug}`}

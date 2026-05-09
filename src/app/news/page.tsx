@@ -9,13 +9,13 @@ export const metadata: Metadata = {
 
 export default async function NewsPage() {
   const supabase = createSupabaseServerClient();
-  const { data: articles } = await supabase
+  const { data } = await supabase
     .from("articles")
-    .select("id,slug,title,excerpt,cover_image,category,tags,author,published_at,reading_time,views,is_featured")
+    .select("*")
     .eq("is_published", true)
     .order("published_at", { ascending: false });
 
-  const articleList = articles ?? [];
+  const articles = data ?? [];
 
   return (
     <div className="container-page section-pad">
@@ -32,7 +32,7 @@ export default async function NewsPage() {
       </header>
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {articleList.map((a) => (
+        {articles.map((a) => (
           <ArticleCard key={a.id} article={a} />
         ))}
       </div>

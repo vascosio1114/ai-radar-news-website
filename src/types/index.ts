@@ -13,6 +13,7 @@ export type Article = {
   reading_time: number; // minutes
   views: number;
   is_featured: boolean;
+  is_published: boolean;
   /** Markdown 內容 */
   content?: string;
 };
@@ -39,6 +40,8 @@ export type Tutorial = {
   duration: string; // e.g. "10 分鐘"
   cover_image: string;
   excerpt: string;
+  content?: string;
+  is_published?: boolean;
 };
 
 export type NewsletterSubscriber = {

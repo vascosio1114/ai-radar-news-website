@@ -11,20 +11,20 @@ export default async function HomePage() {
   const [featuredResult, latestResult, trendingResult] = await Promise.all([
     supabase
       .from("articles")
-      .select("id,slug,title,excerpt,cover_image,category,tags,author,published_at,reading_time,views,is_featured")
-      .eq("is_published", true)
+      .select("*")
       .eq("is_featured", true)
+      .eq("is_published", true)
       .order("published_at", { ascending: false })
       .limit(4),
     supabase
       .from("articles")
-      .select("id,slug,title,excerpt,cover_image,category,tags,author,published_at,reading_time,views,is_featured")
+      .select("*")
       .eq("is_published", true)
       .order("published_at", { ascending: false })
       .limit(6),
     supabase
       .from("tools")
-      .select("id,slug,name,tagline,description,logo,website,category,rating,pricing,is_trending")
+      .select("*")
       .eq("is_trending", true)
       .limit(4),
   ]);

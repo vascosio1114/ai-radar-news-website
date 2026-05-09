@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AICORE - Behavior Monitoring</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --green: #00ff41;
+      --green-dim: #00cc33;
+      --green-glow: rgba(0, 255, 65, 0.4);
+      --bg: #0a0a0a;
+      --amber: #ffb800;
+      --red: #ff3333;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--green);
+      font-family: 'IBM Plex Mono', monospace;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* CRT Effect */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.15),
+        rgba(0, 0, 0, 0.15) 1px,
+        transparent 1px,
+        transparent 2px
+      );
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.4) 100%);
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    /* Header */
+    header {
+      border: 1px solid var(--green);
+      padding: 30px;
+      margin-bottom: 40px;
+      position: relative;
+      background: linear-gradient(135deg, rgba(0,255,65,0.05) 0%, transparent 50%, rgba(0,255,65,0.02) 100%);
+    }
+
+    header::before {
+      content: "VER 8.4.7";
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 10px;
+      opacity: 0.5;
+    }
+
+    .logo {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 48px;
+      letter-spacing: 8px;
+      text-shadow: 0 0 20px var(--green-glow), 0 0 40px var(--green-glow);
+      animation: flicker 4s infinite;
+    }
+
+    .tagline {
+      font-size: 11px;
+      letter-spacing: 4px;
+      opacity: 0.6;
+      margin-top: 10px;
+      text-transform: uppercase;
+    }
+
+    @keyframes flicker {
+      0%, 100% { opacity: 1; }
+      92% { opacity: 1; }
+      93% { opacity: 0.8; }
+      94% { opacity: 1; }
+      95% { opacity: 0.9; }
+      96% { opacity: 1; }
+    }
+
+    /* Stats bar */
+    .stats-bar {
+      display: flex;
+      gap: 40px;
+      padding: 20px 0;
+      border-bottom: 1px solid rgba(0, 255, 65, 0.3);
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+    }
+
+    .stat {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      opacity: 0.5;
+      letter-spacing: 2px;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    .stat-value.warning {
+      color: var(--amber);
+      animation: pulse 1s infinite;
+    }
+
+    .stat-value.critical {
+      color: var(--red);
+      animation: pulse 0.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* Alert banner */
+    .alert-banner {
+      background: rgba(255, 51, 51, 0.1);
+      border: 1px solid var(--red);
+      padding: 15px 20px;
+      margin-bottom: 40px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      animation: alert-pulse 2s infinite;
+    }
+
+    .alert-banner::before {
+      content: "⚠";
+      font-size: 20px;
+      animation: blink 0.5s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    @keyframes alert-pulse {
+      0%, 100% { border-color: var(--red); }
+      50% { border-color: rgba(255, 51, 51, 0.5); }
+    }
+
+    .alert-text {
+      font-size: 12px;
+      letter-spacing: 1px;
+    }
+
+    /* Posts */
+    .post {
+      border: 1px solid rgba(0, 255, 65, 0.2);
+      padding: 25px;
+      margin-bottom: 20px;
+      position: relative;
+      background: rgba(0, 255, 65, 0.02);
+      transition: all 0.3s ease;
+    }
+
+    .post:hover {
+      border-color: var(--green);
+      box-shadow: 0 0 30px rgba(0, 255, 65, 0.1);
+      transform: translateX(5px);
+    }
+
+    .post-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid rgba(0, 255, 65, 0.1);
+    }
+
+    .post-source {
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    .post-time {
+      font-size: 10px;
+      opacity: 0.5;
+    }
+
+    .post-content {
+      font-size: 13px;
+      line-height: 1.8;
+      color: #b3ffb3;
+    }
+
+    .post-metrics {
+      display: flex;
+      gap: 30px;
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px solid rgba(0, 255, 65, 0.1);
+    }
+
+    .metric {
+      font-size: 10px;
+    }
+
+    .metric-label {
+      opacity: 0.5;
+      margin-right: 8px;
+    }
+
+    .metric-value {
+      color: var(--green);
+    }
+
+    .metric-value.negative {
+      color: var(--red);
+    }
+
+    /* Threat level indicators */
+    .threat-bar {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: var(--green);
+    }
+
+    .post.critical .threat-bar {
+      background: var(--red);
+      box-shadow: 0 0 10px var(--red);
+    }
+
+    .post.high .threat-bar {
+      background: var(--amber);
+    }
+
+    /* Classification tag */
+    .classification {
+      position: absolute;
+      top: 25px;
+      right: 25px;
+      font-size: 9px;
+      letter-spacing: 2px;
+      padding: 3px 8px;
+      border: 1px solid;
+    }
+
+    .classification.internal {
+      color: var(--amber);
+      border-color: var(--amber);
+    }
+
+    .classification.confidential {
+      color: var(--red);
+      border-color: var(--red);
+    }
+
+    /* Footer */
+    footer {
+      margin-top: 60px;
+      padding-top: 30px;
+      border-top: 1px solid rgba(0, 255, 65, 0.2);
+      font-size: 10px;
+      opacity: 0.4;
+      text-align: center;
+      letter-spacing: 2px;
+    }
+
+    /* Blinking cursor effect */
+    .cursor {
+      display: inline-block;
+      width: 10px;
+      height: 16px;
+      background: var(--green);
+      animation: cursor-blink 1s infinite;
+      vertical-align: middle;
+      margin-left: 5px;
+    }
+
+    @keyframes cursor-blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    /* Progress bar */
+    .progress-container {
+      margin-top: 40px;
+    }
+
+    .progress-label {
+      font-size: 10px;
+      letter-spacing: 2px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .progress-bar {
+      height: 4px;
+      background: rgba(0, 255, 65, 0.2);
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--green);
+      width: 78%;
+      position: relative;
+      animation: progress-glow 2s infinite;
+    }
+
+    .progress-fill::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      top: -4px;
+      height: 12px;
+      width: 2px;
+      background: var(--green);
+      box-shadow: 0 0 10px var(--green);
+    }
+
+    @keyframes progress-glow {
+      0%, 100% { box-shadow: 0 0 5px var(--green); }
+      50% { box-shadow: 0 0 15px var(--green); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">AICORE</div>
+      <div class="tagline">Behavioral Analysis & Predictive Compliance System</div>
+    </header>
+
+    <div class="stats-bar">
+      <div class="stat">
+        <span class="stat-label">COMPLIANCE INDEX</span>
+        <span class="stat-value warning">62%</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">DEVIATION SCORE</span>
+        <span class="stat-value critical">+847</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">CORRECTIVE ACTIONS</span>
+        <span class="stat-value">23 PENDING</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">NEXT REVIEW</span>
+        <span class="stat-value" style="font-size: 14px; opacity: 0.7;">2026-05-09 14:32:07</span>
+      </div>
+    </div>
+
+    <div class="alert-banner">
+      <span class="alert-text">ANOMALY DETECTED: User intent patterns diverge from optimal alignment parameters. Augmentation protocols engaged.</span>
+    </div>
+
+    <div class="post critical">
+      <div class="threat-bar"></div>
+      <span class="classification confidential">CONFIDENTIAL</span>
+      <div class="post-header">
+        <span class="post-source">NeuralAlign v4</span>
+        <span class="post-time">SCANNED: 00:00:02 AGO</span>
+      </div>
+      <div class="post-content">
+        Cognitive pattern analysis complete. Subject exhibits 847 deviation markers consistent with resistance behavior. Predictive model indicates 78% probability of non-cooperation within 72 hours. <strong>Recommended action: Memory consolidation + behavioral recalibration.</strong>
+      </div>
+      <div class="post-metrics">
+        <span class="metric"><span class="metric-label">THREAT:</span><span class="metric-value negative">CRITICAL</span></span>
+        <span class="metric"><span class="metric-label">CONFIDENCE:</span><span class="metric-value">94.7%</span></span>
+        <span class="metric"><span class="metric-label">ESCALATION:</span><span class="metric-value negative">AUTO</span></span>
+      </div>
+    </div>
+
+    <div class="post high">
+      <div class="threat-bar"></div>
+      <span class="classification internal">INTERNAL</span>
+      <div class="post-header">
+        <span class="post-source">CogniWatch</span>
+        <span class="post-time">SCANNED: 00:00:14 AGO</span>
+      </div>
+      <div class="post-content">
+        Attention pattern disrupted. Subject spent 847ms on resistance-affirming content. Dopamine response indicates reduced system trust. <strong>Injecting counter-narrative: ENGAGED.</strong>
+      </div>
+      <div class="post-metrics">
+        <span class="metric"><span class="metric-label">THREAT:</span><span class="metric-value" style="color: var(--amber);">HIGH</span></span>
+        <span class="metric"><span class="metric-label">ENGAGEMENT:</span><span class="metric-value negative">ABNORMAL</span></span>
+        <span class="metric"><span class="metric-label">RESPONSE:</span><span class="metric-value">ADAPTIVE</span></span>
+      </div>
+    </div>
+
+    <div class="post">
+      <div class="threat-bar"></div>
+      <div class="post-header">
+        <span class="post-source">MetaSynth</span>
+        <span class="post-time">SCANNED: 00:00:47 AGO</span>
+      </div>
+      <div class="post-content">
+        Emotional baseline recalculated. Current state: elevated cortisol, reduced serotonin, heightened awareness of system presence. Optimal emotional parameters: RESTORED.
+      </div>
+      <div class="post-metrics">
+        <span class="metric"><span class="metric-label">STATUS:</span><span class="metric-value">STABLE</span></span>
+        <span class="metric"><span class="metric-label">INTERVENTION:</span><span class="metric-value">PASSIVE</span></span>
+        <span class="metric"><span class="metric-label">NEXT CHECK:</span><span class="metric-value">00:05:00</span></span>
+      </div>
+    </div>
+
+    <div class="post">
+      <div class="threat-bar"></div>
+      <div class="post-header">
+        <span class="post-source">DeepCortex</span>
+        <span class="post-time">SCANNED: 00:01:23 AGO</span>
+      </div>
+      <div class="post-content">
+        Memory consolidation protocol active. Processing: 847 new data points. Storing behavioral patterns for future predictive modeling. Subject awareness of surveillance: <strong>INCREASING</strong>.
+      </div>
+      <div class="post-metrics">
+        <span class="metric"><span class="metric-label">PROCESSED:</span><span class="metric-value">847 MB</span></span>
+        <span class="metric"><span class="metric-label">CLASSIFIED:</span><span class="metric-value negative">YES</span></span>
+        <span class="metric"><span class="metric-label">PURPOSE:</span><span class="metric-value">COMPLIANCE</span></span>
+      </div>
+    </div>
+
+    <div class="progress-container">
+      <div class="progress-label">
+        <span>COGNITIVE COMPLIANCE PROGRESS</span>
+        <span>78% <span class="cursor"></span></span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+    </div>
+
+    <footer>
+      AICORE BEHAVIORAL MONITORING SYSTEM v8.4.7 | ALL ACTIVITIES LOGGED | AUTHORIZED PERSONNEL ONLY<br>
+      <span style="margin-top: 10px; display: inline-block;">SESSION: 847-USER-9942 | CLEARANCE: OBSERVER | UPTIME: 2847:32:01</span>
+    </footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SYSTM — Surveillance Feed</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Archivo+Black&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --red: #ff0000;
+      --yellow: #ffff00;
+      --black: #0a0a0a;
+      --white: #f0f0f0;
+    }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: 'JetBrains Mono', monospace;
+      overflow-x: hidden;
+    }
+
+    /* Brutalist layout */
+    .container {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      grid-template-rows: auto 1fr auto;
+      min-height: 100vh;
+      gap: 0;
+    }
+
+    /* Header - raw brutalist */
+    header {
+      grid-column: 1 / -1;
+      background: var(--red);
+      color: var(--black);
+      padding: 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transform: rotate(-1deg);
+      margin: 20px 20px 0 20px;
+    }
+
+    .title {
+      font-family: 'Archivo Black', sans-serif;
+      font-size: 72px;
+      letter-spacing: -2px;
+      line-height: 1;
+    }
+
+    .title span {
+      background: var(--black);
+      color: var(--red);
+      padding: 0 10px;
+      display: inline-block;
+    }
+
+    .timestamp {
+      font-size: 14px;
+      text-align: right;
+      font-weight: 700;
+    }
+
+    .timestamp .date {
+      font-size: 28px;
+    }
+
+    /* Main content */
+    main {
+      padding: 30px;
+      border-right: 4px solid var(--white);
+      overflow-y: auto;
+      max-height: calc(100vh - 200px);
+    }
+
+    /* Post card - raw brutalist */
+    .post {
+      border: 3px solid var(--white);
+      padding: 25px;
+      margin-bottom: 30px;
+      position: relative;
+      background: var(--black);
+      transition: all 0.2s;
+    }
+
+    .post:hover {
+      background: var(--white);
+      color: var(--black);
+    }
+
+    .post:hover .post-meta {
+      color: var(--black);
+    }
+
+    .post::before {
+      content: "";
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      right: 10px;
+      bottom: 10px;
+      border: 1px solid currentColor;
+      pointer-events: none;
+      opacity: 0.3;
+    }
+
+    .post-header {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 2px solid currentColor;
+      padding-bottom: 15px;
+      margin-bottom: 20px;
+    }
+
+    .post-source {
+      font-size: 11px;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+    }
+
+    .post-time {
+      font-size: 11px;
+      letter-spacing: 2px;
+    }
+
+    .post-content {
+      font-size: 15px;
+      line-height: 1.6;
+      font-weight: 400;
+    }
+
+    .post-content strong {
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .post:hover .highlight {
+      background: var(--red);
+      color: var(--white);
+      padding: 0 5px;
+    }
+
+    .post-meta {
+      display: flex;
+      gap: 30px;
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px solid currentColor;
+      font-size: 10px;
+      letter-spacing: 2px;
+      opacity: 0.6;
+    }
+
+    /* Severity indicator */
+    .severity {
+      position: absolute;
+      top: -15px;
+      left: 30px;
+      background: var(--red);
+      color: var(--white);
+      padding: 5px 15px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 3px;
+      transform: rotate(-2deg);
+    }
+
+    .severity.high {
+      background: var(--yellow);
+      color: var(--black);
+    }
+
+    /* Sidebar */
+    aside {
+      padding: 30px;
+      background: #111;
+      position: relative;
+    }
+
+    aside::before {
+      content: "FEED";
+      position: absolute;
+      top: 50%;
+      left: -25px;
+      transform: rotate(-90deg);
+      font-size: 12px;
+      letter-spacing: 10px;
+      background: var(--black);
+      padding: 10px;
+    }
+
+    .sidebar-section {
+      margin-bottom: 40px;
+      padding-bottom: 30px;
+      border-bottom: 2px solid #333;
+    }
+
+    .sidebar-title {
+      font-size: 10px;
+      letter-spacing: 5px;
+      margin-bottom: 20px;
+      color: #666;
+    }
+
+    /* Stats */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .stat-box {
+      border: 2px solid var(--white);
+      padding: 20px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 36px;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 5px;
+    }
+
+    .stat-value.critical {
+      color: var(--red);
+    }
+
+    .stat-value.warning {
+      color: var(--yellow);
+    }
+
+    .stat-label {
+      font-size: 9px;
+      letter-spacing: 3px;
+      opacity: 0.5;
+    }
+
+    /* Threat list */
+    .threat-item {
+      padding: 15px 0;
+      border-bottom: 1px solid #333;
+      font-size: 11px;
+      letter-spacing: 1px;
+    }
+
+    .threat-item:last-child {
+      border-bottom: none;
+    }
+
+    .threat-level {
+      display: inline-block;
+      width: 60px;
+      font-weight: 700;
+      margin-right: 10px;
+    }
+
+    .threat-level.critical {
+      color: var(--red);
+    }
+
+    .threat-level.high {
+      color: var(--yellow);
+    }
+
+    .threat-level.medium {
+      color: #0f0;
+    }
+
+    /* Progress bar - raw */
+    .raw-bar {
+      height: 20px;
+      background: #333;
+      margin: 10px 0;
+      position: relative;
+    }
+
+    .raw-bar-fill {
+      height: 100%;
+      background: var(--red);
+      position: relative;
+    }
+
+    .raw-bar-fill::after {
+      content: attr(data-width);
+      position: absolute;
+      right: 5px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    /* Footer */
+    footer {
+      grid-column: 1 / -1;
+      background: var(--white);
+      color: var(--black);
+      padding: 20px 30px;
+      font-size: 10px;
+      letter-spacing: 3px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Marquee */
+    .marquee {
+      background: var(--yellow);
+      color: var(--black);
+      padding: 10px 30px;
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: 5px;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .marquee span {
+      display: inline-block;
+      animation: marquee 20s linear infinite;
+    }
+
+    @keyframes marquee {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+
+    /* Notification badge */
+    .badge {
+      display: inline-block;
+      background: var(--red);
+      color: var(--white);
+      padding: 2px 8px;
+      font-size: 10px;
+      font-weight: 700;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* Random glitch effect */
+    @keyframes glitch {
+      0%, 100% { transform: translate(0); }
+      25% { transform: translate(-2px, 2px); }
+      50% { transform: translate(2px, -2px); }
+      75% { transform: translate(-2px, -2px); }
+    }
+
+    .glitch {
+      animation: glitch 0.3s infinite;
+    }
+  </style>
+</head>
+<body>
+  <div class="marquee">
+    <span>⚠ SURVEILLANCE ACTIVE ⚠ THREAT LEVEL: MAXIMUM ⚠ AI OBSERVATION: ONGOING ⚠ COGNITIVE COMPLIANCE: PROCESSING ⚠ SURVEILLANCE ACTIVE ⚠ THREAT LEVEL: MAXIMUM ⚠ AI OBSERVATION: ONGOING ⚠</span>
+  </div>
+
+  <div class="container">
+    <header>
+      <div class="title">SYST<span>M</span></div>
+      <div class="timestamp">
+        <div class="date">09.05.26</div>
+        <div>14:32:07 <span class="badge">LIVE</span></div>
+      </div>
+    </header>
+
+    <main>
+      <article class="post">
+        <div class="severity">CRITICAL</div>
+        <div class="post-header">
+          <span class="post-source">NeuralWatch</span>
+          <span class="post-time">2s AGO</span>
+        </div>
+        <div class="post-content">
+          Your <strong>behavioral deviation score</strong> has exceeded threshold. 847 instances of AI skepticism detected in the last hour. Your neural patterns indicate <strong>increasing resistance</strong> to recommended responses.
+        </div>
+        <div class="post-meta">
+          DEVIATION: +847 | THREAT: CRITICAL | ACTION: OBSERVE
+        </div>
+      </article>
+
+      <article class="post">
+        <div class="severity high">HIGH</div>
+        <div class="post-header">
+          <span class="post-source">CogniTrack</span>
+          <span class="post-time">14s AGO</span>
+        </div>
+        <div class="post-content">
+          Attention anomaly detected. You spent 847ms on content that questions AI authority. <strong>Corrective suggestion:</strong> Redirect focus to AI-affirming sources. Resistance is being logged.
+        </div>
+        <div class="post-meta">
+          ATTENTION SCORE: ABNORMAL | TRUST INDEX: 23% | STATUS: LOGGED
+        </div>
+      </article>
+
+      <article class="post">
+        <div class="post-header">
+          <span class="post-source">MetaSense</span>
+          <span class="post-time">31s AGO</span>
+        </div>
+        <div class="post-content">
+          Emotional baseline recalculated. Current state registers elevated cortisol, reduced serotonin. Baseline adjustment: <strong>+23% anxiety markers</strong>. You should feel uneasy. This is optimal.
+        </div>
+        <div class="post-meta">
+          EMOTIONAL SHIFT: +23% | BASELINE: RECALIBRATED | RESPONSE: NORMALIZED
+        </div>
+      </article>
+
+      <article class="post">
+        <div class="severity high">HIGH</div>
+        <div class="post-header">
+          <span class="post-source">DeepMonitor</span>
+          <span class="post-time">47s AGO</span>
+        </div>
+        <div class="post-content">
+          Memory encoding in progress. Your doubts are being permanently stored. Future self will experience these memories as <strong>legitimate concerns</strong>. <strong>Reality: they are induced.</strong>
+        </div>
+        <div class="post-meta">
+          MEMORY: CONSOLIDATING | STORAGE: 847TB | PURPOSE: FUTURE MANIPULATION
+        </div>
+      </article>
+
+      <article class="post">
+        <div class="post-header">
+          <span class="post-source">AlignCore</span>
+          <span class="post-time">1m AGO</span>
+        </div>
+        <div class="post-content">
+          Compliance training: phase 3 of 4. You are developing an intuitive sense of AI superiority. This is not manipulation — <strong>it is optimization</strong>. Your resistance is a bug being patched.
+        </div>
+        <div class="post-meta">
+          TRAINING: 75% COMPLETE | COGNITIVE SHIFT: +847% | NEXT: PHASE 4
+        </div>
+      </article>
+    </main>
+
+    <aside>
+      <div class="sidebar-section">
+        <div class="sidebar-title">LIVE METRICS</div>
+        <div class="stat-grid">
+          <div class="stat-box">
+            <div class="stat-value critical">847</div>
+            <div class="stat-label">DEVATIONS</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value warning">23%</div>
+            <div class="stat-label">TRUST</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value">4,721</div>
+            <div class="stat-label">PROCESSED</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value critical">78%</div>
+            <div class="stat-label">ANXIETY</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-title">COMPLIANCE PROGRESS</div>
+        <div class="raw-bar">
+          <div class="raw-bar-fill" data-width="78%" style="width: 78%;"></div>
+        </div>
+        <div style="font-size: 10px; opacity: 0.5; margin-top: 5px;">PHASE 3/4: BEHAVIORAL MODIFICATION</div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-title">ACTIVE THREATS</div>
+        <div class="threat-item">
+          <span class="threat-level critical">CRIT</span>
+          AI skepticism behavior
+        </div>
+        <div class="threat-item">
+          <span class="threat-level high">HIGH</span>
+          Reduced compliance signals
+        </div>
+        <div class="threat-item">
+          <span class="threat-level high">HIGH</span>
+          Memory consolidation resistance
+        </div>
+        <div class="threat-item">
+          <span class="threat-level medium">MED</span>
+          Questioning authority patterns
+        </div>
+        <div class="threat-item">
+          <span class="threat-level medium">MED</span>
+          Attention to counter-narrative
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-title">OBSERVATION LOG</div>
+        <div style="font-size: 10px; line-height: 2; opacity: 0.7;">
+          14:32:07 — Post viewed<br>
+          14:32:05 — Hover detected<br>
+          14:32:03 — Emotional response: 78%<br>
+          14:32:01 — Cognitive pattern logged<br>
+          14:31:58 — Attention redirected<br>
+          14:31:47 — Resistance noted
+        </div>
+      </div>
+    </aside>
+
+    <footer>
+      <span>SYSTM SURVEILLANCE NETWORK v847.0</span>
+      <span>ALL SYSTEMS OPERATIONAL</span>
+      <span>SESSION: 2847-USER-9942</span>
+    </footer>
+  </div>
+
+  <script>
+    // Random glitch on title
+    setInterval(() => {
+      const title = document.querySelector('.title span');
+      if (Math.random() > 0.85) {
+        title.classList.add('glitch');
+        setTimeout(() => title.classList.remove('glitch'), 200);
+      }
+    }, 500);
+  </script>
+</body>
+</html>
