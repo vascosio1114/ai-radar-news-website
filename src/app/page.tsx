@@ -3,15 +3,35 @@ import { TrendingNews } from "@/components/home/TrendingNews";
 import { LatestNews } from "@/components/home/LatestNews";
 import { TrendingTools } from "@/components/home/TrendingTools";
 import { Newsletter } from "@/components/home/Newsletter";
-import { MOCK_ARTICLES, MOCK_TOOLS } from "@/data/mock";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-export default function HomePage() {
-  // 之後改用 Supabase server client 取代 mock：
-  // const supabase = createSupabaseServerClient();
-  // const { data: featured } = await supabase.from('articles')...
-  const featured = MOCK_ARTICLES.filter((a) => a.is_featured).slice(0, 4);
-  const latest = MOCK_ARTICLES.slice(0, 6);
-  const trendingTools = MOCK_TOOLS.filter((t) => t.is_trending).slice(0, 4);
+export default async function HomePage() {
+  const supabase = createSupabaseServerClient();
+
+  const [featuredResult, latestResult, trendingResult] = await Promise.all([
+    supabase
+      .from("articles")
+      .select("*")
+      .eq("is_featured", true)
+      .eq("is_published", true)
+      .order("published_at", { ascending: false })
+      .limit(4),
+    supabase
+      .from("articles")
+      .select("*")
+      .eq("is_published", true)
+      .order("published_at", { ascending: false })
+      .limit(6),
+    supabase
+      .from("tools")
+      .select("*")
+      .eq("is_trending", true)
+      .limit(4),
+  ]);
+
+  const featured = featuredResult.data ?? [];
+  const latest = latestResult.data ?? [];
+  const trendingTools = trendingResult.data ?? [];
 
   return (
     <>

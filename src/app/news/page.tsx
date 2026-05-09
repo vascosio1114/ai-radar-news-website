@@ -1,15 +1,21 @@
 import type { Metadata } from "next";
 import { ArticleCard } from "@/components/cards/ArticleCard";
-import { MOCK_ARTICLES } from "@/data/mock";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "AI 新聞",
   description: "最新 AI 業界動向，每日更新。",
 };
 
-export default function NewsPage() {
-  // TODO: 用 Supabase server client 取代
-  const articles = MOCK_ARTICLES;
+export default async function NewsPage() {
+  const supabase = createSupabaseServerClient();
+  const { data } = await supabase
+    .from("articles")
+    .select("*")
+    .eq("is_published", true)
+    .order("published_at", { ascending: false });
+
+  const articles = data ?? [];
 
   return (
     <div className="container-page section-pad">
