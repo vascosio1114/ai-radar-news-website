@@ -1,4 +1,5 @@
 import { User } from "lucide-react";
+import Image from "next/image";
 
 interface AuthorCardProps {
   name: string;
@@ -16,9 +17,11 @@ export default function AuthorCard({ name, bio, avatar }: AuthorCardProps) {
       <div className="flex items-start gap-4">
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent-100 text-accent-600 dark:bg-accent-900 dark:text-accent-300">
           {avatar ? (
-            <img
+            <Image
               src={avatar}
               alt={name}
+              width={48}
+              height={48}
               className="h-full w-full rounded-full object-cover"
             />
           ) : (

@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import { ArticleCard } from "@/components/cards/ArticleCard";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getUIStrings, type Lang } from "@/lib/i18n";
+import { DEFAULT_LANG } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "AI 新聞",
-  description: "最新 AI 業界動向，每日更新。",
-};
+type Props = { params: { lang: string } };
 
-export default async function NewsPage() {
+export default async function NewsPage({ params }: Props) {
+  const lang = (params.lang as Lang) ?? DEFAULT_LANG;
+  const s = getUIStrings(lang);
+
   const supabase = createSupabaseServerClient();
   const { data } = await supabase
     .from("articles")
@@ -24,16 +26,16 @@ export default async function NewsPage() {
           AI News
         </p>
         <h1 className="font-display text-4xl font-bold tracking-tight md:text-5xl">
-          最新 AI 新聞
+          {s.newsPageTitle}
         </h1>
         <p className="mt-3 max-w-2xl text-sm text-ink-500 dark:text-ink-400 md:text-base">
-          編輯團隊每日整理嘅 AI 新聞。由 model release 到產業動向，一個地方睇齊。
+          {s.newsPageDesc}
         </p>
       </header>
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {articles.map((a) => (
-          <ArticleCard key={a.id} article={a} />
+          <ArticleCard key={a.id} article={a} lang={lang} />
         ))}
       </div>
     </div>

@@ -1,12 +1,7 @@
 import Image from "next/image";
 import { ExternalLink, Star } from "lucide-react";
 import type { Tool } from "@/types";
-
-const PRICING_LABEL: Record<Tool["pricing"], string> = {
-  free: "免費",
-  freemium: "Freemium",
-  paid: "付費",
-};
+import { getLocalizedContent, getUIStrings, type Lang } from "@/lib/i18n";
 
 const PRICING_STYLE: Record<Tool["pricing"], string> = {
   free: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
@@ -14,14 +9,29 @@ const PRICING_STYLE: Record<Tool["pricing"], string> = {
   paid: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
 };
 
-export function ToolCard({ tool }: { tool: Tool }) {
+export function ToolCard({
+  tool,
+  lang = "zh",
+}: {
+  tool: Tool;
+  lang?: Lang;
+}) {
+  const localized = getLocalizedContent(tool, lang);
+  const strings = getUIStrings(lang);
+
+  const PRICING_LABEL: Record<Tool["pricing"], string> = {
+    free: strings.pricingFree,
+    freemium: strings.pricingFreemium,
+    paid: strings.pricingPaid,
+  };
+
   return (
     <div className="card-hover group relative flex h-full flex-col overflow-hidden rounded-2xl border border-ink-200/70 bg-white p-6 dark:border-ink-800/70 dark:bg-ink-900">
       <div className="flex items-start justify-between">
         <div className="relative h-12 w-12 overflow-hidden rounded-xl border border-ink-200/70 bg-ink-50 dark:border-ink-800 dark:bg-ink-800">
           <Image
             src={tool.logo}
-            alt={`${tool.name} logo`}
+            alt={`${localized.name} logo`}
             fill
             sizes="48px"
             className="object-cover"
@@ -35,14 +45,14 @@ export function ToolCard({ tool }: { tool: Tool }) {
       </div>
 
       <div className="mt-4">
-        <h3 className="font-display text-lg font-semibold">{tool.name}</h3>
+        <h3 className="font-display text-lg font-semibold">{localized.name}</h3>
         <p className="text-xs text-ink-500 dark:text-ink-400">
-          {tool.tagline}
+          {localized.tagline}
         </p>
       </div>
 
       <p className="mt-3 line-clamp-3 flex-1 text-sm text-ink-600 dark:text-ink-300">
-        {tool.description}
+        {localized.description}
       </p>
 
       <div className="mt-5 flex items-center justify-between border-t border-ink-200/70 pt-4 dark:border-ink-800/70">
@@ -57,7 +67,7 @@ export function ToolCard({ tool }: { tool: Tool }) {
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1 text-xs font-semibold text-ink-700 transition hover:text-accent-600 dark:text-ink-200 dark:hover:text-accent-400"
         >
-          開啟官網
+          {strings.openWebsite}
           <ExternalLink className="h-3.5 w-3.5" />
         </a>
       </div>

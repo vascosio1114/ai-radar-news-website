@@ -3,15 +3,19 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, Sparkles, Search } from "lucide-react";
+import { Menu, X, Sparkles } from "lucide-react";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
+import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { cn } from "@/lib/utils";
-import { SITE_NAME, NAV_ITEMS } from "@/lib/site";
+import { SITE_NAME, SUPPORTED_LANGS } from "@/lib/site";
 
 export function Navbar() {
   const pathname = usePathname();
   const [open, setOpen] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
+
+  // Detect lang from pathname (e.g. "/zh/news" -> "zh")
+  const lang = SUPPORTED_LANGS.find((l) => pathname.startsWith(`/${l}`)) ?? "zh";
 
   React.useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -22,6 +26,13 @@ export function Navbar() {
 
   // close mobile menu on route change
   React.useEffect(() => setOpen(false), [pathname]);
+
+  const navItems = [
+    { href: `/${lang}`, label: lang === "zh" ? "首頁" : "Home" },
+    { href: `/${lang}/news`, label: lang === "zh" ? "AI 新聞" : "AI News" },
+    { href: `/${lang}/tools`, label: lang === "zh" ? "AI 工具" : "AI Tools" },
+    { href: `/${lang}/tutorials`, label: lang === "zh" ? "教學" : "Tutorials" },
+  ] as const;
 
   return (
     <header
@@ -34,7 +45,7 @@ export function Navbar() {
     >
       <div className="container-page flex h-16 items-center justify-between gap-4">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 font-display">
+        <Link href={`/${lang}`} className="flex items-center gap-2 font-display">
           <span className="relative grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-accent-500 to-accent-700 text-white shadow-glow">
             <Sparkles className="h-4 w-4" />
           </span>
@@ -45,10 +56,10 @@ export function Navbar() {
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-1 md:flex">
-          {NAV_ITEMS.map((item) => {
+          {navItems.map((item) => {
             const active =
               pathname === item.href ||
-              (item.href !== "/" && pathname.startsWith(item.href));
+              (item.href !== `/${lang}` && pathname.startsWith(item.href));
             return (
               <Link
                 key={item.href}
@@ -71,14 +82,8 @@ export function Navbar() {
 
         {/* Right side */}
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            aria-label="搜尋"
-            className="hidden h-9 w-9 items-center justify-center rounded-full border border-ink-200 bg-white/70 text-ink-700 transition hover:border-accent-400 hover:text-accent-600 dark:border-ink-800 dark:bg-ink-900/70 dark:text-ink-200 dark:hover:text-accent-400 sm:inline-flex"
-          >
-            <Search className="h-4 w-4" />
-          </button>
           <ThemeToggle />
+          <LanguageSwitcher />
           <button
             type="button"
             aria-label="開啟選單"
@@ -94,10 +99,10 @@ export function Navbar() {
       {open && (
         <div className="md:hidden">
           <nav className="container-page flex flex-col gap-1 pb-4">
-            {NAV_ITEMS.map((item) => {
+            {navItems.map((item) => {
               const active =
                 pathname === item.href ||
-                (item.href !== "/" && pathname.startsWith(item.href));
+                (item.href !== `/${lang}` && pathname.startsWith(item.href));
               return (
                 <Link
                   key={item.href}
@@ -113,6 +118,10 @@ export function Navbar() {
                 </Link>
               );
             })}
+            <div className="mt-2 flex items-center gap-2 px-3">
+              <ThemeToggle />
+              <LanguageSwitcher />
+            </div>
           </nav>
         </div>
       )}

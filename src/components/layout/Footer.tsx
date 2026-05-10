@@ -1,9 +1,21 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Sparkles, Github, Twitter, Mail } from "lucide-react";
-import { SITE_NAME, NAV_ITEMS } from "@/lib/site";
+import { SITE_NAME, SUPPORTED_LANGS } from "@/lib/site";
 
 export function Footer() {
+  const pathname = usePathname();
   const year = new Date().getFullYear();
+  const lang = SUPPORTED_LANGS.find((l) => pathname.startsWith(`/${l}`)) ?? "zh";
+
+  const navItems = [
+    { href: `/${lang}`, label: lang === "zh" ? "首頁" : "Home" },
+    { href: `/${lang}/news`, label: lang === "zh" ? "AI 新聞" : "AI News" },
+    { href: `/${lang}/tools`, label: lang === "zh" ? "AI 工具" : "AI Tools" },
+    { href: `/${lang}/tutorials`, label: lang === "zh" ? "教學" : "Tutorials" },
+  ] as const;
 
   return (
     <footer className="relative mt-24 border-t border-ink-200/70 dark:border-ink-800/70">
@@ -13,7 +25,7 @@ export function Footer() {
       <div className="container-page grid gap-12 py-16 md:grid-cols-4">
         {/* Brand */}
         <div className="md:col-span-2">
-          <Link href="/" className="flex items-center gap-2 font-display">
+          <Link href={`/${lang}`} className="flex items-center gap-2 font-display">
             <span className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-accent-500 to-accent-700 text-white shadow-glow">
               <Sparkles className="h-4 w-4" />
             </span>
@@ -48,7 +60,7 @@ export function Footer() {
             導覽
           </h4>
           <ul className="mt-4 space-y-2 text-sm">
-            {NAV_ITEMS.map((item) => (
+            {navItems.map((item) => (
               <li key={item.href}>
                 <Link
                   href={item.href}

@@ -1,8 +1,7 @@
 "use client";
 
-import ReactMarkdown from "react-markdown";
+import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import rehypePrettyCode from "rehype-pretty-code";
 import type { Components } from "react-markdown";
 
 interface MarkdownRendererProps {
@@ -92,21 +91,12 @@ const components: Components = {
 export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
   return (
     <div className="prose prose-ink dark:prose-invert max-w-none">
-      <ReactMarkdown
+      <Markdown
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[
-          [
-            rehypePrettyCode,
-            {
-              theme: "github-dark",
-              keepBackground: true,
-            },
-          ],
-        ]}
         components={components}
       >
         {content}
-      </ReactMarkdown>
+      </Markdown>
     </div>
   );
 }

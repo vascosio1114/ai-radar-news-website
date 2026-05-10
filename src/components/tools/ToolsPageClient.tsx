@@ -5,10 +5,11 @@ import { ToolCard } from "@/components/cards/ToolCard";
 import { TOOL_CATEGORIES, type ToolCategorySlug } from "@/lib/site";
 import type { Tool } from "@/types";
 import { cn } from "@/lib/utils";
+import { type Lang } from "@/lib/i18n";
 
-type Props = { tools: Tool[] };
+type Props = { tools: Tool[]; lang?: Lang };
 
-export function ToolsPageClient({ tools }: Props) {
+export function ToolsPageClient({ tools, lang = "zh" }: Props) {
   const [active, setActive] = React.useState<ToolCategorySlug>("all");
 
   const filtered =
@@ -37,7 +38,7 @@ export function ToolsPageClient({ tools }: Props) {
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {filtered.map((t) => (
-          <ToolCard key={t.id} tool={t} />
+          <ToolCard key={t.id} tool={t} lang={lang} />
         ))}
       </div>
 

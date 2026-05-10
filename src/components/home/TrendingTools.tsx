@@ -1,20 +1,29 @@
 import { ToolCard } from "@/components/cards/ToolCard";
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import type { Tool } from "@/types";
+import { getUIStrings, type Lang } from "@/lib/i18n";
 
-export function TrendingTools({ tools }: { tools: Tool[] }) {
+export function TrendingTools({
+  tools,
+  lang = "zh",
+}: {
+  tools: Tool[];
+  lang?: Lang;
+}) {
+  const s = getUIStrings(lang);
+
   return (
     <section className="container-page section-pad">
       <SectionHeader
-        eyebrow="精選"
-        title="Trending AI Tools"
-        description="編輯每星期實測，揀出真正有用嘅 AI 工具。"
-        href="/tools"
+        eyebrow={s.trendingTools}
+        title={s.trendingToolsTitle}
+        description={s.trendingToolsDesc}
+        href={`/${lang}/tools`}
       />
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {tools.map((t) => (
-          <ToolCard key={t.id} tool={t} />
+          <ToolCard key={t.id} tool={t} lang={lang} />
         ))}
       </div>
     </section>

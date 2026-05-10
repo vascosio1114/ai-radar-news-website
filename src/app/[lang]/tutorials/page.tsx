@@ -3,11 +3,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { Clock, GraduationCap } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getUIStrings, type Lang } from "@/lib/i18n";
+import { DEFAULT_LANG } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "AI 教學",
-  description: "由新手到進階嘅 AI 教學文章。",
-};
+type Props = { params: { lang: string } };
 
 const LEVEL_STYLE: Record<string, string> = {
   新手: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
@@ -15,7 +14,10 @@ const LEVEL_STYLE: Record<string, string> = {
   進階: "bg-rose-500/10 text-rose-600 dark:text-rose-400",
 };
 
-export default async function TutorialsPage() {
+export default async function TutorialsPage({ params }: Props) {
+  const lang = (params.lang as Lang) ?? DEFAULT_LANG;
+  const s = getUIStrings(lang);
+
   const supabase = createSupabaseServerClient();
   const { data } = await supabase
     .from("tutorials")
@@ -32,10 +34,10 @@ export default async function TutorialsPage() {
           Tutorials
         </p>
         <h1 className="font-display text-4xl font-bold tracking-tight md:text-5xl">
-          AI 教學
+          {s.tutorialsPageTitle}
         </h1>
         <p className="mt-3 text-sm text-ink-500 dark:text-ink-400 md:text-base">
-          一步步教你由零開始用 AI。免費、繁體中文、有實作。
+          {s.tutorialsPageDesc}
         </p>
       </header>
 
@@ -43,7 +45,7 @@ export default async function TutorialsPage() {
         {tutorials.map((t) => (
           <Link
             key={t.id}
-            href={`/tutorials/${t.slug}`}
+            href={`/${lang}/tutorials/${t.slug}`}
             className="card-hover group relative flex overflow-hidden rounded-3xl border border-ink-200/70 bg-white dark:border-ink-800/70 dark:bg-ink-900"
           >
             <div className="relative aspect-square w-40 shrink-0 overflow-hidden md:w-56">

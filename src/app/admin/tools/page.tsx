@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { Plus, Edit2, Trash2, ExternalLink, TrendingUp } from "lucide-react";
 import type { Tool } from "@/types";
@@ -121,9 +122,11 @@ export default function AdminToolsPage() {
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       {tool.logo && (
-                        <img
+                        <Image
                           src={tool.logo}
                           alt={tool.name}
+                          width={32}
+                          height={32}
                           className="h-8 w-8 rounded-lg object-contain"
                         />
                       )}

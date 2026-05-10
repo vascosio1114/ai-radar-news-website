@@ -11,8 +11,9 @@ function maskEmail(email: string): string {
 }
 
 export async function POST(request: Request) {
+  let email = "";
   try {
-    const { email } = await request.json();
+    ({ email } = await request.json());
 
     if (!email || typeof email !== "string" || !email.includes("@")) {
       return NextResponse.json({ error: "Invalid email" }, { status: 400 });
