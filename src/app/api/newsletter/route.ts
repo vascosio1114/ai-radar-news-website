@@ -1,5 +1,14 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { logger } from "@/lib/logger";
+
+const newsletterLogger = logger.child({ component: "newsletter" });
+
+function maskEmail(email: string): string {
+  const [local, domain] = email.split("@");
+  const maskedLocal = local.length > 1 ? local[0] + "***" : "***";
+  return `${maskedLocal}@${domain}`;
+}
 
 export async function POST(request: Request) {
   try {
@@ -25,7 +34,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ok: true });
   } catch (e) {
-    console.error("[newsletter]", e);
+    newsletterLogger.error({ email: maskEmail(email), err: e }, "Newsletter subscription failed");
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
