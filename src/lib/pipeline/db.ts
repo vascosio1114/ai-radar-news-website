@@ -7,6 +7,9 @@
  * Per-row safety comes from the `RawItem` / `Source` types in `@/types`.
  */
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { logger } from "@/lib/logger";
+
+const auditLog = logger.child({ component: "audit" });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyClient = SupabaseClient<any, any, any>;
@@ -44,6 +47,6 @@ export async function audit(
       .from("audit_logs")
       .insert({ actor, action, target_type, target_id, payload });
   } catch (e) {
-    console.warn("[audit] failed", e);
+    auditLog.warn({ err: e }, "[audit] failed");
   }
 }

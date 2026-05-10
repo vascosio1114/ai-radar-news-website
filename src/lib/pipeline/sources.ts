@@ -9,6 +9,9 @@ import { fetchHN } from "./adapters/hn";
 import { fetchArxiv } from "./adapters/arxiv";
 import { fetchGithubTrending } from "./adapters/github-trending";
 import { fetchScrapeGeneric } from "./adapters/scrape";
+import { logger } from "@/lib/logger";
+
+const sourcesLog = logger.child({ component: "sources" });
 
 export type NormalizedItem = {
   external_id: string;
@@ -46,8 +49,10 @@ export async function fetchSource(source: Source): Promise<NormalizedItem[]> {
   if (!adapter) {
     throw new Error(`No adapter for source kind: ${source.kind}`);
   }
+  sourcesLog.info({ source: source.name, kind: source.kind }, "fetching source");
   try {
     const items = await adapter(source);
+    sourcesLog.info({ source: source.name, count: items.length }, "source fetched");
     await pipelineDb()
       .from("sources")
       .update({ last_fetched_at: new Date().toISOString(), last_error: null })
@@ -58,6 +63,7 @@ export async function fetchSource(source: Source): Promise<NormalizedItem[]> {
     return items;
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
+    sourcesLog.error({ source: source.name, err: msg }, "source failed");
     await pipelineDb()
       .from("sources")
       .update({ last_error: msg })
