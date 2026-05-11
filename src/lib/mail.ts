@@ -53,10 +53,10 @@ export async function sendHtmlEmail(
 ): Promise<{ sent: boolean; error?: string }> {
   const key = Buffer.from(
     process.env.MAIL_ENCRYPTION_KEY || "",
-    "utf8"
+    "hex"
   );
   if (key.length !== 32) {
-    return { sent: false, error: "MAIL_ENCRYPTION_KEY must be 32 bytes" };
+    return { sent: false, error: "MAIL_ENCRYPTION_KEY must be 32 bytes (64 hex chars)" };
   }
 
   const password = decryptPassword(settings.smtp_pass_encrypted, key);

@@ -39,12 +39,16 @@ export default function EditArticlePage() {
       .from("articles")
       .update({
         title: data.title,
+        title_zh: data.title_zh || null,
         slug: data.slug,
         excerpt: data.excerpt,
+        excerpt_zh: data.excerpt_zh || null,
         cover_image: data.cover_image || null,
         content: data.content || null,
+        content_zh: data.content_zh || null,
         category: data.category,
         tags: data.tags,
+        published_at: data.published_at ? new Date(data.published_at).toISOString() : null,
         is_featured: data.is_featured,
         is_published: data.is_published,
         updated_at: new Date().toISOString(),
@@ -85,12 +89,18 @@ export default function EditArticlePage() {
         <ArticleForm
           initialData={{
             title: article.title,
+            title_zh: (article as any).title_zh || "",
             slug: article.slug,
             excerpt: article.excerpt || "",
+            excerpt_zh: (article as any).excerpt_zh || "",
             cover_image: article.cover_image || "",
             category: article.category,
             tags: article.tags || [],
             content: article.content || "",
+            content_zh: (article as any).content_zh || "",
+            published_at: article.published_at
+              ? article.published_at.split("T")[0]
+              : new Date().toISOString().split("T")[0],
             is_featured: article.is_featured,
             is_published: article.is_published,
           }}

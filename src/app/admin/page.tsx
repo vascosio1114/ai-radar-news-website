@@ -110,7 +110,11 @@ export default function AdminDashboardPage() {
     setTesting(true);
     setStatusMsg(null);
     try {
-      const res = await fetch("/api/admin/mail/test", { method: "POST" });
+      const res = await fetch("/api/admin/mail/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ to: settings.smtp_from_address }),
+      });
       const data = await res.json();
       if (res.ok) {
         setStatusMsg({ type: "success", text: `Test email sent to ${data.to}.` });
@@ -228,13 +232,13 @@ export default function AdminDashboardPage() {
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium text-ink-700 dark:text-ink-300">
-                  From Address
+                  To Address
                 </label>
                 <input
                   type="email"
                   value={settings.smtp_from_address}
                   onChange={(e) => setSettings((p) => ({ ...p, smtp_from_address: e.target.value }))}
-                  placeholder="newsletter@example.com"
+                  placeholder="your@email.com"
                   className="w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-ink-700 dark:bg-ink-950 dark:text-ink-50"
                 />
               </div>
@@ -249,6 +253,7 @@ export default function AdminDashboardPage() {
                   placeholder="AI Radar"
                   className="w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-ink-700 dark:bg-ink-950 dark:text-ink-50"
                 />
+                <p className="mt-1 text-xs text-ink-400">Name shown in email From header</p>
               </div>
             </div>
           </div>

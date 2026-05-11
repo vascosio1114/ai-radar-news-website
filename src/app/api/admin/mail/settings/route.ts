@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { encryptPassword } from "@/lib/mail";
 
 export async function GET() {
-  const supabase = createSupabaseServerClient();
+  const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase
     .from("mail_settings")
     .select("*")
@@ -18,9 +18,12 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const supabase = createSupabaseServerClient();
+  const supabase = createSupabaseAdminClient();
 
-  const encKey = Buffer.from(process.env.MAIL_ENCRYPTION_KEY || "", "utf8");
+  const encKey = Buffer.from(process.env.MAIL_ENCRYPTION_KEY || "", "hex");
+  if (encKey.length !== 32) {
+    return NextResponse.json({ error: "MAIL_ENCRYPTION_KEY must be 32 bytes" }, { status: 500 });
+  }
   const smtpPassEncrypted = body.smtp_pass
     ? encryptPassword(body.smtp_pass, encKey)
     : undefined;

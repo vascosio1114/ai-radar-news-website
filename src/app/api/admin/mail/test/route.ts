@@ -1,11 +1,16 @@
 import { NextResponse } from "next/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { sendHtmlEmail, buildDigestHtml } from "@/lib/mail";
 
-export async function POST() {
-  const supabase = createSupabaseServerClient();
+export async function POST(request: Request) {
+  const adminDb = createSupabaseAdminClient();
+  const serverClient = createSupabaseServerClient();
 
-  const { data: settings } = await supabase
+  const body = await request.json().catch(() => ({}));
+  const overrideEmail = body.to;
+
+  const { data: settings } = await adminDb
     .from("mail_settings")
     .select("*")
     .limit(1)
@@ -15,9 +20,11 @@ export async function POST() {
     return NextResponse.json({ error: "No mail settings configured" }, { status: 400 });
   }
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user?.email) {
-    return NextResponse.json({ error: "No admin email found" }, { status: 400 });
+  const { data: { user } } = await serverClient.auth.getUser();
+  const recipientEmail = overrideEmail || user?.email || settings.smtp_from_address;
+
+  if (!recipientEmail) {
+    return NextResponse.json({ error: "No recipient email" }, { status: 400 });
   }
 
   const html = buildDigestHtml({
@@ -35,7 +42,7 @@ export async function POST() {
 
   const result = await sendHtmlEmail(
     settings,
-    user.email,
+    recipientEmail,
     "Test: " + (settings.email_subject_template || "AI Radar Daily Digest"),
     html
   );
@@ -43,5 +50,5 @@ export async function POST() {
   if (!result.sent) {
     return NextResponse.json({ error: result.error }, { status: 500 });
   }
-  return NextResponse.json({ ok: true, to: user.email });
+  return NextResponse.json({ ok: true, to: recipientEmail });
 }
