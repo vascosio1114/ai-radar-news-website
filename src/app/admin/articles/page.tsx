@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { Plus, Edit2, Trash2, Eye, EyeOff, ExternalLink } from "lucide-react";
 import type { Article } from "@/types";
 
@@ -12,48 +11,35 @@ export default function AdminArticlesPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const fetchArticles = async () => {
-    const supabase = createSupabaseBrowserClient();
-    const { data, error } = await supabase
-      .from("articles")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (!error && data) {
-      setArticles(data as Article[]);
+    const res = await fetch("/api/admin/articles");
+    if (res.ok) {
+      const { articles } = await res.json();
+      setArticles(articles as Article[]);
     }
     setLoading(false);
   };
-
-  useEffect(() => {
-    fetchArticles();
-  }, []);
 
   const handleDelete = async (id: string) => {
     if (!confirm("確定要刪除這篇文章嗎？")) return;
 
     setDeletingId(id);
-    const supabase = createSupabaseBrowserClient();
-    const { error } = await supabase.from("articles").delete().eq("id", id);
-
-    if (!error) {
+    const res = await fetch(`/api/admin/articles/${id}`, { method: "DELETE" });
+    if (res.ok) {
       setArticles((prev) => prev.filter((a) => a.id !== id));
     }
     setDeletingId(null);
   };
 
   const handleTogglePublish = async (article: Article) => {
-    const supabase = createSupabaseBrowserClient();
-    const { error } = await supabase
-      .from("articles")
-      .update({ is_published: !article.is_published })
-      .eq("id", article.id);
-
-    if (!error) {
+    const res = await fetch(`/api/admin/articles/${article.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ is_published: !article.is_published }),
+    });
+    if (res.ok) {
       setArticles((prev) =>
         prev.map((a) =>
-          a.id === article.id
-            ? { ...a, is_published: !article.is_published }
-            : a
+          a.id === article.id ? { ...a, is_published: !article.is_published } : a
         )
       );
     }

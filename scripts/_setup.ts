@@ -7,6 +7,7 @@
 import { config as loadDotenv } from "dotenv";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { logger } from "../src/lib/logger";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -21,15 +22,19 @@ process.on("unhandledRejection", (err) => {
 
 export function step(label: string) {
   const t = new Date().toISOString().slice(11, 19);
-  console.log(`[${t}] ▸ ${label}`);
+  logger.info(`[${t}] ▸ ${label}`);
 }
 
 export function ok(label: string) {
   const t = new Date().toISOString().slice(11, 19);
-  console.log(`[${t}] ✓ ${label}`);
+  logger.info(`[${t}] ✓ ${label}`);
 }
 
 export function warn(label: string, err?: unknown) {
   const t = new Date().toISOString().slice(11, 19);
-  console.warn(`[${t}] ⚠ ${label}`, err ?? "");
+  if (err !== undefined) {
+    logger.warn({ err }, `[${t}] ⚠ ${label}`);
+  } else {
+    logger.warn(`[${t}] ⚠ ${label}`);
+  }
 }

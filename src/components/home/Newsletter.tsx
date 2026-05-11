@@ -2,8 +2,10 @@
 
 import * as React from "react";
 import { Mail, Send, CheckCircle2 } from "lucide-react";
+import { getUIStrings, type Lang } from "@/lib/i18n";
 
-export function Newsletter() {
+export function Newsletter({ lang = "zh" }: { lang?: Lang }) {
+  const s = getUIStrings(lang);
   const [email, setEmail] = React.useState("");
   const [state, setState] = React.useState<"idle" | "loading" | "success" | "error">(
     "idle"
@@ -14,7 +16,7 @@ export function Newsletter() {
     e.preventDefault();
     if (!email || !email.includes("@")) {
       setState("error");
-      setMessage("唔該輸入有效嘅 email");
+      setMessage(s.newsletterEmailError);
       return;
     }
     setState("loading");
@@ -27,11 +29,11 @@ export function Newsletter() {
       });
       if (!res.ok) throw new Error("subscribe failed");
       setState("success");
-      setMessage("訂閱成功！記得 check 你個 inbox 確認。");
+      setMessage(s.newsletterSuccessMsg);
       setEmail("");
     } catch {
       setState("error");
-      setMessage("訂閱失敗，請稍後再試。");
+      setMessage(s.newsletterErrorMsg);
     }
   }
 
@@ -46,13 +48,13 @@ export function Newsletter() {
           <div>
             <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-ink-200 bg-white/70 px-3 py-1 text-xs font-semibold text-ink-700 backdrop-blur dark:border-ink-800 dark:bg-ink-900/60 dark:text-ink-200">
               <Mail className="h-3.5 w-3.5" />
-              每週通訊
+              {s.newsletter}
             </div>
             <h2 className="font-display text-3xl font-bold tracking-tight md:text-4xl">
-              每週直送你 inbox 嘅 AI 精華
+              {s.newsletterTitle}
             </h2>
             <p className="mt-3 text-sm text-ink-600 dark:text-ink-300 md:text-base">
-              我哋每星期幫你濃縮整週最緊要嘅 AI 動向、新工具同實用 prompt。免費，可隨時退訂。
+              {s.newsletterDesc}
             </p>
           </div>
 
@@ -65,7 +67,7 @@ export function Newsletter() {
               <input
                 type="email"
                 required
-                placeholder="you@example.com"
+                placeholder={s.newsletterPlaceholder}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="min-w-0 flex-1 bg-transparent px-3 py-2 text-sm placeholder:text-ink-400 focus:outline-none dark:placeholder:text-ink-500"
@@ -81,7 +83,7 @@ export function Newsletter() {
                 ) : (
                   <Send className="h-4 w-4" />
                 )}
-                {state === "success" ? "已訂閱" : "訂閱"}
+                {state === "success" ? s.newsletterSuccess : s.newsletterButton}
               </button>
             </div>
             {message && (
@@ -96,7 +98,7 @@ export function Newsletter() {
               </p>
             )}
             <p className="text-xs text-ink-500 dark:text-ink-400">
-              我哋唔會 spam，亦唔會將你嘅 email 賣俾人。
+              {s.newsletterNoSpam}
             </p>
           </form>
         </div>

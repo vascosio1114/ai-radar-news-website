@@ -4,8 +4,12 @@ import { LatestNews } from "@/components/home/LatestNews";
 import { TrendingTools } from "@/components/home/TrendingTools";
 import { Newsletter } from "@/components/home/Newsletter";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { type Lang } from "@/lib/site";
 
-export default async function HomePage() {
+type Props = { params: { lang: string } };
+
+export default async function HomePage({ params }: Props) {
+  const lang = params.lang as Lang;
   const supabase = createSupabaseServerClient();
 
   const [featuredResult, latestResult, trendingResult] = await Promise.all([
@@ -35,11 +39,11 @@ export default async function HomePage() {
 
   return (
     <>
-      <Hero />
-      <TrendingNews articles={featured} />
-      <LatestNews articles={latest} />
-      <TrendingTools tools={trendingTools} />
-      <Newsletter />
+      <Hero lang={lang} />
+      <TrendingNews articles={featured} lang={lang} />
+      <LatestNews articles={latest} lang={lang} />
+      <TrendingTools tools={trendingTools} lang={lang} />
+      <Newsletter lang={lang} />
     </>
   );
 }

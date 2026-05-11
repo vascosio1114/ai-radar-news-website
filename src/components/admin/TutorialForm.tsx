@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import dynamic from "next/dynamic";
 import { Upload, X } from "lucide-react";
+import Image from "next/image";
 
 const MDEditor = dynamic(
   () => import("@uiw/react-md-editor").then((mod) => mod.default),
@@ -12,12 +13,15 @@ const MDEditor = dynamic(
 
 export interface TutorialFormData {
   title: string;
+  title_zh: string;
   slug: string;
   level: "新手" | "中級" | "進階";
   duration: string;
   cover_image: string;
   excerpt: string;
+  excerpt_zh: string;
   content: string;
+  content_zh: string;
   is_published: boolean;
 }
 
@@ -48,12 +52,15 @@ export default function TutorialForm({
 }: TutorialFormProps) {
   const [formData, setFormData] = useState<TutorialFormData>({
     title: initialData?.title || "",
+    title_zh: initialData?.title_zh || "",
     slug: initialData?.slug || "",
     level: initialData?.level || "新手",
     duration: initialData?.duration || "",
     cover_image: initialData?.cover_image || "",
     excerpt: initialData?.excerpt || "",
+    excerpt_zh: initialData?.excerpt_zh || "",
     content: initialData?.content || "",
+    content_zh: initialData?.content_zh || "",
     is_published: initialData?.is_published ?? true,
   });
 
@@ -197,9 +204,11 @@ export default function TutorialForm({
         </div>
         {formData.cover_image && (
           <div className="mt-3 relative w-full max-w-xs">
-            <img
+            <Image
               src={formData.cover_image}
               alt="Cover preview"
+              width={384}
+              height={128}
               className="h-32 w-full rounded-lg object-cover border border-ink-200 dark:border-ink-700"
             />
             <button
@@ -229,6 +238,59 @@ export default function TutorialForm({
           className="mt-1 block w-full rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm text-ink-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-ink-700 dark:bg-ink-800 dark:text-ink-50"
           placeholder="教學簡短描述..."
         />
+      </div>
+
+      {/* 中文內容 */}
+      <div className="border-t border-ink-200 dark:border-ink-700 pt-6">
+        <h3 className="text-lg font-medium text-ink-900 dark:text-ink-50 mb-4">中文內容</h3>
+
+        {/* Title Zh */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-ink-700 dark:text-ink-300">
+            中文標題
+          </label>
+          <input
+            type="text"
+            value={formData.title_zh}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, title_zh: e.target.value }))
+            }
+            className="mt-1 block w-full rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm text-ink-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-ink-700 dark:bg-ink-800 dark:text-ink-50"
+          />
+        </div>
+
+        {/* Excerpt Zh */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-ink-700 dark:text-ink-300">
+            中文摘要
+          </label>
+          <textarea
+            value={formData.excerpt_zh}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, excerpt_zh: e.target.value }))
+            }
+            rows={2}
+            className="mt-1 block w-full rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm text-ink-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-ink-700 dark:bg-ink-800 dark:text-ink-50"
+            placeholder="教學中文簡短描述..."
+          />
+        </div>
+
+        {/* Content Zh */}
+        <div>
+          <label className="block text-sm font-medium text-ink-700 dark:text-ink-300">
+            中文內容
+          </label>
+          <div className="mt-1" data-color-mode="auto">
+            <MDEditor
+              value={formData.content_zh}
+              onChange={(value) =>
+                setFormData((prev) => ({ ...prev, content_zh: value || "" }))
+              }
+              height={400}
+              preview="edit"
+            />
+          </div>
+        </div>
       </div>
 
       {/* Content - Markdown Editor */}

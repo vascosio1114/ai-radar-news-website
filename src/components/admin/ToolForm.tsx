@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import dynamic from "next/dynamic";
 import { Upload, X } from "lucide-react";
+import Image from "next/image";
 
 // Dynamically import markdown editor to avoid SSR issues
 const MDEditor = dynamic(
@@ -13,9 +14,12 @@ const MDEditor = dynamic(
 
 export interface ToolFormData {
   name: string;
+  name_zh: string;
   slug: string;
   tagline: string;
+  tagline_zh: string;
   description: string;
+  description_zh: string;
   logo: string;
   website: string;
   category: string;
@@ -56,9 +60,12 @@ export default function ToolForm({
 }: ToolFormProps) {
   const [formData, setFormData] = useState<ToolFormData>({
     name: initialData?.name || "",
+    name_zh: initialData?.name_zh || "",
     slug: initialData?.slug || "",
     tagline: initialData?.tagline || "",
+    tagline_zh: initialData?.tagline_zh || "",
     description: initialData?.description || "",
+    description_zh: initialData?.description_zh || "",
     logo: initialData?.logo || "",
     website: initialData?.website || "",
     category: initialData?.category || "productivity",
@@ -175,6 +182,62 @@ export default function ToolForm({
         </div>
       </div>
 
+      {/* 中文內容 */}
+      <div className="border-t border-ink-200 dark:border-ink-700 pt-6">
+        <h3 className="text-lg font-medium text-ink-900 dark:text-ink-50 mb-4">中文內容</h3>
+
+        {/* Name Zh */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-ink-700 dark:text-ink-300">
+            中文名稱
+          </label>
+          <input
+            type="text"
+            value={formData.name_zh}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, name_zh: e.target.value }))
+            }
+            className="mt-1 block w-full rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm text-ink-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-ink-700 dark:bg-ink-800 dark:text-ink-50"
+          />
+        </div>
+
+        {/* Tagline Zh */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-ink-700 dark:text-ink-300">
+            中文標語
+          </label>
+          <input
+            type="text"
+            value={formData.tagline_zh}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, tagline_zh: e.target.value }))
+            }
+            className="mt-1 block w-full rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm text-ink-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-ink-700 dark:bg-ink-800 dark:text-ink-50"
+            placeholder="一句話描述這個工具"
+          />
+        </div>
+
+        {/* Description Zh */}
+        <div>
+          <label className="block text-sm font-medium text-ink-700 dark:text-ink-300">
+            中文詳細描述
+          </label>
+          <div className="mt-1" data-color-mode="auto">
+            <MDEditor
+              value={formData.description_zh}
+              onChange={(value) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  description_zh: value || "",
+                }))
+              }
+              height={200}
+              preview="edit"
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Logo */}
       <div>
         <label className="block text-sm font-medium text-ink-700 dark:text-ink-300">
@@ -204,9 +267,11 @@ export default function ToolForm({
         </div>
         {formData.logo && (
           <div className="mt-3">
-            <img
+            <Image
               src={formData.logo}
               alt="Logo preview"
+              width={64}
+              height={64}
               className="h-16 w-16 rounded-lg object-contain border border-ink-200 dark:border-ink-700"
             />
           </div>

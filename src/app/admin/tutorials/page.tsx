@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { Plus, Edit2, Trash2, Eye, EyeOff, ExternalLink } from "lucide-react";
 import type { Tutorial } from "@/types";
 
@@ -18,43 +17,32 @@ export default function AdminTutorialsPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const fetchTutorials = async () => {
-    const supabase = createSupabaseBrowserClient();
-    const { data, error } = await supabase
-      .from("tutorials")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (!error && data) {
-      setTutorials(data as Tutorial[]);
+    const res = await fetch("/api/admin/tutorials");
+    if (res.ok) {
+      const { tutorials } = await res.json();
+      setTutorials(tutorials as Tutorial[]);
     }
     setLoading(false);
   };
-
-  useEffect(() => {
-    fetchTutorials();
-  }, []);
 
   const handleDelete = async (id: string) => {
     if (!confirm("確定要刪除這個教學嗎？")) return;
 
     setDeletingId(id);
-    const supabase = createSupabaseBrowserClient();
-    const { error } = await supabase.from("tutorials").delete().eq("id", id);
-
-    if (!error) {
+    const res = await fetch(`/api/admin/tutorials/${id}`, { method: "DELETE" });
+    if (res.ok) {
       setTutorials((prev) => prev.filter((t) => t.id !== id));
     }
     setDeletingId(null);
   };
 
   const handleTogglePublish = async (tutorial: Tutorial) => {
-    const supabase = createSupabaseBrowserClient();
-    const { error } = await supabase
-      .from("tutorials")
-      .update({ is_published: !tutorial.is_published })
-      .eq("id", tutorial.id);
-
-    if (!error) {
+    const res = await fetch(`/api/admin/tutorials/${tutorial.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ is_published: !tutorial.is_published }),
+    });
+    if (res.ok) {
       setTutorials((prev) =>
         prev.map((t) =>
           t.id === tutorial.id

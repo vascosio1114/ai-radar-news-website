@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ToolsPageClient } from "@/components/tools/ToolsPageClient";
+import { getUIStrings, type Lang } from "@/lib/i18n";
+import { DEFAULT_LANG } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "AI 工具",
-  description: "每星期評測，分類齊全。揀岩你嘅工具，由免費到 enterprise 都有。",
-};
+type Props = { params: { lang: string } };
 
-export default async function ToolsPage() {
+export default async function ToolsPage({ params }: Props) {
+  const lang = (params.lang as Lang) ?? DEFAULT_LANG;
+  const s = getUIStrings(lang);
+
   const supabase = createSupabaseServerClient();
   const { data: tools } = await supabase
     .from("tools")
@@ -22,14 +24,14 @@ export default async function ToolsPage() {
           AI Tools
         </p>
         <h1 className="font-display text-4xl font-bold tracking-tight md:text-5xl">
-          熱門 AI 工具
+          {s.toolsPageTitle}
         </h1>
         <p className="mt-3 max-w-2xl text-sm text-ink-500 dark:text-ink-400 md:text-base">
-          每星期評測，分類齊全。揀岩你嘅工具，由免費到 enterprise 都有。
+          {s.toolsPageDesc}
         </p>
       </header>
 
-      <ToolsPageClient tools={tools ?? []} />
+      <ToolsPageClient tools={tools ?? []} lang={lang} />
     </div>
   );
 }
