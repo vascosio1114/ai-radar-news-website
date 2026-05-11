@@ -5,6 +5,9 @@ import type { Article } from "@/types";
 import { timeAgo } from "@/lib/utils";
 import { getLocalizedContent, getUIStrings, type Lang } from "@/lib/i18n";
 
+const FALLBACK_COVER =
+  "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1200&q=80";
+
 export function ArticleCard({
   article,
   variant = "default",
@@ -132,7 +135,7 @@ export function ArticleCard({
           </span>
           <span className="inline-flex items-center gap-1">
             <Eye className="h-3.5 w-3.5" />
-            {article.views.toLocaleString()}
+            {(article.views ?? 0).toLocaleString()}
           </span>
         </div>
       </div>

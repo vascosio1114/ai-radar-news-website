@@ -2,8 +2,8 @@ name: Ingest sources
 
 on:
   schedule:
-    # 每 2 小時跑一次
-    - cron: "0 */2 * * *"
+    # 每 12 小時跑一次（UTC 00:00 + 12:00 = 香港時間 08:00 + 20:00）
+    - cron: "0 0,12 * * *"
   workflow_dispatch: {} # 手動觸發
 
 concurrency:
@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
       - run: npm ci
       - name: Run ingest

@@ -11,7 +11,6 @@ import { logger } from "@/lib/logger";
 
 const auditLog = logger.child({ component: "audit" });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyClient = SupabaseClient<any, any, any>;
 
 let _client: AnyClient | null = null;
