@@ -1,9 +1,13 @@
 // src/components/globe/PostProcessing.tsx
 'use client';
 
-// Post-processing is temporarily disabled — @react-three/postprocessing has
-// a persistent WebGL compatibility issue with this project's three.js version.
-// The globe renders correctly without bloom and vignette effects.
+import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
+
 export function PostProcessing() {
-  return null;
+  return (
+    <EffectComposer enableNormalPass={false}>
+      <Bloom luminanceThreshold={0.65} luminanceSmoothing={0.9} intensity={1.75} />
+      <Vignette offset={1.0} darkness={0.6} />
+    </EffectComposer>
+  );
 }

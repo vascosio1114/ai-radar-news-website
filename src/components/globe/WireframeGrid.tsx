@@ -5,8 +5,9 @@ import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 
-export function WireframeGrid({ rotation }: { rotation: number }) {
+export function WireframeGrid() {
   const gridRef = useRef<THREE.LineSegments>(null);
+  const rotationRef = useRef(0);
 
   const geometry = useMemo(() => {
     const points: THREE.Vector3[] = [];
@@ -43,9 +44,10 @@ export function WireframeGrid({ rotation }: { rotation: number }) {
     return new THREE.BufferGeometry().setFromPoints(points);
   }, []);
 
-  useFrame(() => {
+  useFrame((_, delta) => {
     if (gridRef.current) {
-      gridRef.current.rotation.y = rotation;
+      rotationRef.current += delta * 0.015;
+      gridRef.current.rotation.y = rotationRef.current;
     }
   });
 

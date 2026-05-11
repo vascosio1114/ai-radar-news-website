@@ -4,11 +4,54 @@ import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
-interface GlobeSphereProps {
-  rotation: number;
+function generateNormalMap(heightData: Uint8ClampedArray, width: number, height: number): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d')!;
+  const imageData = ctx.createImageData(width, height);
+  const data = imageData.data;
+
+  const strength = 8.0; // Controls normal map intensity
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const idx = (y * width + x) * 4;
+      const h = heightData[idx] / 255;
+
+      // Central difference gradient with horizontal wrap for longitude continuity
+      const xLeft = x > 0 ? x - 1 : width - 1;
+      const xRight = x < width - 1 ? x + 1 : 0;
+      const yUp = y > 0 ? y - 1 : 0;
+      const yDown = y < height - 1 ? y + 1 : height - 1;
+
+      const hLeft = heightData[(y * width + xLeft) * 4] / 255;
+      const hRight = heightData[(y * width + xRight) * 4] / 255;
+      const hUp = heightData[(y * width + x) * 4] / 255;
+      const hDown = heightData[((yDown) * width + x) * 4] / 255;
+
+      const dx = hRight - hLeft;
+      const dy = hDown - hUp;
+
+      // Convert gradient to normal vector
+      const nx = -dx * strength;
+      const ny = -dy * strength;
+      const nz = 1.0;
+      const len = Math.sqrt(nx * nx + ny * ny + nz * nz);
+
+      // Pack normal into RGB: map from [-1,1] to [0,255]
+      data[idx] = Math.round(((nx / len) * 0.5 + 0.5) * 255);
+      data[idx + 1] = Math.round(((ny / len) * 0.5 + 0.5) * 255);
+      data[idx + 2] = Math.round(((nz / len) * 0.5 + 0.5) * 255);
+      data[idx + 3] = 255;
+    }
+  }
+
+  ctx.putImageData(imageData, 0, 0);
+  return new THREE.CanvasTexture(canvas);
 }
 
-function generateTerrainTexture(): THREE.CanvasTexture {
+function generateTerrainTexture(): { displacement: THREE.CanvasTexture; normal: THREE.CanvasTexture } {
   const width = 2048;
   const height = 1024;
   const canvas = document.createElement('canvas');
@@ -94,19 +137,35 @@ function generateTerrainTexture(): THREE.CanvasTexture {
 
   ctx.putImageData(imageData, 0, 0);
 
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.ClampToEdgeWrapping;
-  return texture;
+  const displacementTexture = new THREE.CanvasTexture(canvas);
+  displacementTexture.wrapS = THREE.RepeatWrapping;
+  displacementTexture.wrapT = THREE.ClampToEdgeWrapping;
+
+  // Extract height data for normal map generation (R channel)
+  const heightData = new Uint8ClampedArray(width * height * 4);
+  for (let i = 0; i < data.length; i += 4) {
+    heightData[i] = data[i];
+    heightData[i + 1] = data[i + 1];
+    heightData[i + 2] = data[i + 2];
+    heightData[i + 3] = data[i + 3];
+  }
+
+  const normalTexture = generateNormalMap(heightData, width, height);
+  normalTexture.wrapS = THREE.RepeatWrapping;
+  normalTexture.wrapT = THREE.ClampToEdgeWrapping;
+
+  return { displacement: displacementTexture, normal: normalTexture };
 }
 
-export function GlobeSphere({ rotation }: GlobeSphereProps) {
+export function GlobeSphere() {
   const meshRef = useRef<THREE.Mesh>(null);
-  const terrainTexture = useMemo(() => generateTerrainTexture(), []);
+  const rotationRef = useRef(0);
+  const { displacement: terrainTexture, normal: normalTexture } = useMemo(() => generateTerrainTexture(), []);
 
-  useFrame(() => {
+  useFrame((_, delta) => {
     if (meshRef.current) {
-      meshRef.current.rotation.y = rotation;
+      rotationRef.current += delta * 0.015;
+      meshRef.current.rotation.y = rotationRef.current;
     }
   });
 
@@ -120,6 +179,7 @@ export function GlobeSphere({ rotation }: GlobeSphereProps) {
         displacementScale={0.02}
         displacementMap={terrainTexture}
         normalScale={new THREE.Vector2(1.0, 1.0)}
+        normalMap={normalTexture}
       />
     </mesh>
   );
