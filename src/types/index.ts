@@ -15,11 +15,8 @@ export type Article = {
   reading_time: number;
   views: number;
   is_featured: boolean;
-<<<<<<< HEAD
   is_published: boolean;
   /** Markdown 內容 */
-=======
->>>>>>> 5501663 (feat: minimal ingest pipeline (10 sources, every 2hr cron))
   content?: string;
 };
 

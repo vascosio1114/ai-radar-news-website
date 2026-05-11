@@ -4,6 +4,9 @@ import { Clock, Eye } from "lucide-react";
 import type { Article } from "@/types";
 import { timeAgo } from "@/lib/utils";
 
+const FALLBACK_COVER =
+  "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1200&q=80";
+
 export function ArticleCard({
   article,
   variant = "default",
@@ -12,6 +15,7 @@ export function ArticleCard({
   variant?: "default" | "featured" | "compact";
 }) {
   const href = `/news/${article.slug}`;
+  const cover = article.cover_image || FALLBACK_COVER;
 
   if (variant === "featured") {
     return (
@@ -21,7 +25,7 @@ export function ArticleCard({
       >
         <div className="relative aspect-[16/10] w-full overflow-hidden">
           <Image
-            src={article.cover_image}
+            src={cover}
             alt={article.title}
             fill
             sizes="(min-width: 1024px) 60vw, 100vw"
@@ -42,11 +46,11 @@ export function ArticleCard({
               <span>{timeAgo(article.published_at)}</span>
               <span className="inline-flex items-center gap-1">
                 <Clock className="h-3.5 w-3.5" />
-                {article.reading_time} 分鐘
+                {article.reading_time ?? 5} 分鐘
               </span>
               <span className="inline-flex items-center gap-1">
                 <Eye className="h-3.5 w-3.5" />
-                {article.views.toLocaleString()}
+                {(article.views ?? 0).toLocaleString()}
               </span>
             </div>
           </div>
@@ -63,7 +67,7 @@ export function ArticleCard({
       >
         <div className="relative h-20 w-28 shrink-0 overflow-hidden rounded-xl">
           <Image
-            src={article.cover_image}
+            src={cover}
             alt={article.title}
             fill
             sizes="120px"
@@ -92,7 +96,7 @@ export function ArticleCard({
     >
       <div className="relative aspect-[16/10] w-full overflow-hidden">
         <Image
-          src={article.cover_image}
+          src={cover}
           alt={article.title}
           fill
           sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
@@ -117,11 +121,11 @@ export function ArticleCard({
         <div className="mt-auto flex items-center justify-between pt-2 text-xs text-ink-500 dark:text-ink-400">
           <span className="inline-flex items-center gap-1">
             <Clock className="h-3.5 w-3.5" />
-            {article.reading_time} 分鐘閱讀
+            {article.reading_time ?? 5} 分鐘閱讀
           </span>
           <span className="inline-flex items-center gap-1">
             <Eye className="h-3.5 w-3.5" />
-            {article.views.toLocaleString()}
+            {(article.views ?? 0).toLocaleString()}
           </span>
         </div>
       </div>
