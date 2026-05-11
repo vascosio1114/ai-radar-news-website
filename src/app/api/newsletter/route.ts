@@ -12,25 +12,37 @@ function maskEmail(email: string): string {
 
 export async function POST(request: Request) {
   let email = "";
+  let dailyOptIn = false;
   try {
-    ({ email } = await request.json());
+    const body = await request.json();
+    email = body.email || "";
+    dailyOptIn = body.daily_opt_in === true;
 
     if (!email || typeof email !== "string" || !email.includes("@")) {
       return NextResponse.json({ error: "Invalid email" }, { status: 400 });
     }
 
-    // 如果未連 Supabase（env 缺失），靜靜咁回成功，方便 dev
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
       return NextResponse.json({ ok: true, mocked: true });
     }
 
     const supabase = createSupabaseServerClient();
-    const { error } = await supabase
-      .from("newsletter_subscribers")
-      .insert({ email });
 
-    if (error && error.code !== "23505" /* unique_violation */) {
-      throw error;
+    // Always insert into newsletter_subscribers (legacy)
+    try {
+      await supabase.from("newsletter_subscribers").insert({ email });
+    } catch {
+      // ignore duplicates
+    }
+
+    // If daily_opt_in, insert/update mail_subscribers
+    if (dailyOptIn) {
+      await supabase
+        .from("mail_subscribers")
+        .upsert(
+          { email, opted_in: true, is_confirmed: true },
+          { onConflict: "email" }
+        );
     }
 
     return NextResponse.json({ ok: true });
