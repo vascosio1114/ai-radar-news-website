@@ -5,8 +5,6 @@
  *
  * TODO: Replace with `npx supabase gen types typescript` output later.
  */
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
 export type Database = {
   public: {
     Tables: {
