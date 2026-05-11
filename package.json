@@ -39,9 +39,10 @@
     "three": "^0.169.0"
   },
   "devDependencies": {
-    "@types/nodemailer": "^6.4.17",
     "@types/d3": "^7.4.3",
     "@types/node": "^20",
+    "@types/nodemailer": "^6.4.17",
+    "@types/pino": "^7.0.4",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@typescript-eslint/eslint-plugin": "^8.59.2",
@@ -50,9 +51,11 @@
     "dotenv": "^16.4.5",
     "eslint": "^8",
     "eslint-config-next": "14.2.13",
+    "pino": "^10.3.1",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.13",
     "tsx": "^4.19.1",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.6"
   }
 }
