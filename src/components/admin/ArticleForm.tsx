@@ -23,6 +23,7 @@ export interface ArticleFormData {
   tags: string[];
   content: string;
   content_zh: string;
+  published_at: string;
   is_featured: boolean;
   is_published: boolean;
 }
@@ -43,14 +44,16 @@ const CATEGORIES = [
   "產品評測",
 ];
 
-// Generate slug from title
-export function generateSlug(title: string): string {
-  return title
+// Generate slug from date and title
+export function generateSlug(date: string, title: string): string {
+  const dateStr = date ? new Date(date).toISOString().split("T")[0] : "";
+  const titleSlug = title
     .toLowerCase()
     .replace(/[^\w\s一-鿿]/g, "")
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-")
     .trim();
+  return dateStr ? `${dateStr}-${titleSlug}` : titleSlug;
 }
 
 export default function ArticleForm({
@@ -70,6 +73,7 @@ export default function ArticleForm({
     tags: initialData?.tags || [],
     content: initialData?.content || "",
     content_zh: initialData?.content_zh || "",
+    published_at: initialData?.published_at || new Date().toISOString().split("T")[0],
     is_featured: initialData?.is_featured || false,
     is_published: initialData?.is_published ?? true,
   });
@@ -82,7 +86,15 @@ export default function ArticleForm({
     setFormData((prev) => ({
       ...prev,
       title,
-      ...(!slugEdited ? { slug: generateSlug(title) } : {}),
+      ...(!slugEdited ? { slug: generateSlug(prev.published_at, title) } : {}),
+    }));
+  };
+
+  const handleDateChange = (published_at: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      published_at,
+      ...(!slugEdited ? { slug: generateSlug(published_at, prev.title) } : {}),
     }));
   };
 
@@ -147,6 +159,19 @@ export default function ArticleForm({
           onChange={(e) => handleTitleChange(e.target.value)}
           className="mt-1 block w-full rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm text-ink-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-ink-700 dark:bg-ink-800 dark:text-ink-50"
           required
+        />
+      </div>
+
+      {/* Published At */}
+      <div>
+        <label className="block text-sm font-medium text-ink-700 dark:text-ink-300">
+          發佈日期
+        </label>
+        <input
+          type="date"
+          value={formData.published_at}
+          onChange={(e) => handleDateChange(e.target.value)}
+          className="mt-1 block w-full rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm text-ink-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-ink-700 dark:bg-ink-800 dark:text-ink-50"
         />
       </div>
 

@@ -7,6 +7,7 @@ import { getUIStrings, type Lang } from "@/lib/i18n";
 export function Newsletter({ lang = "zh" }: { lang?: Lang }) {
   const s = getUIStrings(lang);
   const [email, setEmail] = React.useState("");
+  const [dailyOptIn, setDailyOptIn] = React.useState(false);
   const [state, setState] = React.useState<"idle" | "loading" | "success" | "error">(
     "idle"
   );
@@ -21,16 +22,16 @@ export function Newsletter({ lang = "zh" }: { lang?: Lang }) {
     }
     setState("loading");
     try {
-      // TODO: 之後接通 /api/newsletter route handler
       const res = await fetch("/api/newsletter", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, daily_opt_in: dailyOptIn }),
       });
       if (!res.ok) throw new Error("subscribe failed");
       setState("success");
       setMessage(s.newsletterSuccessMsg);
       setEmail("");
+      setDailyOptIn(false);
     } catch {
       setState("error");
       setMessage(s.newsletterErrorMsg);
@@ -86,6 +87,25 @@ export function Newsletter({ lang = "zh" }: { lang?: Lang }) {
                 {state === "success" ? s.newsletterSuccess : s.newsletterButton}
               </button>
             </div>
+
+            {/* Daily digest opt-in checkbox */}
+            <div className="flex items-start gap-2 px-1">
+              <input
+                type="checkbox"
+                id="daily_opt_in"
+                checked={dailyOptIn}
+                onChange={(e) => setDailyOptIn(e.target.checked)}
+                className="mt-1 h-4 w-4 rounded border-ink-300"
+                disabled={state === "loading" || state === "success"}
+              />
+              <label
+                htmlFor="daily_opt_in"
+                className="text-sm text-ink-600 dark:text-ink-300"
+              >
+                {s.newsletterDailyDigestOptIn}
+              </label>
+            </div>
+
             {message && (
               <p
                 className={`text-xs ${

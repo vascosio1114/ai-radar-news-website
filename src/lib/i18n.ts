@@ -46,6 +46,7 @@ export const UI_STRINGS = {
     newsletterErrorMsg: "訂閱失敗，請稍後再試。",
     newsletterEmailError: "唔該輸入有效嘅 email",
     newsletterNoSpam: "我哋唔會 spam，亦唔會將你嘅 email 賣俾人。",
+    newsletterDailyDigestOptIn: "每日digest — 每日電郵接收精選 AI 文章",
 
     heroBadge: "每日更新 · 繁體中文",
     heroTitle1: "AI 浪潮",
@@ -104,6 +105,7 @@ export const UI_STRINGS = {
     newsletterErrorMsg: "Subscription failed. Please try again later.",
     newsletterEmailError: "Please enter a valid email",
     newsletterNoSpam: "No spam, never sell your email.",
+    newsletterDailyDigestOptIn: "Daily digest — get top AI articles by email every day",
 
     heroBadge: "Daily updates · Traditional Chinese",
     heroTitle1: "AI Wave",
