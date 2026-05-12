@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { buildConfirmationHtml } from "@/lib/email-templates";
-import { sendHtmlEmail } from "@/lib/mail";
+import { sendHtmlEmail, MailSettings } from "@/lib/mail";
 import { SITE_URL } from "@/lib/site";
 
 export async function GET() {
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     .limit(1)
     .single();
 
-  const insertPayload: any = {
+  const insertPayload = {
     email: body.email,
     opted_in: false,
     is_confirmed: false,
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
   // Send confirmation email
   if (settings) {
     await sendHtmlEmail(
-      settings as any,
+      settings as MailSettings,
       body.email,
       "Confirm your AI Radar subscription",
       confirmHtml

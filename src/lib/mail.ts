@@ -81,7 +81,8 @@ export async function sendHtmlEmail(
       html: htmlBody,
     });
     return { sent: true };
-  } catch (e: any) {
-    return { sent: false, error: e.message };
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : String(e);
+    return { sent: false, error: message };
   }
 }

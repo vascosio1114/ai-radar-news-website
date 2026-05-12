@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { buildUnsubscribeHtml } from "@/lib/email-templates";
 import { generateUnsubscribeToken } from "@/lib/unsubscribe-token";
-import { sendHtmlEmail } from "@/lib/mail";
+import { sendHtmlEmail, MailSettings } from "@/lib/mail";
 
 export async function GET(
   request: Request,
@@ -42,7 +42,7 @@ export async function GET(
   if (settings) {
     const unsubHtml = buildUnsubscribeHtml({ unsubscribeUrl: unsubUrl, lang: "zh" });
     await sendHtmlEmail(
-      settings as any,
+      settings as MailSettings,
       email,
       "You're subscribed to AI Radar!",
       unsubHtml

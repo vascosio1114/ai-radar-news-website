@@ -3,7 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { logger } from "@/lib/logger";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { buildConfirmationHtml } from "@/lib/email-templates";
-import { sendHtmlEmail } from "@/lib/mail";
+import { sendHtmlEmail, MailSettings } from "@/lib/mail";
 import { SITE_URL } from "@/lib/site";
 
 const newsletterLogger = logger.child({ component: "newsletter" });
@@ -77,7 +77,7 @@ export async function POST(request: Request) {
 
       if (settings) {
         await sendHtmlEmail(
-          settings as any,
+          settings as MailSettings,
           email,
           "Confirm your AI Radar subscription",
           confirmHtml
