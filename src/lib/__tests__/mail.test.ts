@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { encryptPassword, decryptPassword } from "../mail";
+import { encryptPassword, decryptPassword, buildDigestHtml } from "../mail";
 
 describe("encryptPassword / decryptPassword", () => {
   const key = Buffer.alloc(32, "a".charCodeAt(0));
@@ -16,5 +16,22 @@ describe("encryptPassword / decryptPassword", () => {
     const enc1 = encryptPassword(plaintext, key);
     const enc2 = encryptPassword(plaintext, key);
     expect(enc1).not.toBe(enc2);
+  });
+});
+
+describe("buildDigestHtml subject date substitution", () => {
+  it("buildDigestHtml produces HTML with sample article", () => {
+    const html = buildDigestHtml({
+      headerHtml: "<h1>Test</h1>",
+      footerHtml: "<p>Footer</p>",
+      articles: [{
+        title: "Test Article",
+        excerpt: "Test excerpt",
+        url: "https://example.com",
+        published_at: new Date().toISOString(),
+      }],
+    });
+    expect(html).toContain("Test Article");
+    expect(html).toContain("Test excerpt");
   });
 });
