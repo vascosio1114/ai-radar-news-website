@@ -1,7 +1,8 @@
 // src/app/api/send-digest/route.ts
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { sendHtmlEmail, buildDigestHtml } from "@/lib/mail";
+import { sendHtmlEmail } from "@/lib/mail";
+import { buildDigestHtml } from "@/lib/digest-html";
 import { SITE_URL } from "@/lib/site";
 
 const CRON_SECRET = process.env.CRON_SECRET;
@@ -70,6 +71,14 @@ export async function GET(request: Request) {
     articles: articlesWithUrl,
   });
 
+  // Replace {{date}} in subject template
+  const today = new Date().toLocaleDateString("zh-HK", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+  const subject = (settings.email_subject_template || "Your AI Radar Daily Digest").replace("{{date}}", today);
+
   let sent = 0;
   const errors: string[] = [];
 
@@ -77,7 +86,7 @@ export async function GET(request: Request) {
     const result = await sendHtmlEmail(
       settings,
       sub.email,
-      settings.email_subject_template || "Your AI Radar Daily Digest",
+      subject,
       html
     );
     if (result.sent) {

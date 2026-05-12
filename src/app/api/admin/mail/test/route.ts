@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { sendHtmlEmail, buildDigestHtml } from "@/lib/mail";
+import { sendHtmlEmail } from "@/lib/mail";
+import { buildDigestHtml } from "@/lib/digest-html";
 
 export async function POST(request: Request) {
   const adminDb = createSupabaseAdminClient();
