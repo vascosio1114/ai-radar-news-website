@@ -1,7 +1,8 @@
 // src/app/api/send-digest/route.ts
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { sendHtmlEmail, buildDigestHtml } from "@/lib/mail";
+import { sendHtmlEmail } from "@/lib/mail";
+import { buildDigestHtml } from "@/lib/digest-html";
 import { SITE_URL } from "@/lib/site";
 
 const CRON_SECRET = process.env.CRON_SECRET;

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Newspaper, Wrench, GraduationCap, Eye, Mail, Send, Loader2 } from "lucide-react";
-import { buildDigestHtml } from "@/lib/mail";
+import { buildDigestHtml } from "@/lib/digest-html";
 import { MailSubscribers } from "@/components/admin/MailSubscribers";
 
 interface MailSettings {
@@ -348,29 +348,29 @@ export default function AdminDashboardPage() {
 
           <div className="rounded-2xl border border-ink-200/70 bg-white p-6 dark:border-ink-800/70 dark:bg-ink-900">
             <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-ink-500 dark:text-ink-400">
-              Email Template
-            </h3>
-            <button
-              onClick={() => {
-                const html = buildDigestHtml({
-                  headerHtml: settings.email_header_html,
-                  footerHtml: settings.email_footer_html,
-                  articles: [{
-                    title: "Sample Article",
-                    excerpt: "This is a sample article excerpt for preview purposes.",
-                    url: "#",
-                    published_at: new Date().toISOString(),
-                  }],
-                });
-                setPreviewHtml(html);
-                setShowPreview(true);
-              }}
-              className="text-xs text-primary-600 hover:text-primary-700"
-            >
-              Preview
-            </button>
-          </div>
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-ink-500 dark:text-ink-400">
+                Email Template
+              </h3>
+              <button
+                onClick={() => {
+                  const html = buildDigestHtml({
+                    headerHtml: settings.email_header_html,
+                    footerHtml: settings.email_footer_html,
+                    articles: [{
+                      title: "Sample Article",
+                      excerpt: "This is a sample article excerpt for preview purposes.",
+                      url: "#",
+                      published_at: new Date().toISOString(),
+                    }],
+                  });
+                  setPreviewHtml(html);
+                  setShowPreview(true);
+                }}
+                className="text-xs text-primary-600 hover:text-primary-700"
+              >
+                Preview
+              </button>
+            </div>
             <div className="space-y-4">
               <div>
                 <label className="mb-1 block text-sm font-medium text-ink-700 dark:text-ink-300">
@@ -438,6 +438,7 @@ export default function AdminDashboardPage() {
           </div>
         </form>
         )}
+        </div>
         {activeMailTab === "subscribers" && <MailSubscribers />}
 
         {showPreview && (
