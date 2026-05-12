@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { Newspaper, Wrench, GraduationCap, Eye, Mail, Send, Loader2 } from "lucide-react";
+import { buildDigestHtml } from "@/lib/mail";
+import { MailSubscribers } from "@/components/admin/MailSubscribers";
 
 interface MailSettings {
   smtp_host: string;
@@ -49,6 +51,8 @@ export default function AdminDashboardPage() {
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [statusMsg, setStatusMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [previewHtml, setPreviewHtml] = useState("");
+  const [showPreview, setShowPreview] = useState(false);
 
   useEffect(() => {
     // Fetch mail settings
@@ -306,9 +310,30 @@ export default function AdminDashboardPage() {
           </div>
 
           <div className="rounded-2xl border border-ink-200/70 bg-white p-6 dark:border-ink-800/70 dark:bg-ink-900">
-            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-ink-500 dark:text-ink-400">
+            <div className="mb-4 flex items-center justify-between">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-ink-500 dark:text-ink-400">
               Email Template
             </h3>
+            <button
+              onClick={() => {
+                const html = buildDigestHtml({
+                  headerHtml: settings.email_header_html,
+                  footerHtml: settings.email_footer_html,
+                  articles: [{
+                    title: "Sample Article",
+                    excerpt: "This is a sample article excerpt for preview purposes.",
+                    url: "#",
+                    published_at: new Date().toISOString(),
+                  }],
+                });
+                setPreviewHtml(html);
+                setShowPreview(true);
+              }}
+              className="text-xs text-primary-600 hover:text-primary-700"
+            >
+              Preview
+            </button>
+          </div>
             <div className="space-y-4">
               <div>
                 <label className="mb-1 block text-sm font-medium text-ink-700 dark:text-ink-300">
@@ -375,9 +400,25 @@ export default function AdminDashboardPage() {
             </button>
           </div>
         </form>
-      </div>
 
-      <div className="mt-10 rounded-2xl border border-dashed border-ink-300 p-8 text-center text-sm text-ink-500 dark:border-ink-700 dark:text-ink-400">
+        {showPreview && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div className="w-full max-w-2xl rounded-2xl bg-white p-6 dark:bg-ink-900">
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="font-semibold">Email Preview</h3>
+                <button onClick={() => setShowPreview(false)} className="text-ink-500 hover:text-ink-700">✕</button>
+              </div>
+              <iframe
+                srcDoc={previewHtml}
+                className="w-full rounded-xl border border-ink-200"
+                style={{ height: "500px" }}
+                title="Email preview"
+              />
+            </div>
+          </div>
+        )}
+
+        <div className="mt-10 rounded-2xl border border-dashed border-ink-300 p-8 text-center text-sm text-ink-500 dark:border-ink-700 dark:text-ink-400">
         Admin CRUD 介面仲未起，下一步用 Supabase Auth + Row Level Security 加入：
         <br />新增 / 編輯 / 刪除文章 + 上傳封面圖 + 工具管理。
       </div>
