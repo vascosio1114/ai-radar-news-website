@@ -53,6 +53,13 @@ export default function AdminDashboardPage() {
   const [statusMsg, setStatusMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [previewHtml, setPreviewHtml] = useState("");
   const [showPreview, setShowPreview] = useState(false);
+  const [stats, setStats] = useState({
+    articles: 0,
+    tools: 0,
+    tutorials: 0,
+    views: 0,
+  });
+  const [activeMailTab, setActiveMailTab] = useState<"settings" | "subscribers">("settings");
 
   useEffect(() => {
     // Fetch mail settings
@@ -83,6 +90,20 @@ export default function AdminDashboardPage() {
       .then((r) => r.ok ? r.json() : null)
       .then((data) => {
         if (data?.count !== undefined) setSubscriberCount(data.count);
+      });
+
+    // Fetch real stats
+    fetch("/api/admin/stats")
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (data) {
+          setStats({
+            articles: data.articles ?? 0,
+            tools: data.tools ?? 0,
+            tutorials: data.tutorials ?? 0,
+            views: data.views ?? 0,
+          });
+        }
       });
   }, []);
 
@@ -131,11 +152,11 @@ export default function AdminDashboardPage() {
     setTesting(false);
   };
 
-  const stats = [
-    { label: "文章總數", value: "0", icon: Newspaper },
-    { label: "工具總數", value: "0", icon: Wrench },
-    { label: "教學總數", value: "0", icon: GraduationCap },
-    { label: "本月瀏覽", value: "—", icon: Eye },
+  const statsDisplay = [
+    { label: "文章總數", value: stats.articles.toString(), icon: Newspaper },
+    { label: "工具總數", value: stats.tools.toString(), icon: Wrench },
+    { label: "教學總數", value: stats.tutorials.toString(), icon: GraduationCap },
+    { label: "本月瀏覽", value: stats.views > 0 ? stats.views.toLocaleString() : "—", icon: Eye },
   ];
 
   return (
@@ -148,7 +169,7 @@ export default function AdminDashboardPage() {
       </p>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((s) => (
+        {statsDisplay.map((s) => (
           <div
             key={s.label}
             className="rounded-2xl border border-ink-200/70 bg-white p-5 dark:border-ink-800/70 dark:bg-ink-900"
@@ -180,7 +201,23 @@ export default function AdminDashboardPage() {
           )}
         </div>
 
-        <form onSubmit={handleSave} className="space-y-6">
+        <div className="mb-4 flex items-center gap-4 border-b border-ink-200 dark:border-ink-700">
+          <button
+            onClick={() => setActiveMailTab("settings")}
+            className={`pb-2 text-sm font-medium ${activeMailTab === "settings" ? "border-b-2 border-primary-600 text-primary-600" : "text-ink-500"}`}
+          >
+            Settings
+          </button>
+          <button
+            onClick={() => setActiveMailTab("subscribers")}
+            className={`pb-2 text-sm font-medium ${activeMailTab === "subscribers" ? "border-b-2 border-primary-600 text-primary-600" : "text-ink-500"}`}
+          >
+            Subscribers
+          </button>
+        </div>
+
+        {activeMailTab === "settings" && (
+          <form onSubmit={handleSave} className="space-y-6">
           <div className="rounded-2xl border border-ink-200/70 bg-white p-6 dark:border-ink-800/70 dark:bg-ink-900">
             <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-ink-500 dark:text-ink-400">
               SMTP
@@ -400,6 +437,8 @@ export default function AdminDashboardPage() {
             </button>
           </div>
         </form>
+        )}
+        {activeMailTab === "subscribers" && <MailSubscribers />}
 
         {showPreview && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
