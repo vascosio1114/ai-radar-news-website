@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { logger } from "@/lib/logger";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { buildConfirmationHtml } from "@/lib/email-templates";
+import { sendHtmlEmail } from "@/lib/mail";
+import { SITE_URL } from "@/lib/site";
 
 const newsletterLogger = logger.child({ component: "newsletter" });
 
@@ -22,6 +26,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid email" }, { status: 400 });
     }
 
+    // Rate limiting
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0] ||
+               request.headers.get("x-real-ip") ||
+               "unknown";
+    const { allowed, remaining, resetIn } = checkRateLimit(ip);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: "Too many requests. Try again later.", retryAfter: Math.ceil(resetIn / 1000) },
+        { status: 429 }
+      );
+    }
+
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
       return NextResponse.json({ ok: true, mocked: true });
     }
@@ -35,17 +51,45 @@ export async function POST(request: Request) {
       // ignore duplicates
     }
 
-    // If daily_opt_in, insert/update mail_subscribers
+    // If daily_opt_in, insert into mail_subscribers with is_confirmed=false
     if (dailyOptIn) {
+      const confirmUrl = `${SITE_URL}/api/confirm/${Buffer.from(email).toString("base64url")}`;
+      const confirmHtml = buildConfirmationHtml({ confirmUrl, lang: "zh" });
+
       await supabase
         .from("mail_subscribers")
         .upsert(
-          { email, opted_in: true, is_confirmed: true },
+          {
+            email,
+            opted_in: false,
+            is_confirmed: false,
+            subscribed_at: new Date().toISOString(),
+          },
           { onConflict: "email" }
         );
+
+      // Send confirmation email
+      const { data: settings } = await supabase
+        .from("mail_settings")
+        .select("smtp_host, smtp_port, smtp_user, smtp_pass_encrypted, smtp_from_address, smtp_from_name")
+        .limit(1)
+        .single();
+
+      if (settings) {
+        await sendHtmlEmail(
+          settings as any,
+          email,
+          "Confirm your AI Radar subscription",
+          confirmHtml
+        );
+      }
     }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({
+      ok: true,
+      needConfirm: dailyOptIn,
+      remaining,
+    });
   } catch (e) {
     newsletterLogger.error({ email: maskEmail(email), err: e }, "Newsletter subscription failed");
     return NextResponse.json({ error: "Server error" }, { status: 500 });
