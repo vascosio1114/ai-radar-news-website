@@ -43,7 +43,7 @@ export default async function SummaryPage({ params }: Props) {
 
   // If authenticated, redirect to full article
   if (user) {
-    return NextResponse.redirect(new URL(`/${lang}/news/${params.slug}`, "https://ai-radar.com"));
+    return NextResponse.redirect(`/${lang}/news/${params.slug}`);
   }
 
   // Fetch article (same pattern as news page)

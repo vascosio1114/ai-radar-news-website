@@ -262,23 +262,6 @@ export default function ArticleForm({
             />
           </div>
         </div>
-
-        {/* Summary Content Zh */}
-        <div>
-          <label className="block text-sm font-medium text-ink-700 dark:text-ink-300">
-            中文摘要內容
-          </label>
-          <div className="mt-1" data-color-mode="auto">
-            <MDEditor
-              value={formData.summary_content_zh}
-              onChange={(value) =>
-                setFormData((prev) => ({ ...prev, summary_content_zh: value || "" }))
-              }
-              height={400}
-              preview="edit"
-            />
-          </div>
-        </div>
       </div>
 
       {/* Cover Image */}
@@ -420,6 +403,23 @@ export default function ArticleForm({
             value={formData.summary_content}
             onChange={(value) =>
               setFormData((prev) => ({ ...prev, summary_content: value || "" }))
+            }
+            height={400}
+            preview="edit"
+          />
+        </div>
+      </div>
+
+      {/* Summary Content Zh - Markdown Editor */}
+      <div>
+        <label className="block text-sm font-medium text-ink-700 dark:text-ink-300">
+          中文摘要內容
+        </label>
+        <div className="mt-1" data-color-mode="auto">
+          <MDEditor
+            value={formData.summary_content_zh}
+            onChange={(value) =>
+              setFormData((prev) => ({ ...prev, summary_content_zh: value || "" }))
             }
             height={400}
             preview="edit"

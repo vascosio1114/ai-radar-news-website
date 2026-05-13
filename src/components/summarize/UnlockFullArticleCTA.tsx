@@ -17,7 +17,7 @@ export default function UnlockFullArticleCTA({ lang, slug }: UnlockFullArticleCT
       </p>
       <div className="mt-6 flex flex-wrap items-center gap-4">
         <Link
-          href={`/${lang}/admin/login`}
+          href={`/${lang}/news/${slug}`}
           className="inline-flex items-center gap-2 rounded-full bg-accent-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-accent-700"
         >
           Log in / Create account
