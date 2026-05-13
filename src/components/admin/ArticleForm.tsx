@@ -23,6 +23,8 @@ export interface ArticleFormData {
   tags: string[];
   content: string;
   content_zh: string;
+  summary_content: string;
+  summary_content_zh: string;
   published_at: string;
   is_featured: boolean;
   is_published: boolean;
@@ -73,6 +75,8 @@ export default function ArticleForm({
     tags: initialData?.tags || [],
     content: initialData?.content || "",
     content_zh: initialData?.content_zh || "",
+    summary_content: initialData?.summary_content || "",
+    summary_content_zh: initialData?.summary_content_zh || "",
     published_at: initialData?.published_at || new Date().toISOString().split("T")[0],
     is_featured: initialData?.is_featured || false,
     is_published: initialData?.is_published ?? true,
@@ -258,6 +262,23 @@ export default function ArticleForm({
             />
           </div>
         </div>
+
+        {/* Summary Content Zh */}
+        <div>
+          <label className="block text-sm font-medium text-ink-700 dark:text-ink-300">
+            中文摘要內容
+          </label>
+          <div className="mt-1" data-color-mode="auto">
+            <MDEditor
+              value={formData.summary_content_zh}
+              onChange={(value) =>
+                setFormData((prev) => ({ ...prev, summary_content_zh: value || "" }))
+              }
+              height={400}
+              preview="edit"
+            />
+          </div>
+        </div>
       </div>
 
       {/* Cover Image */}
@@ -382,6 +403,23 @@ export default function ArticleForm({
             value={formData.content}
             onChange={(value) =>
               setFormData((prev) => ({ ...prev, content: value || "" }))
+            }
+            height={400}
+            preview="edit"
+          />
+        </div>
+      </div>
+
+      {/* Summary Content - Markdown Editor */}
+      <div>
+        <label className="block text-sm font-medium text-ink-700 dark:text-ink-300">
+          英文摘要內容
+        </label>
+        <div className="mt-1" data-color-mode="auto">
+          <MDEditor
+            value={formData.summary_content}
+            onChange={(value) =>
+              setFormData((prev) => ({ ...prev, summary_content: value || "" }))
             }
             height={400}
             preview="edit"

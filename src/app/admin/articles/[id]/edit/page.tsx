@@ -46,6 +46,8 @@ export default function EditArticlePage() {
         cover_image: data.cover_image || null,
         content: data.content || null,
         content_zh: data.content_zh || null,
+        summary_content: data.summary_content || null,
+        summary_content_zh: data.summary_content_zh || null,
         category: data.category,
         tags: data.tags,
         published_at: data.published_at ? new Date(data.published_at).toISOString() : null,
@@ -98,6 +100,8 @@ export default function EditArticlePage() {
             tags: article.tags || [],
             content: article.content || "",
             content_zh: (article as any).content_zh || "",
+            summary_content: (article as any).summary_content || "",
+            summary_content_zh: (article as any).summary_content_zh || "",
             published_at: article.published_at
               ? article.published_at.split("T")[0]
               : new Date().toISOString().split("T")[0],
