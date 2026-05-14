@@ -45,6 +45,40 @@ export type Database = {
           link_image?: string | null;
         };
       };
+      thread_comments: {
+        Row: {
+          id: string;
+          thread_id: string;
+          parent_comment_id: string | null;
+          author_id: string;
+          content: string;
+          is_bot_comment: boolean;
+          like_count: number;
+          created_at: string;
+        };
+        Insert: {
+          thread_id: string;
+          parent_comment_id?: string | null;
+          author_id: string;
+          content: string;
+          is_bot_comment?: boolean;
+        };
+        Update: {
+          content?: string;
+        };
+      };
+      comment_likes: {
+        Row: {
+          comment_id: string;
+          user_id: string;
+          created_at: string;
+        };
+        Insert: {
+          comment_id: string;
+          user_id: string;
+        };
+        Update: Record<string, never>;
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
