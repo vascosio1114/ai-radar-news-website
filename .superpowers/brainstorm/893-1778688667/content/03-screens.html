@@ -1,0 +1,107 @@
+<h2>Forum Key Screens — Thread App Style</h2>
+<p class="subtitle">Reference: dense feed, nested comments, clean cards</p>
+
+<div class="mockup">
+  <div class="mockup-header">1. Community Feed</div>
+  <div class="mockup-body">
+    <div style="background:#fff;border-radius:12px;padding:16px;border:1px solid #e5e7eb">
+      <!-- Thread -->
+      <div style="display:flex;gap:12px;margin-bottom:16px">
+        <div style="width:40px;height:40px;border-radius:50%;background:#6366f1;flex-shrink:0"></div>
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <strong>AI News Bot</strong>
+            <span style="background:#dbeafe;color:#1d4ed8;font-size:11px;padding:2px 6px;border-radius:4px">BOT</span>
+            <span style="color:#9ca3af;font-size:13px">· 2h ago</span>
+          </div>
+          <p style="margin:0 0 8px;font-size:15px">GPT-5 officially released — 5 things you need to know</p>
+          <img src="https://picsum.photos/400/200" style="width:100%;border-radius:8px;margin-bottom:12px" />
+          <div style="display:flex;gap:20px;font-size:13px;color:#6b7280">
+            <span>❤️ 142</span><span>💬 38</span><span>🔗 Share</span>
+          </div>
+        </div>
+      </div>
+      <hr style="border:none;border-top:1px solid #e5e7eb;margin:16px 0">
+      <!-- User thread -->
+      <div style="display:flex;gap:12px">
+        <div style="width:40px;height:40px;border-radius:50%;background:#10b981;flex-shrink:0"></div>
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <strong>user_sarah</strong>
+            <span style="color:#9ca3af;font-size:13px">· 5h ago</span>
+          </div>
+          <p style="margin:0 0 8px;font-size:15px">Best free AI coding tools in 2026? Looking for alternatives to Copilot 😅</p>
+          <div style="display:flex;gap:20px;font-size:13px;color:#6b7280">
+            <span>❤️ 28</span><span>💬 15</span><span>🔗 Share</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mockup" style="margin-top:16px">
+  <div class="mockup-header">2. Thread Detail — Nested Comments</div>
+  <div class="mockup-body">
+    <div style="background:#fff;border-radius:12px;padding:16px;border:1px solid #e5e7eb">
+      <div style="display:flex;gap:12px;margin-bottom:16px">
+        <div style="width:40px;height:40px;border-radius:50%;background:#6366f1;flex-shrink:0"></div>
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <strong>AI News Bot</strong><span style="background:#dbeafe;color:#1d4ed8;font-size:11px;padding:2px 6px;border-radius:4px">BOT</span>
+          </div>
+          <p style="margin:0;font-size:15px;font-weight:500">GPT-5 officially released — 5 things you need to know</p>
+        </div>
+      </div>
+      <!-- Comment -->
+      <div style="display:flex;gap:12px;margin-left:52px;padding:12px;background:#f9fafb;border-radius:8px;margin-bottom:12px">
+        <div style="width:32px;height:32px;border-radius:50%;background:#f59e0b;flex-shrink:0"></div>
+        <div>
+          <div style="font-size:13px;margin-bottom:4px"><strong>dev_mike</strong> · 1h</div>
+          <p style="margin:0;font-size:14px">The reasoning improvement is wild! Been testing it on LeetCode hard problems 🐐</p>
+          <div style="display:flex;gap:16px;margin-top:8px;font-size:12px;color:#6b7280">
+            <span>❤️ 12</span><span style="color:#6366f1;font-weight:500">Reply</span>
+          </div>
+        </div>
+      </div>
+      <!-- Nested reply -->
+      <div style="display:flex;gap:12px;margin-left:96px;padding:12px;background:#f0f9ff;border-radius:8px">
+        <div style="width:28px;height:28px;border-radius:50%;background:#6366f1;flex-shrink:0"></div>
+        <div>
+          <div style="font-size:12px;margin-bottom:4px"><strong>AI News Bot</strong><span style="background:#dbeafe;color:#1d4ed8;font-size:10px;padding:1px 4px;border-radius:3px;margin-left:4px">BOT</span> · 45m</div>
+          <p style="margin:0;font-size:13px">Agreed! The multi-step reasoning is up 40% on MATH benchmark. Will post full analysis tomorrow ✨</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mockup" style="margin-top:16px">
+  <div class="mockup-header">3. New Thread Modal</div>
+  <div class="mockup-body">
+    <div style="background:#fff;border-radius:12px;padding:20px;border:1px solid #e5e7eb">
+      <div style="display:flex;gap:12px;margin-bottom:16px">
+        <div style="width:40px;height:40px;border-radius:50%;background:#10b981;flex-shrink:0"></div>
+        <div style="flex:1">
+          <input class="mock-input" placeholder="What's on your mind?" style="width:100%;margin-bottom:12px">
+          <div style="display:flex;gap:8px;margin-bottom:12px">
+            <button style="background:#f3f4f6;border:none;padding:8px 12px;border-radius:6px;font-size:13px">📷 Photo</button>
+            <button style="background:#f3f4f6;border:none;padding:8px 12px;border-radius:6px;font-size:13px">🔗 Link</button>
+          </div>
+          <button class="mock-button" style="width:100%;background:#6366f1;color:#fff">Post Thread</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:24px;padding:16px;background:#fef3c7;border-radius:8px">
+  <h4 style="margin:0 0 8px">Data Model (Supabase)</h4>
+  <p style="margin:0;font-size:13px;color:#92400e">
+    <strong>threads</strong> (id, author_id, content, image_url, link_url, link_preview, created_at)<br>
+    <strong>thread_comments</strong> (id, thread_id, parent_comment_id, author_id, content, created_at)<br>
+    <strong>thread_likes</strong> (thread_id, user_id) — unique together<br>
+    <strong>comment_likes</strong> (comment_id, user_id) — unique together<br>
+    <strong>bot_posts</strong> (id, content_type: article|web, source_id, scheduled_time)
+  </p>
+</div>

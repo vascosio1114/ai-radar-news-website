@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { logger } from "@/lib/logger";
 
 const log = logger.child({ component: "middleware" });
@@ -7,7 +8,40 @@ const log = logger.child({ component: "middleware" });
 const SUPPORTED_LANGS = ["zh", "en"];
 const DEFAULT_LANG = "zh";
 
-export function middleware(request: NextRequest) {
+function createAdminAuthClient(request: NextRequest) {
+  const cookieStore = {
+    get(name: string) {
+      return request.cookies.get(name);
+    },
+  };
+
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      logger: {
+        log: {
+          error: log.error.bind(log),
+          warn: log.warn.bind(log),
+          info: log.info.bind(log),
+        },
+      },
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          // Read-only for middleware - we can't set cookies here
+        },
+        remove(name: string, options: CookieOptions) {
+          // Read-only for middleware
+        },
+      },
+    }
+  );
+}
+
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const start = Date.now();
 
@@ -16,12 +50,27 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Admin routes — leave untouched
+  // Admin routes — require admin authentication
   if (pathname.startsWith("/admin")) {
+    const supabase = createAdminAuthClient(request);
+    const { data: { user }, error } = await supabase.auth.getUser();
+
+    if (error || !user) {
+      log.warn({ pathname, reason: "no_session" }, "Admin access denied - no session");
+      return NextResponse.redirect(new URL("/zh/login", request.url));
+    }
+
+    const role = user.app_metadata?.role;
+    if (role !== "admin") {
+      log.warn({ pathname, userId: user.id, reason: "not_admin" }, "Admin access denied - not admin");
+      return NextResponse.redirect(new URL("/zh/login", request.url));
+    }
+
     const response = NextResponse.next();
     log.info({
       method: request.method,
       pathname,
+      userId: user.id,
       status: response.status,
       duration: Date.now() - start,
     });
