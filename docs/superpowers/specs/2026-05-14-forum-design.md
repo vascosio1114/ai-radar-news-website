@@ -1,7 +1,7 @@
 # Forum / Community Feature Design
 
 **Date:** 2026-05-14
-**Status:** Draft
+**Status:** In Progress (80% complete)
 
 ---
 
@@ -209,7 +209,37 @@ Add a DCard/Threads-style community forum as a new `/community` section in the e
 
 ---
 
-## 11. Success Criteria
+## 11. Implementation Progress
+
+### Completed
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 1 | Supabase schema migration | ✅ DONE | `004_forum_schema.sql` - 5 tables, RLS policies, indexes |
+| 2 | `/community` page with thread feed | ✅ DONE | Server Component + CommunityFeed, ThreadCard, LinkPreview, BotBadge, NewThreadModal (placeholder) |
+| 3 | NewThreadModal + image upload | ✅ DONE | Full form with content, image upload to Supabase Storage, link preview via `/api/community/link-preview` |
+| 4 | `/community/[threadId]` page with comments | ✅ DONE | Full thread view with nested comments (max 2 levels), CommentBlock component |
+| 5 | Like functionality (threads + comments) | ✅ DONE | `/api/community/threads/[id]/like` + `/api/community/comments/[id]/like` routes with optimistic UI |
+| 6 | Supabase Auth protection | ✅ DONE | RLS policies enforce auth at DB level; write routes have 401 checks |
+| 7 | Bot posting cron job (`/api/bot/post`) | ✅ DONE | Posts 1-2 threads daily (article summary + web search news) with cron secret auth |
+
+### Remaining
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 8 | Bot comment scanning (`/api/bot/comment-scan`) | ⬜ TODO | Scan user threads every 30 min, post helpful comment if topic matches |
+| 9 | Polish: link preview cards, nested comment UI, empty states | ⬜ TODO | Per spec section 3.3, improve visual polish |
+
+### Notes
+
+- **Bot `author_id`**: Currently using placeholder `00000000-0000-0000-0000-000000000000`. Need actual bot user in `auth.users` for FK constraint.
+- **MiniMax API**: Web search endpoint assumed (`https://api.minimax.chat/v1/web_search`). May need adjustment.
+- **`/api/community/threads` POST**: Thread creation happens client-side via Supabase direct insert (no dedicated API route). RLS policies enforce auth.
+- **Out of scope items** (section 10) not implemented: right sidebar trending tags/active members, thread editing, moderation queue, search, tagging/categories, user profiles.
+
+---
+
+## 12. Success Criteria
 
 - User can post a thread with text, photo, and link
 - User can comment on a thread (nested up to 2 levels)
