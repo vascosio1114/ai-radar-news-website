@@ -1,9 +1,27 @@
 import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { getUIStrings, type Lang } from "@/lib/i18n";
+import { getStats, getHotTopics } from "@/lib/dashboard/queries";
+import { HotTopics } from "@/components/home/HotTopics";
 
-export function Hero({ lang = "zh" }: { lang?: Lang }) {
+export async function Hero({ lang = "zh" }: { lang?: Lang }) {
   const s = getUIStrings(lang);
+
+  // 拎 live data；如果 Supabase 出事就 fallback default
+  let liveStats: { items_24h: number; total_items: number; active_sources: number } | null = null;
+  let topics: Awaited<ReturnType<typeof getHotTopics>> = [];
+  try {
+    const [stats, hot] = await Promise.all([getStats(), getHotTopics()]);
+    liveStats = {
+      items_24h: stats.items_24h,
+      total_items: stats.total_items,
+      active_sources: stats.active_sources,
+    };
+    topics = hot;
+  } catch (e) {
+    // Silent — Hero 仍然 render 用 hardcoded fallback
+    console.warn("[Hero] live data fetch failed", e);
+  }
 
   return (
     <section className="relative overflow-hidden">
@@ -48,12 +66,18 @@ export function Hero({ lang = "zh" }: { lang?: Lang }) {
             </Link>
           </div>
 
-          {/* Stats strip */}
+          {/* Stats strip — use live data when available, fall back to i18n strings */}
           <div className="mx-auto mt-16 grid max-w-2xl grid-cols-3 gap-4">
             {[
-              { v: s.heroStat1Val, k: s.heroStat1Key },
-              { v: s.heroStat2Val, k: s.heroStat2Key },
-              { v: s.heroStat3Val, k: s.heroStat3Key },
+              liveStats
+                ? { v: liveStats.total_items.toLocaleString(), k: lang === "zh" ? "AI 新聞總數" : "AI items" }
+                : { v: s.heroStat1Val, k: s.heroStat1Key },
+              liveStats
+                ? { v: `${liveStats.items_24h}`, k: lang === "zh" ? "今日新增" : "Added today" }
+                : { v: s.heroStat2Val, k: s.heroStat2Key },
+              liveStats
+                ? { v: `${liveStats.active_sources}`, k: lang === "zh" ? "Source 數量" : "Sources" }
+                : { v: s.heroStat3Val, k: s.heroStat3Key },
             ].map((stat) => (
               <div
                 key={stat.k}
@@ -68,6 +92,9 @@ export function Hero({ lang = "zh" }: { lang?: Lang }) {
               </div>
             ))}
           </div>
+
+          {/* Hot topics ticker — link to /dashboard */}
+          <HotTopics topics={topics} lang={lang} />
         </div>
       </div>
     </section>

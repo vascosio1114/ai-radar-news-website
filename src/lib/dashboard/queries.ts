@@ -89,7 +89,6 @@ export async function getDailyTrend(): Promise<DailyPoint[]> {
   if (error) throw error;
 
   const buckets = new Map<string, number>();
-  // Initialize last 7 days with 0
   for (let i = 6; i >= 0; i--) {
     const d = new Date(Date.now() - i * 24 * 3600 * 1000);
     const key = d.toISOString().slice(0, 10);
@@ -123,7 +122,6 @@ export async function getSources(): Promise<SourceRow[]> {
 
   if (!sources) return [];
 
-  // Get item count per source
   const ids = (sources as { id: string }[]).map((s) => s.id);
   const { data: counts } = await supabase
     .from("raw_items")
@@ -180,4 +178,57 @@ export async function getLatestItems(limit = 12): Promise<LatestItem[]> {
     source_name: r.sources?.name ?? "—",
     source_kind: r.sources?.kind ?? "",
   }));
+}
+
+// ============ Hot topics (NEW) ============
+
+/** AI 圈嘅 known keywords，用嚟由 raw_items title 統計熱話題。 */
+const HOT_KEYWORDS = [
+  // Models
+  "GPT-5", "GPT-4", "Claude", "Gemini", "Llama", "DeepSeek", "Qwen", "Mistral",
+  "o1", "Sora",
+  // Companies
+  "OpenAI", "Anthropic", "Google", "Meta", "Mistral AI", "Hugging Face",
+  // Tech keywords
+  "agent", "RAG", "MCP", "diffusion", "embedding", "fine-tune",
+  // Tools
+  "Cursor", "v0", "Copilot", "ChatGPT", "Perplexity", "Midjourney", "Runway",
+] as const;
+
+export type HotTopic = {
+  keyword: string;
+  mentions: number;
+};
+
+/** 過去 7 日 raw_items title 入面提及最多嘅 AI keyword，top 6。 */
+export async function getHotTopics(): Promise<HotTopic[]> {
+  const supabase = db();
+  const since = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
+
+  const { data, error } = await supabase
+    .from("raw_items")
+    .select("title")
+    .gte("fetched_at", since)
+    .limit(2000);
+
+  if (error) throw error;
+
+  const titles = (data as { title: string }[] | null) ?? [];
+  const counts = new Map<string, number>();
+  for (const k of HOT_KEYWORDS) counts.set(k, 0);
+
+  for (const row of titles) {
+    const lower = (row.title ?? "").toLowerCase();
+    for (const k of HOT_KEYWORDS) {
+      if (lower.includes(k.toLowerCase())) {
+        counts.set(k, (counts.get(k) ?? 0) + 1);
+      }
+    }
+  }
+
+  return Array.from(counts.entries())
+    .map(([keyword, mentions]) => ({ keyword, mentions }))
+    .filter((t) => t.mentions > 0)
+    .sort((a, b) => b.mentions - a.mentions)
+    .slice(0, 6);
 }

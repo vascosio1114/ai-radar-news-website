@@ -29,6 +29,7 @@ export function Navbar() {
 
   const navItems = [
     { href: `/${lang}`, label: lang === "zh" ? "首頁" : "Home" },
+    { href: `/${lang}/dashboard`, label: lang === "zh" ? "今日動態" : "Dashboard" },
     { href: `/${lang}/news`, label: lang === "zh" ? "AI 新聞" : "AI News" },
     { href: `/${lang}/tools`, label: lang === "zh" ? "AI 工具" : "AI Tools" },
     { href: `/${lang}/tutorials`, label: lang === "zh" ? "教學" : "Tutorials" },
@@ -82,8 +83,8 @@ export function Navbar() {
 
         {/* Right side */}
         <div className="flex items-center gap-2">
-          <ThemeToggle />
           <LanguageSwitcher />
+          <ThemeToggle />
           <button
             type="button"
             aria-label="開啟選單"
@@ -118,10 +119,6 @@ export function Navbar() {
                 </Link>
               );
             })}
-            <div className="mt-2 flex items-center gap-2 px-3">
-              <ThemeToggle />
-              <LanguageSwitcher />
-            </div>
           </nav>
         </div>
       )}
