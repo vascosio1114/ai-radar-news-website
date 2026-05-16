@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { buildUnsubscribeHtml } from "@/lib/email-templates";
+import { buildWelcomeHtml } from "@/lib/email-templates";
 import { generateUnsubscribeToken } from "@/lib/unsubscribe-token";
 import { sendHtmlEmail, MailSettings } from "@/lib/mail";
 
@@ -40,12 +40,12 @@ export async function GET(
     .single();
 
   if (settings) {
-    const unsubHtml = buildUnsubscribeHtml({ unsubscribeUrl: unsubUrl, lang: "zh" });
+    const welcomeHtml = buildWelcomeHtml({ unsubscribeUrl: unsubUrl, siteUrl: SITE_URL, lang: "zh" });
     await sendHtmlEmail(
       settings as MailSettings,
       email,
-      "You're subscribed to AI Radar!",
-      unsubHtml
+      "歡迎訂閱 AI Radar ✅",
+      welcomeHtml
     );
   }
 

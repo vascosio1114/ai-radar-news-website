@@ -79,7 +79,7 @@ export async function POST(request: Request) {
         await sendHtmlEmail(
           settings as MailSettings,
           email,
-          "Confirm your AI Radar subscription",
+          "確認訂閱 AI Radar 每日速報",
           confirmHtml
         );
       }
