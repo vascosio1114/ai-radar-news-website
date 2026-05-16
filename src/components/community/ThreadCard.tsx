@@ -44,9 +44,10 @@ function formatRelativeTime(dateStr: string): string {
 
 interface ThreadCardProps {
   thread: Thread;
+  lang: string;
 }
 
-export function ThreadCard({ thread }: ThreadCardProps) {
+export function ThreadCard({ thread, lang }: ThreadCardProps) {
   const [copied, setCopied] = useState(false);
 
   const authorName = thread.profile?.display_name || "匿名用戶";
@@ -59,7 +60,7 @@ export function ThreadCard({ thread }: ThreadCardProps) {
 
   const handleShare = async () => {
     try {
-      await navigator.clipboard.writeText(`${window.location.origin}/community/${thread.id}`);
+      await navigator.clipboard.writeText(`${window.location.origin}/${lang}/community/${thread.id}`);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -83,7 +84,7 @@ export function ThreadCard({ thread }: ThreadCardProps) {
         {/* Author info */}
         <div className="flex items-center gap-2">
           <Link
-            href={`/profile/${thread.author_id}`}
+            href={`/${lang}/profile/${thread.author_id}`}
             className="font-semibold text-ink-900 hover:text-accent-600 dark:text-ink-100 dark:hover:text-accent-400"
           >
             {authorName}
@@ -93,7 +94,7 @@ export function ThreadCard({ thread }: ThreadCardProps) {
         </div>
 
         {/* Content preview */}
-        <Link href={`/community/${thread.id}`}>
+        <Link href={`/${lang}/community/${thread.id}`}>
           <p className="mt-2 whitespace-pre-wrap text-sm text-ink-700 dark:text-ink-300">
             {truncatedContent}
           </p>
@@ -132,7 +133,7 @@ export function ThreadCard({ thread }: ThreadCardProps) {
 
           {/* Comment count */}
           <Link
-            href={`/community/${thread.id}#comments`}
+            href={`/${lang}/community/${thread.id}#comments`}
             className="flex items-center gap-1 text-sm text-ink-500 transition hover:text-accent-600 dark:text-ink-400 dark:hover:text-accent-400"
           >
             <MessageCircle className="h-4 w-4" />

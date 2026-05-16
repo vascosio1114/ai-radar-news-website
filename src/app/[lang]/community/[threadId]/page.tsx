@@ -173,7 +173,7 @@ export default function ThreadDetailPage() {
 
   const handleShare = async () => {
     try {
-      await navigator.clipboard.writeText(`${window.location.origin}/community/${threadId}`);
+      await navigator.clipboard.writeText(`${window.location.origin}/${params.lang}/community/${threadId}`);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -226,7 +226,7 @@ export default function ThreadDetailPage() {
         <div className="rounded-xl border border-ink-200 bg-white p-8 text-center dark:border-ink-700 dark:bg-ink-900">
           <p className="text-ink-500">{error || "Thread not found"}</p>
           <Link
-            href="/community"
+            href={`/${params.lang}/community`}
             className="mt-4 inline-block text-accent-600 hover:underline"
           >
             返回社群
@@ -243,7 +243,7 @@ export default function ThreadDetailPage() {
     <div className="container mx-auto px-4 py-8">
       {/* Back button */}
       <Link
-        href="/community"
+        href={`/${params.lang}/community`}
         className="mb-6 inline-flex items-center gap-2 text-sm text-ink-500 transition hover:text-ink-700 dark:text-ink-400 dark:hover:text-ink-200"
       >
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

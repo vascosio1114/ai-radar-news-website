@@ -7,8 +7,16 @@ interface LinkPreviewProps {
   image?: string;
 }
 
+function getDomain(url: string): string {
+  try {
+    return new URL(url).hostname.replace("www.", "");
+  } catch {
+    return url.replace(/^https?:\/\//, "").split("/")[0];
+  }
+}
+
 export function LinkPreview({ url, title, description, image }: LinkPreviewProps) {
-  const domain = typeof window !== 'undefined' ? new URL(url).hostname.replace('www.', '') : url;
+  const domain = getDomain(url);
 
   return (
     <a

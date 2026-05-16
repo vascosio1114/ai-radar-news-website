@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import { CommunityFeed } from "@/components/community/CommunityFeed";
 import { NewThreadModal } from "@/components/community/NewThreadModal";
 
+type Props = { params: { lang: string } };
+
 export const metadata: Metadata = {
   title: "Community",
   description: "AI Radar community forum",
 };
 
-export default function CommunityPage() {
+export default function CommunityPage({ params }: Props) {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8 flex items-center justify-between">
@@ -23,7 +25,7 @@ export default function CommunityPage() {
       </div>
 
       <div className="mx-auto max-w-2xl">
-        <CommunityFeed />
+        <CommunityFeed lang={params.lang} />
       </div>
     </div>
   );

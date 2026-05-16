@@ -1,6 +1,11 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { ThreadCard, Thread } from "./ThreadCard";
+
+interface CommunityFeedProps {
+  lang: string;
+}
 
 function hoursAgo(h: number): string {
   return new Date(Date.now() - h * 3600000).toISOString();
@@ -99,11 +104,72 @@ const mockThreads: Thread[] = [
   },
 ];
 
-export function CommunityFeed() {
+export function CommunityFeed({ lang }: CommunityFeedProps) {
+  const [threads, setThreads] = useState<Thread[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchThreads() {
+      try {
+        const response = await fetch("/api/community/threads");
+        if (!response.ok) {
+          throw new Error("Failed to fetch threads");
+        }
+        const data = await response.json();
+        setThreads(data.threads ?? []);
+      } catch (err) {
+        console.error("Error fetching threads:", err);
+        setError("載入失敗");
+        // Fall back to mock data on error
+        setThreads(mockThreads as Thread[]);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchThreads();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-4">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="animate-pulse rounded-xl border border-ink-200 bg-white p-4 dark:border-ink-700 dark:bg-ink-900">
+            <div className="flex gap-3">
+              <div className="h-10 w-10 rounded-full bg-ink-200 dark:bg-ink-700" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 w-24 rounded bg-ink-200 dark:bg-ink-700" />
+                <div className="h-4 w-full rounded bg-ink-200 dark:bg-ink-700" />
+                <div className="h-4 w-3/4 rounded bg-ink-200 dark:bg-ink-700" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-center text-rose-600 dark:border-rose-800 dark:bg-rose-900/20 dark:text-rose-400">
+        {error}
+      </div>
+    );
+  }
+
+  if (threads.length === 0) {
+    return (
+      <div className="rounded-xl border border-ink-200 bg-white p-8 text-center dark:border-ink-700 dark:bg-ink-900">
+        <p className="text-ink-500">尚無帖文，成為第一個發文的人吧！</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-4">
-      {mockThreads.map((thread) => (
-        <ThreadCard key={thread.id} thread={thread} />
+      {threads.map((thread) => (
+        <ThreadCard key={thread.id} thread={thread} lang={lang} />
       ))}
     </div>
   );

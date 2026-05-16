@@ -1,11 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { X, Image as ImageIcon, Link as LinkIcon, Loader2, ExternalLink, LogIn } from "lucide-react";
+import { X, Image as ImageIcon, Link as LinkIcon, Loader2, ExternalLink } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import type { Database } from "../../types/database.types";
-
-type Thread = Database["public"]["Tables"]["threads"]["Row"];
 
 interface LinkPreviewData {
   title: string | null;
@@ -118,50 +115,29 @@ export function NewThreadModal() {
     setError(null);
 
     try {
-      const supabase = createSupabaseBrowserClient();
-
-      let uploadedImageUrl: string | null = null;
-
-      // Upload image if selected
-      if (imageFile) {
-        const ext = imageFile.name.split(".").pop() || "jpg";
-        const filePath = `${user.id}/${Date.now()}.${ext}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from("thread-images")
-          .upload(filePath, imageFile, {
-            contentType: imageFile.type,
-            upsert: false,
-          });
-
-        if (uploadError) {
-          // Bucket may not exist - skip image upload
-          console.warn("Image upload failed:", uploadError.message);
-        } else {
-          const { data: urlData } = supabase.storage
-            .from("thread-images")
-            .getPublicUrl(filePath);
-          uploadedImageUrl = urlData.publicUrl;
-        }
-      }
-
-      // Build link preview data
+      // Normalize link URL
       let normalizedUrl = linkUrl.trim();
       if (normalizedUrl && !/^https?:\/\//i.test(normalizedUrl)) {
         normalizedUrl = "https://" + normalizedUrl;
       }
 
-      const { error: insertError } = await supabase.from("threads").insert({
-        author_id: user.id,
-        content: content.trim(),
-        image_url: uploadedImageUrl,
-        link_url: linkPreview ? normalizedUrl : null,
-        link_title: linkPreview?.title,
-        link_description: linkPreview?.description,
-        link_image: linkPreview?.image,
+      const response = await fetch("/api/community/threads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content: content.trim(),
+          image_url: imageUrl,
+          link_url: linkPreview ? normalizedUrl : null,
+          link_title: linkPreview?.title,
+          link_description: linkPreview?.description,
+          link_image: linkPreview?.image,
+        }),
       });
 
-      if (insertError) throw insertError;
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "提交失敗");
+      }
 
       // Reset form and close
       setContent("");
@@ -171,6 +147,9 @@ export function NewThreadModal() {
       setImageUrl(null);
       setError(null);
       setIsOpen(false);
+
+      // Refresh the page to show new thread
+      window.location.reload();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "提交失敗，請稍後再試");
     } finally {
