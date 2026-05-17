@@ -9,7 +9,7 @@ export const DEFAULT_LANG: Lang = "zh";
 export function getLangNavItems(lang: Lang) {
   return [
     { href: `/${lang}`, label: lang === "zh" ? "首頁" : "Home" },
-    { href: `/${lang}/news`, label: lang === "zh" ? "AI 新聞" : "AI News" },
+    { href: `/${lang}/news`, label: lang === "zh" ? "AI 文章" : "AI Blog" },
     { href: `/${lang}/tools`, label: lang === "zh" ? "AI 工具" : "AI Tools" },
     { href: `/${lang}/tutorials`, label: lang === "zh" ? "教學" : "Tutorials" },
   ] as const;
@@ -17,7 +17,7 @@ export function getLangNavItems(lang: Lang) {
 
 export const NAV_ITEMS = [
   { href: "/", label: "首頁" },
-  { href: "/news", label: "AI 新聞" },
+  { href: "/news", label: "AI 文章" },
   { href: "/tools", label: "AI 工具" },
   { href: "/tutorials", label: "教學" },
   { href: "/trends", label: "趨勢分析" },

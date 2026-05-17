@@ -95,7 +95,7 @@ const featureListZh = `
     <tr>
       <td style="padding:14px 16px;border:1px solid rgba(148,163,184,.18);border-radius:18px;background:rgba(15,23,42,.64);color:#dbeafe;font-size:14px;line-height:1.75;">
         <div style="margin-bottom:8px;"><strong style="color:#ffffff;">你將會收到：</strong></div>
-        <div>• 每日 AI 新聞重點整理</div>
+        <div>• 每日 AI 文章重點整理</div>
         <div>• 新 AI 工具 / GitHub trending / arXiv paper 快速掃描</div>
         <div>• 由 AI Radar 編輯角度整理嘅中文解讀</div>
       </td>
@@ -107,7 +107,7 @@ const featureListEn = `
     <tr>
       <td style="padding:14px 16px;border:1px solid rgba(148,163,184,.18);border-radius:18px;background:rgba(15,23,42,.64);color:#dbeafe;font-size:14px;line-height:1.75;">
         <div style="margin-bottom:8px;"><strong style="color:#ffffff;">You'll receive:</strong></div>
-        <div>• Curated AI news highlights</div>
+        <div>• Curated AI article highlights</div>
         <div>• New tools, GitHub trends, and arXiv signals</div>
         <div>• Concise analysis from AI Radar</div>
       </td>
@@ -125,7 +125,7 @@ export function buildConfirmationHtml(params: TemplateParams): string {
     title: isEn ? "Confirm your subscription" : "確認訂閱 AI Radar",
     intro: isEn
       ? "One click and you're in. We'll send curated AI signals, tools, and trend summaries to your inbox."
-      : "差一步就完成。確認後，我哋會將每日 AI 新聞、工具更新同趨勢重點送到你 inbox。",
+      : "差一步就完成。確認後，我哋會將每日 AI 文章、工具更新同趨勢重點送到你 inbox。",
     children: `
       <div style="text-align:center;margin:6px 0 22px;">
         ${button(isEn ? "Confirm subscription" : "確認訂閱", url)}

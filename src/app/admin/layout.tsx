@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { LayoutDashboard, Newspaper, Wrench, GraduationCap } from "lucide-react";
+import { LayoutDashboard, Newspaper, Wrench, GraduationCap, Bot } from "lucide-react";
 
 const ADMIN_NAV = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/articles", label: "文章管理", icon: Newspaper },
+  { href: "/admin/agent", label: "Agent 動態", icon: Bot },
   { href: "/admin/tools", label: "工具管理", icon: Wrench },
   { href: "/admin/tutorials", label: "教學管理", icon: GraduationCap },
 ];

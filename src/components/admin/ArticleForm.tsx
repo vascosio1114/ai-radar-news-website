@@ -38,7 +38,7 @@ interface ArticleFormProps {
 }
 
 const CATEGORIES = [
-  "AI 新聞",
+  "AI 文章",
   "AI 工具",
   "AI 教程",
   "技術解析",

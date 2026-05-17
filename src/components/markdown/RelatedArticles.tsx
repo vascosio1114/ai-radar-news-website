@@ -60,7 +60,7 @@ export default function RelatedArticles({ articles, currentSlug, lang = "zh" }: 
           href={`/${lang}/news`}
           className="inline-flex items-center gap-1 text-sm font-medium text-accent-600 transition hover:text-accent-700 dark:text-accent-400 dark:hover:text-accent-300"
         >
-          查看全部新聞
+          查看全部文章
           <ArrowRight className="h-4 w-4" />
         </Link>
       </div>

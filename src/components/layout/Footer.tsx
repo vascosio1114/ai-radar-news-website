@@ -12,7 +12,7 @@ export function Footer() {
 
   const navItems = [
     { href: `/${lang}`, label: lang === "zh" ? "首頁" : "Home" },
-    { href: `/${lang}/news`, label: lang === "zh" ? "AI 新聞" : "AI News" },
+    { href: `/${lang}/news`, label: lang === "zh" ? "AI 文章" : "AI Blog" },
     { href: `/${lang}/tools`, label: lang === "zh" ? "AI 工具" : "AI Tools" },
     { href: `/${lang}/tutorials`, label: lang === "zh" ? "教學" : "Tutorials" },
   ] as const;
@@ -32,7 +32,7 @@ export function Footer() {
             <span className="text-lg font-semibold">{SITE_NAME}</span>
           </Link>
           <p className="mt-4 max-w-md text-sm leading-relaxed text-ink-500 dark:text-ink-400">
-            最新 AI 新聞、AI 工具評測、AI 教學同趨勢分析。
+            最新 AI 文章、AI 工具評測、AI 教學同趨勢分析。
             繁體中文，每日更新，幫你跟得上 AI 浪潮。
           </p>
           <div className="mt-6 flex items-center gap-2">

@@ -29,19 +29,19 @@ export const metadata: Metadata = {
     template: `%s · ${SITE_NAME}`,
   },
   description:
-    "最新 AI 新聞、AI 工具評測、AI 教學同趨勢分析，每日更新，繁體中文。",
+    "最新 AI 文章、AI 工具評測、AI 教學同趨勢分析，每日更新，繁體中文。",
   keywords: [
     "AI",
     "人工智能",
     "ChatGPT",
     "AI 工具",
-    "AI 新聞",
+    "AI 文章",
     "AI 教學",
     "AI 趨勢",
   ],
   openGraph: {
     title: `${SITE_NAME} — 中文 AI 最新資訊`,
-    description: "最新 AI 新聞、工具、教學、趨勢分析",
+    description: "最新 AI 文章、工具、教學、趨勢分析",
     url: SITE_URL,
     siteName: SITE_NAME,
     locale: "zh_HK",
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: SITE_NAME,
-    description: "最新 AI 新聞、工具、教學",
+    description: "最新 AI 文章、工具、教學",
   },
   robots: { index: true, follow: true },
   icons: { icon: "/favicon.svg" },

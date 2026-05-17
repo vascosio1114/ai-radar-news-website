@@ -23,7 +23,7 @@ export default async function NewsPage({ params }: Props) {
     <div className="container-page section-pad">
       <header className="mb-12">
         <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-accent-600 dark:text-accent-400">
-          AI News
+          AI Blog
         </p>
         <h1 className="font-display text-4xl font-bold tracking-tight md:text-5xl">
           {s.newsPageTitle}

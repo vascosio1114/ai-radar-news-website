@@ -37,8 +37,7 @@ export function NavbarClient({ initialUser }: Props) {
 
   const navItems = [
     { href: `/${lang}`, label: lang === "zh" ? "首頁" : "Home" },
-    { href: `/${lang}/dashboard`, label: lang === "zh" ? "今日動態" : "Dashboard" },
-    { href: `/${lang}/news`, label: lang === "zh" ? "AI 新聞" : "AI News" },
+    { href: `/${lang}/news`, label: lang === "zh" ? "AI 文章" : "AI Blog" },
     { href: `/${lang}/tools`, label: lang === "zh" ? "AI 工具" : "AI Tools" },
     { href: `/${lang}/tutorials`, label: lang === "zh" ? "教學" : "Tutorials" },
   ] as const;

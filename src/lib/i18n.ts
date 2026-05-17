@@ -24,7 +24,7 @@ export function getLocalizedContent<T extends Record<string, any>>(
 export const UI_STRINGS = {
   zh: {
     latestNews: "最新更新",
-    latestNewsTitle: "最新 AI 新聞",
+    latestNewsTitle: "最新 AI 文章",
     latestNewsDesc: "不停更新，揀啱你嘅一篇 deep dive。",
 
     trendingNews: "今日熱門",
@@ -51,10 +51,10 @@ export const UI_STRINGS = {
     heroBadge: "每日更新 · 繁體中文",
     heroTitle1: "AI 浪潮",
     heroTitle2: "由你開始追上",
-    heroDesc: "最新 AI 新聞、AI 工具評測、實用教學同趨勢分析。一個地方，幫你睇懂 AI 點樣改變世界。",
+    heroDesc: "AI 趨勢文章、工具觀察、實用教學同長線分析。一個地方，幫你睇懂 AI 點樣改變世界。",
     heroCta1: "睇今日熱門",
     heroCta2: "探索 AI 工具",
-    heroStat1Key: "AI 新聞",
+    heroStat1Key: "AI 文章",
     heroStat1Val: "300+",
     heroStat2Key: "AI 工具",
     heroStat2Val: "120+",
@@ -65,15 +65,15 @@ export const UI_STRINGS = {
     minutes: "分鐘",
     minRead: "分鐘",
     openWebsite: "開啟官網",
-    backToNews: "返回新聞列表",
+    backToNews: "返回文章列表",
     contentPreparing: "文章內容準備中...",
 
     pricingFree: "免費",
     pricingFreemium: "Freemium",
     pricingPaid: "付費",
 
-    newsPageTitle: "最新 AI 新聞",
-    newsPageDesc: "編輯團隊每日整理嘅 AI 新聞。由 model release 到產業動向，一個地方睇齊。",
+    newsPageTitle: "AI 文章",
+    newsPageDesc: "以 Blog 形式整理 AI 趨勢、工具觀察、研究摘要同產業分析。由 model release 到市場變化，一個地方睇齊。",
 
     toolsPageTitle: "熱門 AI 工具",
     toolsPageDesc: "每星期評測，分類齊全。揀岩你嘅工具，由免費到 enterprise 都有。",
@@ -83,7 +83,7 @@ export const UI_STRINGS = {
   },
   en: {
     latestNews: "Latest Updates",
-    latestNewsTitle: "Latest AI News",
+    latestNewsTitle: "Latest AI Articles",
     latestNewsDesc: "Constantly updated. Pick the perfect deep dive for you.",
 
     trendingNews: "Trending Today",
@@ -110,10 +110,10 @@ export const UI_STRINGS = {
     heroBadge: "Daily updates · Traditional Chinese",
     heroTitle1: "AI Wave",
     heroTitle2: "Stay ahead starting today",
-    heroDesc: "The latest AI news, tool reviews, tutorials and trend analysis. One place to understand how AI is changing the world.",
+    heroDesc: "AI trend articles, tool observations, tutorials and long-form analysis — one place to understand how AI is changing the world.",
     heroCta1: "See today's trending",
     heroCta2: "Explore AI tools",
-    heroStat1Key: "AI News",
+    heroStat1Key: "AI Articles",
     heroStat1Val: "300+",
     heroStat2Key: "AI Tools",
     heroStat2Val: "120+",
@@ -124,15 +124,15 @@ export const UI_STRINGS = {
     minutes: "min",
     minRead: "min read",
     openWebsite: "Open website",
-    backToNews: "Back to news",
+    backToNews: "Back to articles",
     contentPreparing: "Article content coming soon...",
 
     pricingFree: "Free",
     pricingFreemium: "Freemium",
     pricingPaid: "Paid",
 
-    newsPageTitle: "Latest AI News",
-    newsPageDesc: "Daily AI news curated by our editorial team. From model releases to industry trends, all in one place.",
+    newsPageTitle: "AI Blog",
+    newsPageDesc: "AI trends, tool observations, research summaries and industry analysis in a blog format.",
 
     toolsPageTitle: "Trending AI Tools",
     toolsPageDesc: "Weekly reviews across all categories. Find the right tool for you, from free to enterprise.",
