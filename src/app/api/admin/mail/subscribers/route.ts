@@ -7,6 +7,11 @@ import { SITE_URL } from "@/lib/site";
 
 export async function GET() {
   const supabase = createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { data, error } = await supabase
     .from("mail_subscribers")
     .select("id, email, opted_in, is_confirmed, subscribed_at")
@@ -23,6 +28,10 @@ export async function POST(request: Request) {
   }
 
   const supabase = createSupabaseAdminClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   const confirmUrl = `${SITE_URL}/api/confirm/${Buffer.from(body.email).toString("base64url")}`;
   const confirmHtml = buildConfirmationHtml({ confirmUrl, lang: body.lang || "zh" });

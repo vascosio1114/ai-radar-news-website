@@ -1,3 +1,4 @@
+import { NextResponse } from "next/server";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -50,6 +51,13 @@ export default async function ArticlePage({ params }: Props) {
   const lang = params.lang as Lang;
   const ui = getUIStrings(lang);
   const supabase = createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // If unauthenticated, redirect to summary version
+  if (!user) {
+    return NextResponse.redirect(`/${lang}/summarize/${params.slug}`);
+  }
+
   const { data: article } = await supabase
     .from("articles")
     .select("*")

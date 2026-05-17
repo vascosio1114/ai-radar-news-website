@@ -8,6 +8,11 @@ export async function POST(request: Request) {
   const adminDb = createSupabaseAdminClient();
   const serverClient = createSupabaseServerClient();
 
+  const { data: { user } } = await serverClient.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const body = await request.json().catch(() => ({}));
   const overrideEmail = body.to;
 
@@ -21,7 +26,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "No mail settings configured" }, { status: 400 });
   }
 
-  const { data: { user } } = await serverClient.auth.getUser();
   const recipientEmail = overrideEmail || user?.email || settings.smtp_from_address;
 
   if (!recipientEmail) {

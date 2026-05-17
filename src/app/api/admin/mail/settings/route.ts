@@ -4,6 +4,11 @@ import { encryptPassword } from "@/lib/mail";
 
 export async function GET() {
   const supabase = createSupabaseAdminClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { data, error } = await supabase
     .from("mail_settings")
     .select("*")
@@ -19,6 +24,10 @@ export async function GET() {
 export async function POST(request: Request) {
   const body = await request.json();
   const supabase = createSupabaseAdminClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   const encKey = Buffer.from(process.env.MAIL_ENCRYPTION_KEY || "", "hex");
   if (encKey.length !== 32) {
@@ -44,9 +53,20 @@ export async function POST(request: Request) {
     updated_at: new Date().toISOString(),
   };
 
-  // Upsert: delete existing row, then insert new
-  await supabase.from("mail_settings").delete().neq("id", "00000000-0000-0000-0000-000000000000");
-  const { error } = await supabase.from("mail_settings").insert(payload);
+  // Upsert: fetch existing row to get id, then upsert
+  const { data: existing } = await supabase
+    .from("mail_settings")
+    .select("id")
+    .limit(1)
+    .single();
+
+  const upsertData = existing
+    ? { ...payload, id: existing.id }
+    : payload;
+
+  const { error } = await supabase
+    .from("mail_settings")
+    .upsert(upsertData, { onConflict: "id" });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   return NextResponse.json({ ok: true });

@@ -1,3 +1,10 @@
+/**
+ * In-memory rate limiter for newsletter signup.
+ * NOTE: In serverless/multi-instance deployments, each instance maintains
+ * independent state. This limit is per-instance, not global.
+ * For production with multiple replicas, use Redis or Supabase-backed rate limiting.
+ */
+
 interface RateLimitEntry {
   count: number;
   windowStart: number;

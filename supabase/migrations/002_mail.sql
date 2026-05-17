@@ -1,5 +1,6 @@
 -- Migration: Mailing list tables (mail_subscribers + mail_settings)
 -- Run in Supabase SQL Editor after merging
+-- Note: Down migrations are not provided for this file.
 
 -- 1. mail_subscribers
 create table if not exists public.mail_subscribers (
@@ -11,6 +12,9 @@ create table if not exists public.mail_subscribers (
 );
 
 alter table public.mail_subscribers enable row level security;
+
+-- Index for efficient on conflict (email) do update lookups
+create index if not exists mail_subscribers_email_idx on public.mail_subscribers(email);
 
 -- Anyone can subscribe (insert), admins can read/update
 create policy "Anyone can subscribe to mail list"
@@ -31,7 +35,7 @@ create table if not exists public.mail_settings (
   smtp_host               text,
   smtp_port               int default 587,
   smtp_user               text,
-  smtp_pass_encrypted     text,
+  smtp_pass_encrypted     text, -- SMTP password stored as-is. Use Supabase Vault for encryption at rest.
   smtp_from_address       text,
   smtp_from_name          text,
   daily_enabled           boolean default false,
@@ -44,6 +48,21 @@ create table if not exists public.mail_settings (
 );
 
 alter table public.mail_settings enable row level security;
+
+-- Trigger function to auto-update updated_at
+create or replace function public.update_updated_at()
+returns trigger as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$ language plpgsql;
+
+-- Trigger on mail_settings
+drop trigger if exists mail_settings_updated_at on public.mail_settings;
+create trigger mail_settings_updated_at
+  before update on public.mail_settings
+  for each row execute function public.update_updated_at();
 
 -- Only admins can read/write mail_settings
 create policy "Only admins can read mail settings"

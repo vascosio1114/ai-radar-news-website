@@ -37,28 +37,8 @@ create policy "users delete own bookmarks"
   on public.bookmarks for delete
   using (auth.uid() = user_id);
 
--- 4. Profiles table (optional — extend auth.users with extra fields)
-create table if not exists public.profiles (
-  id              uuid primary key references auth.users(id) on delete cascade,
-  email           text not null,
-  display_name    text,
-  avatar_url      text,
-  newsletter_optin boolean default true,
-  created_at      timestamptz default now(),
-  updated_at      timestamptz default now()
-);
-
-alter table public.profiles enable row level security;
-
-drop policy if exists "users read own profile" on public.profiles;
-create policy "users read own profile"
-  on public.profiles for select
-  using (auth.uid() = id);
-
-drop policy if exists "users update own profile" on public.profiles;
-create policy "users update own profile"
-  on public.profiles for update
-  using (auth.uid() = id);
+-- 4. Add newsletter_optin column to profiles (table already created by 004_profiles.sql)
+alter table public.profiles add column if not exists newsletter_optin boolean default true;
 
 -- 5. Trigger: on auth.users insert, create profile + auto-subscribe to newsletter
 create or replace function public.handle_new_user()

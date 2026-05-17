@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { LayoutDashboard, Newspaper, Wrench, GraduationCap, Bot } from "lucide-react";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const ADMIN_NAV = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -9,11 +11,20 @@ const ADMIN_NAV = [
   { href: "/admin/tutorials", label: "教學管理", icon: GraduationCap },
 ];
 
-export default function AdminLayout({
+async function checkAuth() {
+  const supabase = createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    redirect("/admin/login");
+  }
+}
+
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  await checkAuth();
   return (
     <div className="container-page py-12">
       <div className="grid gap-8 lg:grid-cols-[240px_1fr]">

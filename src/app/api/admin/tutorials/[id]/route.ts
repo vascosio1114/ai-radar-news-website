@@ -11,6 +11,11 @@ export async function DELETE(
   try {
     const { id } = await params;
     const supabase = createSupabaseAdminClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { error } = await supabase.from("tutorials").delete().eq("id", id);
 
     if (error) {
@@ -33,6 +38,11 @@ export async function PATCH(
     const { id } = await params;
     const body = await req.json();
     const supabase = createSupabaseAdminClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { error } = await supabase
       .from("tutorials")
       .update({ is_published: body.is_published })

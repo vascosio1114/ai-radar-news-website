@@ -26,3 +26,54 @@ export type Database = {
     CompositeTypes: Record<string, never>;
   };
 };
+
+// ============ Forum / Community ============
+
+export type Thread = {
+  id: string;
+  author_id: string;
+  content: string;
+  image_url: string | null;
+  link_url: string | null;
+  link_title: string | null;
+  link_description: string | null;
+  link_image: string | null;
+  is_bot_post: boolean;
+  like_count: number;
+  comment_count: number;
+  created_at: string;
+  /** Joined author data from Supabase query */
+  author?: { id: string; email?: string; raw_user_meta_data?: { full_name?: string; avatar_url?: string } };
+};
+
+export type ThreadComment = {
+  id: string;
+  thread_id: string;
+  parent_comment_id: string | null;
+  author_id: string;
+  content: string;
+  is_bot_comment: boolean;
+  like_count: number;
+  created_at: string;
+  /** Joined author data from Supabase query */
+  author?: { id: string; email?: string; raw_user_meta_data?: { full_name?: string; avatar_url?: string } };
+};
+
+export type ThreadLike = {
+  thread_id: string;
+  user_id: string;
+  created_at: string;
+};
+
+export type CommentLike = {
+  comment_id: string;
+  user_id: string;
+  created_at: string;
+};
+
+export type BotSettings = {
+  id: string;
+  enabled: boolean;
+  daily_post_time: string;
+  comment_enabled: boolean;
+};

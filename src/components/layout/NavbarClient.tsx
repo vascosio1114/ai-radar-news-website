@@ -40,6 +40,7 @@ export function NavbarClient({ initialUser }: Props) {
     { href: `/${lang}/news`, label: lang === "zh" ? "AI 文章" : "AI Blog" },
     { href: `/${lang}/tools`, label: lang === "zh" ? "AI 工具" : "AI Tools" },
     { href: `/${lang}/tutorials`, label: lang === "zh" ? "教學" : "Tutorials" },
+    { href: `/${lang}/community`, label: lang === "zh" ? "社群" : "Community" },
   ] as const;
 
   return (

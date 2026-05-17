@@ -7,6 +7,11 @@ export async function GET(
 ) {
   const { id } = await params;
   const supabase = createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { data, error } = await supabase
     .from("mail_subscribers")
     .select("id, email, opted_in, is_confirmed, subscribed_at")
@@ -24,6 +29,10 @@ export async function PATCH(
   const { id } = await params;
   const body = await request.json();
   const supabase = createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   const allowed: Record<string, unknown> = {};
   if (typeof body.opted_in === "boolean") allowed.opted_in = body.opted_in;
@@ -44,6 +53,11 @@ export async function DELETE(
 ) {
   const { id } = await params;
   const supabase = createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { error } = await supabase
     .from("mail_subscribers")
     .delete()
