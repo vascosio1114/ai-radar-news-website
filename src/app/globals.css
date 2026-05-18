@@ -120,3 +120,79 @@ body {
     animation: none;
   }
 }
+
+/* Paratrix-inspired protocol motion */
+.protocol-rail {
+  animation: protocol-rail 34s linear infinite;
+}
+
+.protocol-orbit::before,
+.protocol-orbit::after {
+  content: "";
+  position: absolute;
+  border-radius: 9999px;
+  background: rgb(96 165 250 / 0.95);
+  box-shadow: 0 0 22px rgb(96 165 250 / 0.8);
+}
+
+.protocol-orbit::before {
+  width: 7px;
+  height: 7px;
+  left: 50%;
+  top: -4px;
+}
+
+.protocol-orbit::after {
+  width: 4px;
+  height: 4px;
+  right: 12%;
+  bottom: 12%;
+}
+
+.protocol-orbit {
+  animation: protocol-orbit 28s linear infinite;
+}
+
+.protocol-orbit-slow {
+  animation-duration: 42s;
+  animation-direction: reverse;
+}
+
+.protocol-card {
+  animation: protocol-card-float 7s ease-in-out infinite alternate;
+}
+
+@keyframes protocol-rail {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes protocol-orbit {
+  from {
+    transform: translateX(-50%) rotate(0deg);
+  }
+  to {
+    transform: translateX(-50%) rotate(360deg);
+  }
+}
+
+@keyframes protocol-card-float {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-10px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .protocol-rail,
+  .protocol-orbit,
+  .protocol-card {
+    animation: none;
+  }
+}

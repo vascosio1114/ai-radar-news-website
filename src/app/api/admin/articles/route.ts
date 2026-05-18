@@ -62,16 +62,11 @@ export async function POST(req: Request) {
     const { data, error } = await supabase
       .from("articles")
       .insert({
-        title: body.title || body.title_zh,
-        title_zh: body.title_zh || body.title || null,
+        title: body.title_zh || body.title,
         slug,
-        excerpt: body.excerpt || body.excerpt_zh || "",
-        excerpt_zh: body.excerpt_zh || body.excerpt || null,
+        excerpt: body.excerpt_zh || body.excerpt || "",
         cover_image: body.cover_image || null,
-        content: body.content || null,
-        content_zh: body.content_zh || body.content || null,
-        summary_content: body.summary_content || null,
-        summary_content_zh: body.summary_content_zh || null,
+        content: body.content_zh || body.content || null,
         category: body.category || "AI 文章",
         tags: Array.isArray(body.tags) ? body.tags : [],
         author: body.author || "RADAR AI Studio",

@@ -38,6 +38,11 @@ export function Hero({ lang = "zh" }: { lang?: Lang }) {
         </motion.div>
 
         <div aria-hidden="true" className="cinematic-particles absolute inset-0" />
+        <div aria-hidden="true" className="absolute inset-6 hidden border border-white/[0.045] md:block" />
+        <div aria-hidden="true" className="absolute left-6 top-6 hidden h-16 w-16 border-l border-t border-blue-300/25 md:block" />
+        <div aria-hidden="true" className="absolute right-6 top-6 hidden h-16 w-16 border-r border-t border-blue-300/25 md:block" />
+        <div aria-hidden="true" className="absolute bottom-6 left-6 hidden h-16 w-16 border-b border-l border-blue-300/18 md:block" />
+        <div aria-hidden="true" className="absolute bottom-6 right-6 hidden h-16 w-16 border-b border-r border-blue-300/18 md:block" />
 
         <motion.div
           aria-hidden="true"
@@ -75,6 +80,11 @@ export function Hero({ lang = "zh" }: { lang?: Lang }) {
             {tagline}
           </p>
         </motion.div>
+
+        <div className="pointer-events-none absolute bottom-10 right-8 z-20 hidden text-right text-[10px] uppercase tracking-[0.28em] text-white/35 md:block">
+          <div>System boot</div>
+          <div className="mt-1 text-blue-300/60">Scroll to initialize</div>
+        </div>
 
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-black via-black/70 to-transparent" />
       </div>
