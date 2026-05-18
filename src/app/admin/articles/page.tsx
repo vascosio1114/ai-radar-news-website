@@ -141,7 +141,7 @@ export default function AdminArticlesPage() {
                         )}
                       </button>
                       <Link
-                        href={`/news/${article.slug}`}
+                        href={`/zh/news/${article.slug}`}
                         target="_blank"
                         className="rounded-lg p-1.5 text-ink-500 hover:bg-ink-100 hover:text-ink-700 dark:hover:bg-ink-800 dark:hover:text-ink-300"
                         title="查看"

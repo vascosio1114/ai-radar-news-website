@@ -51,11 +51,14 @@ export function generateSlug(date: string, title: string): string {
   const dateStr = date ? new Date(date).toISOString().split("T")[0] : "";
   const titleSlug = title
     .toLowerCase()
-    .replace(/[^\w\s一-鿿]/g, "")
+    .normalize("NFKD")
+    .replace(/[^a-z0-9\s-]/g, "")
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
     .trim();
-  return dateStr ? `${dateStr}-${titleSlug}` : titleSlug;
+  const safeTitle = titleSlug || "blog-post";
+  return dateStr ? `${dateStr}-${safeTitle}` : safeTitle;
 }
 
 export default function ArticleForm({
@@ -190,9 +193,9 @@ export default function ArticleForm({
           onChange={(e) => handleSlugChange(e.target.value)}
           className="mt-1 block w-full rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm text-ink-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-ink-700 dark:bg-ink-800 dark:text-ink-50"
           pattern="[a-z0-9-]+"
-          placeholder="auto-generated-from-title"
+          placeholder="auto-generated-blog-post-slug"
         />
-        <p className="mt-1 text-xs text-ink-500">只允許小寫字母、數字和連字符</p>
+        <p className="mt-1 text-xs text-ink-500">只允許小寫英文字母、數字和連字符；中文標題會自動 fallback 成 blog-post。</p>
       </div>
 
       {/* Excerpt */}
@@ -473,7 +476,7 @@ export default function ArticleForm({
           disabled={isSubmitting}
           className="rounded-xl bg-primary-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-700 disabled:opacity-50"
         >
-          {isSubmitting ? "儲存中..." : "儲存"}
+          {isSubmitting ? "儲存中..." : formData.is_published ? "發佈文章" : "儲存草稿"}
         </button>
       </div>
     </form>

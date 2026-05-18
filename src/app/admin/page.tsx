@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Newspaper, Wrench, GraduationCap, Eye, Mail, Send, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { Newspaper, Wrench, GraduationCap, Eye, Mail, Send, Loader2, PenLine, ArrowRight, Home } from "lucide-react";
 import { buildDigestHtml } from "@/lib/digest-html";
 import { MailSubscribers } from "@/components/admin/MailSubscribers";
 
@@ -167,6 +168,51 @@ export default function AdminDashboardPage() {
       <p className="mt-2 text-sm text-ink-500 dark:text-ink-400">
         歡迎返嚟。呢度將顯示網站嘅整體狀態。
       </p>
+
+      <div className="mt-8 grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+        <Link
+          href="/admin/articles/new"
+          className="group relative overflow-hidden rounded-3xl border border-accent-500/25 bg-gradient-to-br from-ink-950 via-ink-900 to-black p-6 text-white shadow-glow transition hover:-translate-y-0.5 hover:border-accent-400/50"
+        >
+          <div className="pointer-events-none absolute right-0 top-0 h-44 w-44 translate-x-12 -translate-y-12 rounded-full bg-accent-500/20 blur-3xl transition group-hover:bg-accent-400/25" />
+          <div className="relative flex items-start justify-between gap-6">
+            <div>
+              <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-accent-300 ring-1 ring-white/10">
+                <PenLine className="h-5 w-5" />
+              </div>
+              <p className="text-xs font-semibold uppercase tracking-[0.32em] text-accent-300/80">
+                Blog Composer
+              </p>
+              <h2 className="mt-3 font-display text-2xl font-bold tracking-tight">
+                寫新 Blog 文章
+              </h2>
+              <p className="mt-2 max-w-xl text-sm leading-6 text-white/60">
+                手寫 AI 觀點、教學、分析或者工具文章。發佈後會即刻連到主頁最新文章區。
+              </p>
+            </div>
+            <ArrowRight className="mt-2 h-5 w-5 text-white/50 transition group-hover:translate-x-1 group-hover:text-white" />
+          </div>
+        </Link>
+
+        <Link
+          href="/zh"
+          target="_blank"
+          className="group rounded-3xl border border-ink-200 bg-white/80 p-6 shadow-soft transition hover:-translate-y-0.5 hover:border-accent-400/50 dark:border-ink-800 dark:bg-ink-950/70"
+        >
+          <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-accent-500/10 text-accent-600 dark:text-accent-400">
+            <Home className="h-5 w-5" />
+          </div>
+          <p className="text-xs font-semibold uppercase tracking-[0.32em] text-ink-500 dark:text-ink-400">
+            Public Site
+          </p>
+          <h2 className="mt-3 font-display text-xl font-bold tracking-tight">
+            查看主頁
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-ink-500 dark:text-ink-400">
+            檢查新文章喺主頁同 Blog 列表嘅呈現。
+          </p>
+        </Link>
+      </div>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {statsDisplay.map((s) => (
@@ -458,10 +504,6 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-        <div className="mt-10 rounded-2xl border border-dashed border-ink-300 p-8 text-center text-sm text-ink-500 dark:border-ink-700 dark:text-ink-400">
-        Admin CRUD 介面仲未起，下一步用 Supabase Auth + Row Level Security 加入：
-        <br />新增 / 編輯 / 刪除文章 + 上傳封面圖 + 工具管理。
-      </div>
     </div>
   );
 }

@@ -1,29 +1,82 @@
-import { Radar } from "lucide-react";
-import { SITE_NAME } from "@/lib/site";
+"use client";
+
+import Image from "next/image";
+import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import type { Lang } from "@/lib/i18n";
 
-export async function Hero({ lang = "zh" }: { lang?: Lang }) {
-  const tagline = lang === "zh" ? "中文 AI Blog" : "Chinese AI Blog";
+export function Hero({ lang = "zh" }: { lang?: Lang }) {
+  const prefersReducedMotion = useReducedMotion();
+  const { scrollYProgress } = useScroll();
+
+  const logoOpacity = useTransform(scrollYProgress, [0, 0.16, 0.32], [1, 0.82, 0]);
+  const logoScale = useTransform(scrollYProgress, [0, 0.32], [1, 0.86]);
+  const logoY = useTransform(scrollYProgress, [0, 0.32], [0, -72]);
+  const ambientOpacity = useTransform(scrollYProgress, [0, 0.38], [1, 0.42]);
+  const backgroundY = useTransform(scrollYProgress, [0, 0.45], [0, 90]);
+  const veilOpacity = useTransform(scrollYProgress, [0, 0.2, 0.48], [0.1, 0.42, 0.82]);
+  const systemOpacity = useTransform(scrollYProgress, [0.04, 0.2, 0.38], [0, 1, 0]);
+
+  const tagline = lang === "zh" ? "Signal detection online" : "Signal detection online";
 
   return (
-    <section className="relative overflow-hidden">
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-grid-light bg-grid dark:bg-grid-dark [mask-image:radial-gradient(ellipse_at_center,black_28%,transparent_70%)]" />
-      <div className="pointer-events-none absolute left-1/2 top-0 -z-10 h-[420px] w-[900px] -translate-x-1/2 rounded-full bg-accent-500/20 blur-3xl dark:bg-accent-500/25" />
+    <section className="relative h-[145vh] overflow-hidden bg-black text-white">
+      <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden">
+        <motion.div
+          aria-hidden="true"
+          style={{ y: prefersReducedMotion ? 0 : backgroundY }}
+          className="absolute inset-0 bg-[url('/images/radar-ai-studio-bg.jpeg')] bg-cover bg-center bg-no-repeat opacity-95"
+        />
 
-      <div className="container-page flex min-h-[46vh] items-center justify-center py-20 md:min-h-[56vh]">
-        <div className="text-center">
-          <div className="mx-auto flex h-28 w-28 items-center justify-center rounded-[2rem] border border-ink-200/80 bg-white/75 shadow-soft backdrop-blur dark:border-ink-800 dark:bg-ink-950/80">
-            <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-ink-950 text-white shadow-glow dark:bg-white dark:text-ink-950">
-              <Radar className="h-10 w-10" />
-            </div>
-          </div>
-          <h1 className="mt-7 font-display text-4xl font-bold tracking-tight text-ink-950 dark:text-white md:text-6xl">
-            {SITE_NAME}
-          </h1>
-          <p className="mt-3 text-sm font-medium uppercase tracking-[0.35em] text-accent-600 dark:text-accent-400">
+        <motion.div
+          aria-hidden="true"
+          style={{ opacity: prefersReducedMotion ? 0.75 : ambientOpacity }}
+          className="absolute inset-0"
+        >
+          <div className="absolute left-1/2 top-[42%] h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500/20 blur-3xl" />
+          <div className="absolute left-[18%] top-[22%] h-44 w-44 rounded-full bg-sky-400/10 blur-3xl" />
+          <div className="absolute right-[16%] bottom-[18%] h-52 w-52 rounded-full bg-blue-700/12 blur-3xl" />
+        </motion.div>
+
+        <div aria-hidden="true" className="cinematic-particles absolute inset-0" />
+
+        <motion.div
+          aria-hidden="true"
+          style={{ opacity: prefersReducedMotion ? 0.55 : veilOpacity }}
+          className="absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,transparent_0%,rgba(0,0,0,0.16)_35%,rgba(0,0,0,0.82)_78%,#000_100%)]"
+        />
+
+        <motion.div
+          style={{
+            opacity: prefersReducedMotion ? 1 : logoOpacity,
+            scale: prefersReducedMotion ? 1 : logoScale,
+            y: prefersReducedMotion ? 0 : logoY,
+            filter: prefersReducedMotion ? "blur(0px)" : undefined,
+          }}
+          className="relative z-10 flex w-full max-w-5xl flex-col items-center px-6 text-center"
+        >
+          <div className="h-px w-24 bg-gradient-to-r from-transparent via-blue-400/60 to-transparent" />
+          <Image
+            src="/images/radar-ai-studio-bg.jpeg"
+            alt="RADAR AI Studio"
+            width={1536}
+            height={1024}
+            priority
+            className="mt-6 w-full max-w-[760px] select-none object-contain opacity-95 drop-shadow-[0_0_36px_rgba(37,99,235,0.18)]"
+            draggable={false}
+          />
+          <div className="mt-3 h-px w-24 bg-gradient-to-r from-transparent via-white/45 to-transparent" />
+        </motion.div>
+
+        <motion.div
+          style={{ opacity: prefersReducedMotion ? 0 : systemOpacity }}
+          className="pointer-events-none absolute bottom-10 left-1/2 z-20 -translate-x-1/2 text-center"
+        >
+          <p className="rounded-full border border-white/10 bg-black/35 px-5 py-2 text-[10px] font-medium uppercase tracking-[0.42em] text-white/65 backdrop-blur-md">
             {tagline}
           </p>
-        </div>
+        </motion.div>
+
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-black via-black/70 to-transparent" />
       </div>
     </section>
   );

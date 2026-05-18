@@ -29,7 +29,15 @@ html {
 }
 
 body {
-  background-color: rgb(var(--background));
+  background-color: #020204;
+  background-image:
+    radial-gradient(circle at 50% 42%, rgb(37 99 235 / 0.16), transparent 34rem),
+    linear-gradient(180deg, rgb(0 0 0 / 0.18) 0%, rgb(0 0 0 / 0.72) 56%, rgb(0 0 0 / 0.92) 100%),
+    url("/images/radar-ai-studio-bg.jpeg");
+  background-attachment: fixed;
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-size: cover;
   color: rgb(var(--foreground));
   font-feature-settings: "rlig" 1, "calt" 1;
   -webkit-font-smoothing: antialiased;
@@ -82,4 +90,33 @@ body {
 /* Selection */
 ::selection {
   background: rgb(var(--accent) / 0.25);
+}
+
+/* Cinematic landing ambience */
+.cinematic-particles {
+  background-image:
+    radial-gradient(circle, rgb(96 165 250 / 0.18) 0 1px, transparent 1.6px),
+    radial-gradient(circle, rgb(255 255 255 / 0.08) 0 1px, transparent 1.4px);
+  background-position: 12% 24%, 78% 62%;
+  background-size: 180px 180px, 260px 260px;
+  mask-image: radial-gradient(circle at center, black 0%, transparent 72%);
+  opacity: 0.28;
+  animation: cinematic-drift 18s ease-in-out infinite alternate;
+}
+
+@keyframes cinematic-drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.18;
+  }
+  to {
+    transform: translate3d(0, -22px, 0) scale(1.03);
+    opacity: 0.34;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cinematic-particles {
+    animation: none;
+  }
 }
