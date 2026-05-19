@@ -1,4 +1,4 @@
-import { ArrowUpRight, Bot, DatabaseZap, Newspaper, Radio, ShieldCheck } from "lucide-react";
+import { ArrowUpRight, Bot, DatabaseZap, Radio, ShieldCheck } from "lucide-react";
 import type { Lang } from "@/lib/site";
 
 const signals = [
@@ -14,42 +14,75 @@ const signals = [
   "LOCAL LLAMA",
 ];
 
-const cards = [
-  {
-    icon: Radio,
-    label: "Signal Intake",
-    title: "10 sources / 12h cycle",
-    body: "Agent 持續掃描 AI labs、research、developer community 同科技媒體，將 noise 變成可讀訊號。",
-  },
-  {
-    icon: DatabaseZap,
-    label: "Knowledge Layer",
-    title: "Raw items → blog intelligence",
-    body: "每一條 source 都會入庫，方便之後 ranking、filter、整理成中文 blog 文章。",
-  },
-  {
-    icon: ShieldCheck,
-    label: "Editorial Control",
-    title: "Human approve before scale",
-    body: "先保留人工 editorial taste，等內容有觀點、有質感，而唔係純粹機械式新聞搬運。",
-  },
-];
+const cardCopies = {
+  zh: [
+    {
+      icon: Radio,
+      label: "訊號擷取",
+      title: "10 個來源／每 12 小時更新",
+      body: "系統會持續監測 AI 實驗室、研究社群、開發者平台與科技媒體，將分散資訊整理成可讀、可追蹤的核心訊號。",
+    },
+    {
+      icon: DatabaseZap,
+      label: "知識層",
+      title: "原始資料 → Blog 洞察",
+      body: "每筆來源資料都會先進入資料庫，方便後續排序、篩選，並整理成具備脈絡與觀點的中文專題文章。",
+    },
+    {
+      icon: ShieldCheck,
+      label: "編輯把關",
+      title: "在擴張前保留人工判斷",
+      body: "現階段會保留人工編輯判斷，確保內容具備觀點、脈絡與品質，而不是單純進行自動化資訊轉載。",
+    },
+  ],
+  en: [
+    {
+      icon: Radio,
+      label: "Signal Intake",
+      title: "10 sources / 12h cycle",
+      body: "The agent continuously scans AI labs, research communities, developer platforms and technology media, turning noisy updates into readable signals.",
+    },
+    {
+      icon: DatabaseZap,
+      label: "Knowledge Layer",
+      title: "Raw items → blog intelligence",
+      body: "Every source item is stored first, making it easier to rank, filter and transform signals into opinionated blog intelligence.",
+    },
+    {
+      icon: ShieldCheck,
+      label: "Editorial Control",
+      title: "Human judgment before scale",
+      body: "We keep an editorial layer in the loop so the content has taste, context and point of view — not just automated news reposting.",
+    },
+  ],
+} satisfies Record<Lang, Array<{ icon: typeof Radio; label: string; title: string; body: string }>>;
 
 export function ProtocolExperience({ lang = "zh" }: { lang?: Lang }) {
   const copy =
     lang === "zh"
       ? {
           eyebrow: "AI Intelligence Protocol",
-          title: "唔係新聞站，係一個 AI 訊號系統。",
-          desc: "網站背後會每日收集世界各地嘅 AI movement，再由我哋整理成 blog、newsletter、dashboard 同未來課程入口。",
+          title: "這不是新聞站，而是一個 AI 訊號系統。",
+          desc: "網站背後會定期收集全球 AI 動態，再由我們整理成專題文章、電子報、數據儀表板，以及未來的課程入口。",
           cta: "查看 Blog 文章",
+          metrics: {
+            sources: "來源數量",
+            refresh: "更新週期",
+            output: "內容輸出",
+          },
         }
       : {
           eyebrow: "AI Intelligence Protocol",
           title: "Not a news site — an AI signal system.",
           desc: "The platform collects AI movements globally and turns them into blog posts, newsletters, dashboards and future learning products.",
           cta: "Read the blog",
+          metrics: {
+            sources: "Sources",
+            refresh: "Refresh Cycle",
+            output: "Output",
+          },
         };
+  const cards = cardCopies[lang];
 
   return (
     <section className="relative overflow-hidden bg-black py-20 text-white md:py-28">
@@ -117,9 +150,9 @@ export function ProtocolExperience({ lang = "zh" }: { lang?: Lang }) {
         </div>
 
         <div className="mt-10 grid gap-4 rounded-[2rem] border border-white/10 bg-black/45 p-4 backdrop-blur-xl md:grid-cols-4">
-          <Metric label="Sources" value="10" />
-          <Metric label="Refresh Cycle" value="12H" />
-          <Metric label="Output" value="Blog" />
+          <Metric label={copy.metrics.sources} value="10" />
+          <Metric label={copy.metrics.refresh} value="12H" />
+          <Metric label={copy.metrics.output} value={lang === "zh" ? "文章" : "Blog"} />
           <a
             href={`/${lang}/news`}
             className="group flex items-center justify-between rounded-2xl border border-blue-300/15 bg-blue-500/10 px-5 py-4 text-sm font-semibold text-blue-100 transition hover:bg-blue-500/15"

@@ -35,7 +35,7 @@ export default async function HomePage({ params }: Props) {
           <ProtocolExperience lang={lang} />
         </ScrollReveal>
         <ScrollReveal delay={0.03}>
-          <JobImpactTicker trend={jobImpact} />
+          <JobImpactTicker trend={jobImpact} lang={lang} />
         </ScrollReveal>
         <ScrollReveal delay={0.04}>
           <AISnowSection />
