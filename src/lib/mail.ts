@@ -1,6 +1,7 @@
 // src/lib/mail.ts
 import nodemailer from "nodemailer";
 import crypto from "crypto";
+import { createSupabaseAdminClient } from "./supabase/admin";
 
 export { buildDigestHtml } from "./digest-html";
 
@@ -37,6 +38,7 @@ export type MailSettings = {
   smtp_port: number;
   smtp_user: string;
   smtp_pass_encrypted: string;
+  smtp_pass_vault_id?: string;
   smtp_from_address: string;
   smtp_from_name: string;
   daily_enabled: boolean;
@@ -47,16 +49,30 @@ export type MailSettings = {
   email_footer_html: string;
 };
 
-let transporter: nodemailer.Transporter | null = null;
-
-function getTransporter(settings: MailSettings): nodemailer.Transporter {
-  if (transporter) return transporter;
-
+async function getSmtpPassword(settings: MailSettings): Promise<string> {
+  if (settings.smtp_pass_vault_id) {
+    const supabase = createSupabaseAdminClient();
+    const { data, error } = await supabase.rpc("vault.decrypt", {
+      id: settings.smtp_pass_vault_id,
+    });
+    if (error || !data) {
+      throw new Error(`Failed to decrypt SMTP password from vault: ${error?.message ?? "unknown"}`);
+    }
+    return data as string;
+  }
   const key = Buffer.from(process.env.MAIL_ENCRYPTION_KEY || "", "hex");
   if (key.length !== 32) {
     throw new Error("MAIL_ENCRYPTION_KEY must be 32 bytes (64 hex chars)");
   }
-  const password = decryptPassword(settings.smtp_pass_encrypted, key);
+  return decryptPassword(settings.smtp_pass_encrypted, key);
+}
+
+let transporter: nodemailer.Transporter | null = null;
+
+async function getTransporter(settings: MailSettings): Promise<nodemailer.Transporter> {
+  if (transporter) return transporter;
+
+  const password = await getSmtpPassword(settings);
 
   transporter = nodemailer.createTransport({
     pool: true,
@@ -79,7 +95,7 @@ export async function sendHtmlEmail(
   signal?: AbortSignal
 ): Promise<{ sent: boolean; error?: string }> {
   try {
-    const transport = getTransporter(settings);
+    const transport = await getTransporter(settings);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10000);
     if (signal) {
