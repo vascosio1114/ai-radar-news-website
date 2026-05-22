@@ -130,7 +130,9 @@ export default function ArticleForm({
 
     setUploading(true);
     const supabase = createSupabaseBrowserClient();
-    const fileName = `${Date.now()}-${file.name.replace(/\s/g, "-")}`;
+    const safeName = file.name.replace(/[^a-zA-Z0-9.]+/g, "_").replace(/^_+|_+$/g, "");
+    const [name, ext] = safeName.split(".");
+    const filename = `${Date.now()}-${name.slice(0, 50)}.${ext}`;
 
     const { data, error } = await supabase.storage
       .from("covers")
