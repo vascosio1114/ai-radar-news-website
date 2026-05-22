@@ -32,7 +32,9 @@ export function UserButton({ initialUser }: Props) {
       }
     }
     document.addEventListener("mousedown", onClick);
-    return () => document.removeEventListener("mousedown", onClick);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+    };
   }, []);
 
   async function onLogout() {

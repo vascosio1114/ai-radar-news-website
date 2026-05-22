@@ -85,6 +85,17 @@ export function AuthForm({
 
   const isLogin = mode === "login";
 
+  const strength = React.useMemo(() => {
+    if (password.length === 0) return null;
+    let score = 0;
+    if (password.length >= 8) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[a-z]/.test(password)) score++;
+    if (/\d/.test(password)) score++;
+    if (/[^A-Za-z0-9]/.test(password)) score++;
+    return { score, label: score < 2 ? "弱" : score < 4 ? "中" : "強", color: score < 2 ? "bg-rose-500" : score < 4 ? "bg-amber-500" : "bg-emerald-500" };
+  }, [password]);
+
   return (
     <div className="mx-auto w-full max-w-sm">
       <h1 className="font-display text-3xl font-bold tracking-tight">
@@ -152,14 +163,26 @@ export function AuthForm({
               type="password"
               required
               autoComplete={isLogin ? "current-password" : "new-password"}
-              minLength={6}
+              pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$"
+              title="Must be at least 8 characters with uppercase, lowercase, and number"
+              minLength={8}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder={isLogin ? "你嘅 password" : "至少 6 個字元"}
+              placeholder={isLogin ? "你嘅 password" : "至少 8 個字元"}
               disabled={!!loading}
               className="w-full rounded-xl border border-ink-200 bg-white py-2.5 pl-9 pr-3 text-sm focus:border-accent-500 focus:outline-none disabled:opacity-50 dark:border-ink-800 dark:bg-ink-900"
             />
           </div>
+          {strength && (
+            <div className="mt-1.5 flex items-center gap-2">
+              <div className="flex flex-1 gap-0.5">
+                {[1,2,3,4,5].map(i => (
+                  <div key={i} className={`h-1 flex-1 rounded-full ${i <= strength.score ? strength.color : "bg-ink-200 dark:bg-ink-700"}`} />
+                ))}
+              </div>
+              <span className="text-xs text-ink-400">{strength.label}</span>
+            </div>
+          )}
         </div>
 
         {error && (
@@ -227,9 +250,13 @@ function translateError(msg: string): string {
   if (msg.includes("Invalid login credentials")) return "Email 或 password 唔啱";
   if (msg.includes("Email not confirmed"))
     return "Email 仲未驗證，請去 inbox 撳確認 link";
-  if (msg.includes("already registered"))
+  if (msg.includes("already registered") || msg.includes("User already registered"))
     return "呢個 email 已經註冊咗，去登入頁吧";
-  if (msg.includes("Password should be at least"))
-    return "Password 至少要 6 個字元";
-  return msg;
+  if (msg.includes("Password should be at least") || msg.includes("too short"))
+    return "Password 至少要 8 個字元";
+  if (msg.includes("Invalid email")) return "Email 格式唔啱";
+  if (msg.includes("Not authorized")) return "無權訪問，請重新登入";
+  if (msg.includes("Signup is disabled")) return "暫時未能註冊，請稍後再試";
+  if (msg.includes("Rate limit")) return "太多次嘗試，請稍後再試";
+  return "登入或註冊失敗，請再試";
 }

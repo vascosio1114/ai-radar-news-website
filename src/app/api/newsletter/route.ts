@@ -27,7 +27,8 @@ export async function POST(request: Request) {
     email = body.email || "";
     dailyOptIn = body.daily_opt_in === true;
 
-    if (!email || typeof email !== "string" || !email.includes("@")) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || typeof email !== "string" || !emailRegex.test(email)) {
       return NextResponse.json({ error: "Invalid email" }, { status: 400 });
     }
 
