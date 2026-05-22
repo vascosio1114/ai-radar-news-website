@@ -1,4 +1,16 @@
 // Pure client-side email HTML builder — no server dependencies
+function escapeHtml(text: string): string {
+  return text.replace(/[&<>"']/g, (c) => {
+    switch (c) {
+      case "&": return "&amp;";
+      case "<": return "&lt;";
+      case ">": return "&gt;";
+      case '"': return "&quot;";
+      case "'": return "&#39;";
+    }
+  });
+}
+
 export function buildDigestHtml(params: {
   headerHtml: string;
   footerHtml: string;
@@ -27,7 +39,7 @@ export function buildDigestHtml(params: {
           ${imgTag}
           <h3 style="margin:0 0 8px;font-size:18px;"><a href="${a.url}" style="color:#1a1a1a;text-decoration:none;">${a.title}</a></h3>
           <p style="margin:0 0 8px;color:#666;font-size:14px;">${date}</p>
-          <p style="margin:0;color:#333;font-size:15px;">${a.excerpt}</p>
+          <p style="margin:0;color:#333;font-size:15px;">${escapeHtml(a.excerpt)}</p>
           <a href="${a.url}" style="display:inline-block;margin-top:12px;font-size:14px;color:#2563eb;text-decoration:none;">Read more →</a>
         </div>
       `;

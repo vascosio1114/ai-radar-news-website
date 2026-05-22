@@ -53,19 +53,25 @@ export function CommunityFeed({ initialThreads = [] }: CommunityFeedProps) {
   }, [fetchThreads, initialThreads.length]);
 
   // Infinite scroll via IntersectionObserver
+  const threadsCountRef = useRef(0);
   useEffect(() => {
     if (!hasMore || loading) return;
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
-          fetchThreads(threads.length);
+          fetchThreads(threadsCountRef.current);
         }
       },
       { threshold: 0.1 }
     );
     if (observerRef.current) observer.observe(observerRef.current);
     return () => observer.disconnect();
-  }, [hasMore, loading, fetchThreads, threads.length]);
+  }, [hasMore, loading, fetchThreads]);
+
+  // Track thread count for pagination
+  useEffect(() => {
+    threadsCountRef.current = threads.length;
+  }, [threads.length]);
 
   // Like toggle
   const handleLike = useCallback(

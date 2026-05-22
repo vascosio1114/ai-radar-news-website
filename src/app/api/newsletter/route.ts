@@ -49,6 +49,31 @@ export async function POST(request: Request) {
 
     const supabase = createSupabaseServerClient();
 
+    // Check if already confirmed in mail_subscribers
+    const { data: existingConfirm } = await supabase
+      .from("mail_subscribers")
+      .select("is_confirmed")
+      .eq("email", email.toLowerCase())
+      .eq("is_confirmed", true)
+      .single();
+
+    // Also check newsletter_subscribers for legacy confirmed users
+    const { data: legacyConfirm } = await supabase
+      .from("newsletter_subscribers")
+      .select("is_confirmed")
+      .eq("email", email.toLowerCase())
+      .eq("is_confirmed", true)
+      .single();
+
+    if (existingConfirm || legacyConfirm) {
+      return NextResponse.json({
+        ok: true,
+        needConfirm: false,
+        alreadyConfirmed: true,
+        remaining,
+      });
+    }
+
     // Always insert into newsletter_subscribers (legacy)
     try {
       await supabase.from("newsletter_subscribers").insert({ email });
