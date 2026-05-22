@@ -133,6 +133,10 @@ do $$ begin
     views               int default 0,
     summary_content     text,
     summary_content_zh  text,
+    title_zh            text,
+    excerpt_zh          text,
+    content_zh          text,
+    content_html        text,
     created_at          timestamptz default now(),
     updated_at          timestamptz default now()
   );

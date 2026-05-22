@@ -47,23 +47,19 @@ export type MailSettings = {
   email_footer_html: string;
 };
 
-export async function sendHtmlEmail(
-  settings: MailSettings,
-  to: string,
-  subject: string,
-  htmlBody: string
-): Promise<{ sent: boolean; error?: string }> {
-  const key = Buffer.from(
-    process.env.MAIL_ENCRYPTION_KEY || "",
-    "hex"
-  );
-  if (key.length !== 32) {
-    return { sent: false, error: "MAIL_ENCRYPTION_KEY must be 32 bytes (64 hex chars)" };
-  }
+let transporter: nodemailer.Transporter | null = null;
 
+function getTransporter(settings: MailSettings): nodemailer.Transporter {
+  if (transporter) return transporter;
+
+  const key = Buffer.from(process.env.MAIL_ENCRYPTION_KEY || "", "hex");
+  if (key.length !== 32) {
+    throw new Error("MAIL_ENCRYPTION_KEY must be 32 bytes (64 hex chars)");
+  }
   const password = decryptPassword(settings.smtp_pass_encrypted, key);
 
-  const transporter = nodemailer.createTransport({
+  transporter = nodemailer.createTransport({
+    pool: true,
     host: settings.smtp_host,
     port: settings.smtp_port,
     secure: settings.smtp_port === 465,
@@ -72,14 +68,33 @@ export async function sendHtmlEmail(
       pass: password,
     },
   });
+  return transporter;
+}
 
+export async function sendHtmlEmail(
+  settings: MailSettings,
+  to: string,
+  subject: string,
+  htmlBody: string,
+  signal?: AbortSignal
+): Promise<{ sent: boolean; error?: string }> {
   try {
-    await transporter.sendMail({
-      from: `"${settings.smtp_from_name}" <${settings.smtp_from_address}>`,
-      to,
-      subject,
-      html: htmlBody,
-    });
+    const transport = getTransporter(settings);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+    if (signal) {
+      signal.addEventListener("abort", () => controller.abort());
+    }
+    try {
+      await transport.sendMail({
+        from: `"${settings.smtp_from_name}" <${settings.smtp_from_address}>`,
+        to,
+        subject,
+        html: htmlBody,
+      }, { signal: controller.signal as AbortSignal });
+    } finally {
+      clearTimeout(timeout);
+    }
     return { sent: true };
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : String(e);

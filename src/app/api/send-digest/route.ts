@@ -82,17 +82,20 @@ export async function GET(request: Request) {
   let sent = 0;
   const errors: string[] = [];
 
-  for (const sub of subscribers) {
-    const result = await sendHtmlEmail(
-      settings,
-      sub.email,
-      subject,
-      html
+  const BATCH_SIZE = 10;
+
+  for (let i = 0; i < subscribers.length; i += BATCH_SIZE) {
+    const batch = subscribers.slice(i, i + BATCH_SIZE);
+    const results = await Promise.all(
+      batch.map((sub) =>
+        sendHtmlEmail(settings, sub.email, subject, html)
+          .then((result) => ({ email: sub.email, ...result }))
+          .catch((err) => ({ email: sub.email, sent: false, error: err instanceof Error ? err.message : String(err) }))
+      )
     );
-    if (result.sent) {
-      sent++;
-    } else {
-      errors.push(`${sub.email}: ${result.error}`);
+    for (const r of results) {
+      if (r.sent) sent++;
+      else errors.push(`${r.email}: ${r.error}`);
     }
   }
 
