@@ -14,17 +14,23 @@ import UnlockFullArticleCTA from "@/components/summarize/UnlockFullArticleCTA";
 type Props = { params: { lang: string; slug: string } };
 
 export async function generateStaticParams() {
-  return MOCK_ARTICLES.map((a) => ({ slug: a.slug }));
+  // Fetch all published article slugs from DB for static generation
+  const supabase = createSupabaseServerClient();
+  const { data: article } = await supabase
+    .from("articles_public")
+    .select("slug")
+    .eq("is_published", true);
+
+  return (article ?? MOCK_ARTICLES).map((a) => ({ slug: a.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const lang = params.lang as Lang;
   const supabase = createSupabaseServerClient();
   const { data: article } = await supabase
-    .from("articles")
+    .from("articles_public")
     .select("*")
     .eq("slug", params.slug)
-    .eq("is_published", true)
     .single();
 
   if (!article) return {};
@@ -46,12 +52,11 @@ export default async function SummaryPage({ params }: Props) {
     return NextResponse.redirect(`/${lang}/news/${params.slug}`);
   }
 
-  // Fetch article (same pattern as news page)
+  // Fetch article from articles_public view (auth-gated - unauthenticated only see summary_content)
   const { data: article } = await supabase
-    .from("articles")
+    .from("articles_public")
     .select("*")
     .eq("slug", params.slug)
-    .eq("is_published", true)
     .single();
 
   const mockArticle = MOCK_ARTICLES.find((a) => a.slug === params.slug);

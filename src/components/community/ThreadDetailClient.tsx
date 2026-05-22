@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, MessageCircle, Loader2 } from "lucide-react";
+import DOMPurify from "isomorphic-dompurify";
 import { CommentLikeButton } from "@/components/community/CommentLikeButton";
 import { BotBadge } from "@/components/community/BotBadge";
 import { LikeButton } from "@/components/community/LikeButton";
@@ -175,7 +176,7 @@ export function ThreadDetailClient({ threadId, initialThread, initialComments }:
           </div>
         </div>
 
-        <p className="whitespace-pre-wrap text-base leading-relaxed">{thread.content}</p>
+        <p className="whitespace-pre-wrap text-base leading-relaxed">{DOMPurify.sanitize(thread.content)}</p>
 
         {thread.image_url && (
           <div className="mt-4 relative aspect-[16/9] w-full overflow-hidden rounded-xl">
@@ -258,7 +259,7 @@ export function ThreadDetailClient({ threadId, initialThread, initialComments }:
                   {comment.is_bot_comment && <BotBadge />}
                   <span className="text-xs text-ink-400">{timeAgo(comment.created_at)}</span>
                 </div>
-                <p className="whitespace-pre-wrap text-sm">{comment.content}</p>
+                <p className="whitespace-pre-wrap text-sm">{DOMPurify.sanitize(comment.content)}</p>
                 <div className="mt-3 flex items-center gap-3">
                   <CommentLikeButton
                     count={comment.like_count}
@@ -296,7 +297,7 @@ export function ThreadDetailClient({ threadId, initialThread, initialComments }:
                       {reply.is_bot_comment && <BotBadge />}
                       <span className="text-xs text-ink-400">{timeAgo(reply.created_at)}</span>
                     </div>
-                    <p className="whitespace-pre-wrap text-sm">{reply.content}</p>
+                    <p className="whitespace-pre-wrap text-sm">{DOMPurify.sanitize(reply.content)}</p>
                     <div className="mt-2">
                       <CommentLikeButton
                         count={reply.like_count}

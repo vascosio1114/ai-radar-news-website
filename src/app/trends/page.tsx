@@ -1,14 +1,22 @@
 import type { Metadata } from "next";
 import { ArticleCard } from "@/components/cards/ArticleCard";
-import { MOCK_ARTICLES } from "@/data/mock";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "趨勢分析",
   description: "AI 行業深度趨勢分析。",
 };
 
-export default function TrendsPage() {
-  const articles = MOCK_ARTICLES.filter((a) => a.category === "趨勢分析");
+export default async function TrendsPage() {
+  const supabase = createSupabaseServerClient();
+  const { data } = await supabase
+    .from("articles_public")
+    .select("*")
+    .eq("is_published", true)
+    .eq("category", "趨勢分析")
+    .order("published_at", { ascending: false });
+
+  const articles = data ?? [];
 
   return (
     <div className="container-page section-pad">
@@ -26,7 +34,7 @@ export default function TrendsPage() {
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {articles.map((a) => (
-          <ArticleCard key={a.id} article={a} />
+          <ArticleCard key={a.id} article={a} lang="zh" />
         ))}
       </div>
     </div>

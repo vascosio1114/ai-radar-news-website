@@ -136,12 +136,12 @@ export default function ArticleForm({
 
     const { data, error } = await supabase.storage
       .from("covers")
-      .upload(fileName, file, { upsert: true });
+      .upload(filename, file, { upsert: true });
 
     if (!error && data) {
       const { data: urlData } = supabase.storage
         .from("covers")
-        .getPublicUrl(fileName);
+        .getPublicUrl(filename);
       setFormData((prev) => ({ ...prev, cover_image: urlData.publicUrl }));
     }
     setUploading(false);

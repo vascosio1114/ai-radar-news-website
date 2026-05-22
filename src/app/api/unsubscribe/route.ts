@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { validateUnsubscribeToken } from "@/lib/unsubscribe-token";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -9,11 +10,9 @@ export async function GET(request: Request) {
     return new Response("Missing unsubscribe token.", { status: 400 });
   }
 
-  let payload: { email: string };
-  try {
-    payload = JSON.parse(Buffer.from(token, "base64url").toString("utf8"));
-  } catch {
-    return new Response("Invalid unsubscribe link.", { status: 400 });
+  const payload = validateUnsubscribeToken(token);
+  if (!payload) {
+    return new Response("Invalid or expired unsubscribe link.", { status: 400 });
   }
 
   const supabase = createSupabaseAdminClient();

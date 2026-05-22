@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Newspaper, Wrench, GraduationCap, Eye, Mail, Send, Loader2 } from "lucide-react";
+import { Newspaper, Wrench, GraduationCap, Eye, Mail, Send, Loader2, Users } from "lucide-react";
 import { buildDigestHtml } from "@/lib/digest-html";
 import { MailSubscribers } from "@/components/admin/MailSubscribers";
 
@@ -58,6 +58,7 @@ export default function AdminDashboardPage() {
     tools: 0,
     tutorials: 0,
     views: 0,
+    users: 0,
   });
   const [activeMailTab, setActiveMailTab] = useState<"settings" | "subscribers">("settings");
 
@@ -102,6 +103,7 @@ export default function AdminDashboardPage() {
             tools: data.tools ?? 0,
             tutorials: data.tutorials ?? 0,
             views: data.views ?? 0,
+            users: data.users ?? 0,
           });
         }
       });
@@ -157,6 +159,7 @@ export default function AdminDashboardPage() {
     { label: "工具總數", value: stats.tools.toString(), icon: Wrench },
     { label: "教學總數", value: stats.tutorials.toString(), icon: GraduationCap },
     { label: "本月瀏覽", value: stats.views > 0 ? stats.views.toLocaleString() : "—", icon: Eye },
+    { label: "Users", value: stats.users.toString(), icon: Users },
   ];
 
   return (

@@ -1,30 +1,44 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
-import type { Article } from "@/types";
 import type { Lang } from "@/lib/site";
 import { formatDate } from "@/lib/utils";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 interface RelatedArticlesProps {
-  articles: Article[];
   currentSlug: string;
   lang?: Lang;
+  category?: string;
 }
 
 /**
- * Shows related articles based on matching tags/category.
+ * Shows related articles based on matching category, fetched from DB.
  */
-export default function RelatedArticles({ articles, currentSlug, lang = "zh" }: RelatedArticlesProps) {
-  // Filter out current article
-  const related = articles.filter((a) => a.slug !== currentSlug).slice(0, 3);
+export default async function RelatedArticles({ currentSlug, lang = "zh", category }: RelatedArticlesProps) {
+  const supabase = createSupabaseServerClient();
+  const { data: articles } = category
+    ? await supabase
+        .from("articles_public")
+        .select("id, slug, title, cover_image, category, published_at, is_published")
+        .eq("is_published", true)
+        .neq("slug", currentSlug)
+        .limit(6)
+    : await supabase
+        .from("articles_public")
+        .select("id, slug, title, cover_image, category, published_at, is_published")
+        .eq("is_published", true)
+        .neq("slug", currentSlug)
+        .limit(3);
 
-  if (related.length === 0) return null;
+  const filtered = (articles ?? []).filter((a) => a.slug !== currentSlug).slice(0, 3);
+
+  if (filtered.length === 0) return null;
 
   return (
     <section className="mt-12">
       <h2 className="mb-6 font-display text-xl font-semibold">相關文章</h2>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {related.map((article) => (
+        {filtered.map((article) => (
           <Link
             key={article.id}
             href={`/${lang}/news/${article.slug}`}

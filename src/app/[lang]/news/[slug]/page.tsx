@@ -19,17 +19,24 @@ import RelatedArticles from "@/components/markdown/RelatedArticles";
 type Props = { params: { lang: string; slug: string } };
 
 export async function generateStaticParams() {
-  return MOCK_ARTICLES.map((a) => ({ slug: a.slug }));
+  // Fetch all published article slugs from DB for static generation
+  const supabase = createSupabaseServerClient();
+  const { data: article } = await supabase
+    .from("articles_public")
+    .select("slug")
+    .eq("is_published", true);
+
+  return (article ?? MOCK_ARTICLES).map((a) => ({ slug: a.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const lang = params.lang as Lang;
   const supabase = createSupabaseServerClient();
+  // Use articles_public view for auth gating
   const { data: article } = await supabase
-    .from("articles")
+    .from("articles_public")
     .select("*")
     .eq("slug", params.slug)
-    .eq("is_published", true)
     .single();
 
   if (!article) return {};
@@ -58,11 +65,11 @@ export default async function ArticlePage({ params }: Props) {
     return NextResponse.redirect(`/${lang}/summarize/${params.slug}`);
   }
 
+  // Use articles_public view for auth-gated content
   const { data: article } = await supabase
-    .from("articles")
+    .from("articles_public")
     .select("*")
     .eq("slug", params.slug)
-    .eq("is_published", true)
     .single();
 
   const mockArticle = MOCK_ARTICLES.find((a) => a.slug === params.slug);
@@ -160,11 +167,7 @@ export default async function ArticlePage({ params }: Props) {
         </div>
 
         <div className="mt-12 border-t border-ink-200 pt-8 dark:border-ink-800">
-          <RelatedArticles
-            articles={MOCK_ARTICLES}
-            currentSlug={params.slug}
-            lang={lang}
-          />
+          <RelatedArticles currentSlug={params.slug} lang={lang} category={localized.category ?? ""} />
         </div>
       </div>
     </article>

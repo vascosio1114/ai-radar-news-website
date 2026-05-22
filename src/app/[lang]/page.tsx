@@ -14,10 +14,10 @@ export default async function HomePage({ params }: Props) {
   const supabase = createSupabaseServerClient();
 
   const [latestResult, jobImpact] = await Promise.all([
+    // Use articles_public to respect auth gating - unauthenticated only see summary_content
     supabase
-      .from("articles")
+      .from("articles_public")
       .select("*")
-      .eq("is_published", true)
       .order("published_at", { ascending: false })
       .limit(6),
     getJobImpactTrend(),
