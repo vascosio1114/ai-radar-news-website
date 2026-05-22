@@ -8,7 +8,11 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
-  const next = url.searchParams.get("next") ?? "/";
+  const rawNext = url.searchParams.get("next");
+  const safeNext =
+    rawNext && !rawNext.includes("://") && !rawNext.startsWith("data:")
+      ? rawNext
+      : "/";
 
   if (code) {
     const supabase = createSupabaseServerClient();
@@ -21,5 +25,5 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.redirect(new URL(next, request.url));
+  return NextResponse.redirect(new URL(safeNext, request.url));
 }

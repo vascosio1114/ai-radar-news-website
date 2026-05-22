@@ -16,8 +16,13 @@ export default async function SignupPage({
   searchParams: { next?: string };
 }) {
   const user = await getUser();
+  const rawNext = searchParams.next;
+  const safeNext =
+    rawNext && !rawNext.includes("://") && !rawNext.startsWith("data:")
+      ? rawNext
+      : `/${params.lang}`;
   if (user) {
-    redirect(searchParams.next || `/${params.lang}`);
+    redirect(safeNext);
   }
 
   return (

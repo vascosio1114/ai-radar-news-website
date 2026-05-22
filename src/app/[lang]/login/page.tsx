@@ -17,8 +17,13 @@ export default async function LoginPage({
 }) {
   // 已 login 就 redirect
   const user = await getUser();
+  const rawNext = searchParams.next;
+  const safeNext =
+    rawNext && !rawNext.includes("://") && !rawNext.startsWith("data:")
+      ? rawNext
+      : `/${params.lang}`;
   if (user) {
-    redirect(searchParams.next || `/${params.lang}`);
+    redirect(safeNext);
   }
 
   return (

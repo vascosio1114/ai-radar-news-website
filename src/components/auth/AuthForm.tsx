@@ -17,7 +17,11 @@ export function AuthForm({
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const nextUrl = searchParams.get("next") || `/${lang}`;
+  const rawNext = searchParams.get("next");
+  const nextUrl =
+    rawNext && !rawNext.includes("://") && !rawNext.startsWith("data:")
+      ? rawNext
+      : `/${lang}`;
 
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
