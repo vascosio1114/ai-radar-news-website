@@ -30,7 +30,7 @@ export function ArticleCard({
         {article.cover_image && (
           <div className="relative aspect-[16/10] w-full overflow-hidden">
             <Image
-              src={article.cover_image}
+              src={article.cover_image || FALLBACK_COVER}
               alt={localized.title}
               fill
               sizes="(min-width: 1024px) 60vw, 100vw"
@@ -74,7 +74,7 @@ export function ArticleCard({
         {article.cover_image && (
           <div className="relative h-20 w-28 shrink-0 overflow-hidden rounded-xl">
             <Image
-              src={article.cover_image}
+              src={article.cover_image || FALLBACK_COVER}
               alt={localized.title}
               fill
               sizes="120px"
@@ -105,7 +105,7 @@ export function ArticleCard({
       {article.cover_image && (
         <div className="relative aspect-[16/10] w-full overflow-hidden">
           <Image
-            src={article.cover_image}
+            src={article.cover_image || FALLBACK_COVER}
             alt={localized.title}
             fill
             sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"

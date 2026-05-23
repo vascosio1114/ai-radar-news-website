@@ -11,10 +11,10 @@ export default async function NewsPage({ params }: Props) {
   const s = getUIStrings(lang);
 
   const supabase = createSupabaseServerClient();
+  // Use articles_public to respect auth gating - unauthenticated users get masked content
   const { data } = await supabase
-    .from("articles")
+    .from("articles_public")
     .select("*")
-    .eq("is_published", true)
     .order("published_at", { ascending: false });
 
   const articles = lang === "en"

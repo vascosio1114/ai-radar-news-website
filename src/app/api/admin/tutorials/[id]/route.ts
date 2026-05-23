@@ -16,6 +16,16 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_admin")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile?.is_admin) {
+      return NextResponse.json({ error: "Admin access required" }, { status: 403 });
+    }
+
     const { error } = await supabase.from("tutorials").delete().eq("id", id);
 
     if (error) {
@@ -41,6 +51,16 @@ export async function PATCH(
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_admin")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile?.is_admin) {
+      return NextResponse.json({ error: "Admin access required" }, { status: 403 });
     }
 
     const { error } = await supabase

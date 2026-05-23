@@ -31,7 +31,7 @@ export async function GET(
   // Send welcome email with unsubscribe link
   const unsubToken = generateUnsubscribeToken(email);
   const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://ai-radar.com";
-  const unsubUrl = `${SITE_URL}/api/unsubscribe?token=${Buffer.from(JSON.stringify({ email, unsubToken })).toString("base64url")}`;
+  const unsubUrl = `${SITE_URL}/api/unsubscribe?token=${unsubToken}`;
 
   const { data: settings } = await supabase
     .from("mail_settings")

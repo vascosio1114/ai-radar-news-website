@@ -71,20 +71,7 @@ export async function POST(
         author_id: user.id,
         content,
       })
-      .select(`
-        id,
-        thread_id,
-        parent_comment_id,
-        content,
-        is_bot_comment,
-        like_count,
-        created_at,
-        author:auth.users!author_id(
-          id,
-          email,
-          raw_user_meta_data
-        )
-      `)
+      .select("id")
       .single();
 
     if (error) {
@@ -92,10 +79,22 @@ export async function POST(
       return NextResponse.json({ error: "Failed to create comment" }, { status: 500 });
     }
 
+    // Fetch the comment with the author join
+    const { data: newComment, error: fetchError } = await supabase
+      .from("thread_comments")
+      .select(`*, authorCM:profiles!author_id(id, display_name, avatar_url, raw_user_meta_data)`)
+      .eq("id", comment.id)
+      .single();
+
+    if (fetchError) {
+      communityLogger.error({ err: fetchError }, "Failed to fetch comment with author");
+      return NextResponse.json({ error: "Failed to create comment" }, { status: 500 });
+    }
+
     // Update denormalized comment_count on thread
     await supabase.rpc("increment_comment_count", { thread_id: threadId });
 
-    return NextResponse.json({ comment }, { status: 201 });
+    return NextResponse.json({ comment: newComment }, { status: 201 });
   } catch (e) {
     communityLogger.error({ err: e }, "Unexpected error creating comment");
     return NextResponse.json({ error: "Server error" }, { status: 500 });

@@ -6,6 +6,10 @@ export async function POST(request: Request) {
   await supabase.auth.signOut();
 
   const url = new URL(request.url);
-  const next = url.searchParams.get("next") || "/";
-  return NextResponse.redirect(new URL(next, request.url), { status: 303 });
+  const rawNext = url.searchParams.get("next");
+  const safeNext =
+    rawNext && !rawNext.includes("://") && !rawNext.startsWith("data:")
+      ? rawNext
+      : "/";
+  return NextResponse.redirect(new URL(safeNext, request.url), { status: 303 });
 }

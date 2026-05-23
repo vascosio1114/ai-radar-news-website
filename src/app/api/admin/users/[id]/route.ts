@@ -2,10 +2,15 @@ import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { logger } from "@/lib/logger";
 
-const log = logger.child({ component: "admin-tutorials" });
+const log = logger.child({ component: "admin-users-id" });
 
-export async function GET() {
+export async function PATCH(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
+    const { id } = await params;
+    const body = await req.json();
     const supabase = createSupabaseAdminClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -22,19 +27,19 @@ export async function GET() {
       return NextResponse.json({ error: "Admin access required" }, { status: 403 });
     }
 
-    const { data, error } = await supabase
-      .from("tutorials")
-      .select("*")
-      .order("created_at", { ascending: false });
+    const { error } = await supabase
+      .from("profiles")
+      .update({ is_admin: body.is_admin })
+      .eq("id", id);
 
     if (error) {
-      log.error({ err: error }, "Failed to fetch tutorials");
+      log.error({ err: error, id }, "Failed to update user");
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ tutorials: data });
+    return NextResponse.json({ ok: true });
   } catch (e) {
-    log.error({ err: e }, "Unexpected error fetching tutorials");
+    log.error({ err: e }, "Unexpected error updating user");
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

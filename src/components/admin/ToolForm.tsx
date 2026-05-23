@@ -96,7 +96,9 @@ export default function ToolForm({
 
     setUploading(true);
     const supabase = createSupabaseBrowserClient();
-    const fileName = `logos/${Date.now()}-${file.name.replace(/\s/g, "-")}`;
+    const safeName = file.name.replace(/[^a-zA-Z0-9.]+/g, "_").replace(/^_+|_+$/g, "");
+    const [name, ext] = safeName.split(".");
+    const fileName = `logos/${Date.now()}-${name.slice(0, 50)}.${ext}`;
 
     const { data, error } = await supabase.storage
       .from("covers")

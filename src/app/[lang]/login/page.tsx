@@ -20,8 +20,13 @@ export function generateMetadata({ params }: { params: { lang: string } }): Meta
 
 export default async function LoginPage({ params, searchParams }: Props) {
   const user = await getUser();
+  const rawNext = searchParams.next;
+  const safeNext =
+    rawNext && !rawNext.includes("://") && !rawNext.startsWith("data:")
+      ? rawNext
+      : `/${params.lang}`;
   if (user) {
-    redirect(searchParams.next || `/${params.lang}`);
+    redirect(safeNext);
   }
 
   return (

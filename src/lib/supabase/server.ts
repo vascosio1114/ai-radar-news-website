@@ -27,14 +27,14 @@ export function createSupabaseServerClient() {
         },
         set(name: string, value: string, options: CookieOptions) {
           try {
-            cookieStore.set({ name, value, ...options });
+            cookieStore.set({ name, value, ...options, secure: true });
           } catch {
             // ignored when called from a Server Component
           }
         },
         remove(name: string, options: CookieOptions) {
           try {
-            cookieStore.set({ name, value: "", ...options });
+            cookieStore.set({ name, value: "", ...options, secure: true });
           } catch {
             // ignored when called from a Server Component
           }

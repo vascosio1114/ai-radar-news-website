@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { MessageCircle, Share2, ExternalLink } from "lucide-react";
+import DOMPurify from "isomorphic-dompurify";
 import { LikeButton } from "@/components/community/LikeButton";
 import { BotBadge } from "@/components/community/BotBadge";
 import { timeAgo } from "@/lib/utils";
@@ -46,7 +47,7 @@ export function ThreadCard({ thread, liked = false, onLike, currentUserId, lang 
       {/* Content */}
       <Link href={`/${lang}/community/${thread.id}`} className="block">
         <p className="mb-3 line-clamp-4 whitespace-pre-wrap text-sm leading-relaxed">
-          {thread.content.length > 150 ? thread.content.slice(0, 150) + "…" : thread.content}
+          {DOMPurify.sanitize(thread.content.length > 150 ? thread.content.slice(0, 150) + "…" : thread.content)}
         </p>
       </Link>
 
@@ -79,6 +80,7 @@ export function ThreadCard({ thread, liked = false, onLike, currentUserId, lang 
                 fill
                 sizes="96px"
                 className="object-cover"
+                onError={(e) => { e.currentTarget.style.display = "none"; }}
               />
             </div>
           )}
