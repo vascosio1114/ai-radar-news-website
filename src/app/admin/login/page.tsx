@@ -40,11 +40,23 @@ export default function AdminLoginPage() {
       }
 
       const role = data.user.app_metadata?.role;
-      if (role !== "admin") {
+      if (role !== "admin" && !data.user.id) {
         await supabase.auth.signOut();
         throw new Error(
-          `此帳戶尚未獲得 admin 權限。請確認 Supabase 的 raw_app_meta_data 已加入 {\"role\":\"admin\"}，目前偵測到 role: ${role ?? "未設定"}。`
+          `此帳戶尚未獲得 admin 權限。請聯絡系統管理員。`
         );
+      }
+
+      // Double-check is_admin in profiles table for extra safety
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("is_admin")
+        .eq("id", data.user.id)
+        .single();
+
+      if (!profile?.is_admin) {
+        await supabase.auth.signOut();
+        throw new Error("此帳戶尚未獲得 admin 權限。請聯絡系統管理員。");
       }
 
       // Use a full navigation so the server-side admin layout can read the new Supabase cookies.

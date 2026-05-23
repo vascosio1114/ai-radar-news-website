@@ -21,6 +21,16 @@ async function checkAuth() {
   if (!user) {
     redirect("/admin/login");
   }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("is_admin")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile?.is_admin) {
+    redirect("/admin/login");
+  }
 }
 
 export default async function AdminDashboardLayout({
