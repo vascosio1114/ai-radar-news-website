@@ -1,26 +1,16 @@
 import { NextResponse } from "next/server";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { requireAdminApi } from "@/lib/admin-auth";
 import { logger } from "@/lib/logger";
+
+export const dynamic = "force-dynamic";
 
 const log = logger.child({ component: "admin-articles" });
 
 export async function GET() {
   try {
-    const supabase = createSupabaseAdminClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("is_admin")
-      .eq("id", user.id)
-      .single();
-
-    if (!profile?.is_admin) {
-      return NextResponse.json({ error: "Admin access required" }, { status: 403 });
-    }
+    const auth = await requireAdminApi();
+    if (!auth.ok) return auth.response;
+    const supabase = auth.adminDb;
 
     const { data, error } = await supabase
       .from("articles")
@@ -62,7 +52,9 @@ function estimateReadingTime(content: string) {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const supabase = createSupabaseAdminClient();
+    const auth = await requireAdminApi();
+    if (!auth.ok) return auth.response;
+    const supabase = auth.adminDb;
     const publishedAt = body.published_at
       ? new Date(body.published_at).toISOString()
       : new Date().toISOString();
@@ -72,11 +64,16 @@ export async function POST(req: Request) {
     const { data, error } = await supabase
       .from("articles")
       .insert({
-        title: body.title_zh || body.title,
+        title: body.title || body.title_zh || "Untitled",
+        title_zh: body.title_zh || body.title || null,
         slug,
-        excerpt: body.excerpt_zh || body.excerpt || "",
+        excerpt: body.excerpt || body.excerpt_zh || "",
+        excerpt_zh: body.excerpt_zh || body.excerpt || null,
         cover_image: body.cover_image || null,
-        content: body.content_zh || body.content || null,
+        content: body.content || body.content_zh || null,
+        content_zh: body.content_zh || body.content || null,
+        summary_content: body.summary_content || null,
+        summary_content_zh: body.summary_content_zh || null,
         category: body.category || "AI 文章",
         tags: Array.isArray(body.tags) ? body.tags : [],
         author: body.author || "RADAR AI Studio",

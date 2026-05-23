@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 function translateLoginError(message: string) {
@@ -16,11 +17,18 @@ function translateLoginError(message: string) {
 }
 
 export default function AdminLoginPage() {
+  const searchParams = useSearchParams();
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("error") === "not_admin") {
+      setError("此帳戶尚未獲授管理員權限。請確認 Supabase Auth 的 raw_app_meta_data.role 為 admin，或 profiles.is_admin 為 true。");
+    }
+  }, [searchParams]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,15 +47,8 @@ export default function AdminLoginPage() {
         throw new Error("登入未能建立 session，請確認帳戶是否已完成電郵驗證。");
       }
 
-      const role = data.user.app_metadata?.role;
-      if (role !== "admin") {
-        await supabase.auth.signOut();
-        throw new Error(
-          `此帳戶尚未獲得 admin 權限。請確認 Supabase 的 raw_app_meta_data 已加入 {\"role\":\"admin\"}，目前偵測到 role: ${role ?? "未設定"}。`
-        );
-      }
-
-      // Use a full navigation so the server-side admin layout can read the new Supabase cookies.
+      // Use a full navigation so the server-side admin layout can read the new Supabase cookies
+      // and perform the final admin permission check server-side.
       window.location.assign("/admin");
     } catch (err) {
       setError(translateLoginError((err as Error).message));

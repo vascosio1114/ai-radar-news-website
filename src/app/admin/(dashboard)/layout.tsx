@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LayoutDashboard, Newspaper, Wrench, GraduationCap, Bot, Users } from "lucide-react";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getCurrentAdmin } from "@/lib/admin-auth";
 
 const ADMIN_NAV = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -13,13 +13,14 @@ const ADMIN_NAV = [
 ];
 
 async function checkAuth() {
-  const supabase = createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const admin = await getCurrentAdmin();
 
-  if (!user) {
+  if (!admin.user) {
     redirect("/admin/login");
+  }
+
+  if (!admin.isAdmin) {
+    redirect("/admin/login?error=not_admin");
   }
 }
 

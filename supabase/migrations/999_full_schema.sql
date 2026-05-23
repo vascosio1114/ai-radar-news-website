@@ -349,6 +349,7 @@ do $$ begin
     display_name      text,
     avatar_url        text,
     newsletter_optin  boolean default true,
+    is_admin          boolean not null default false,
     created_at        timestamptz default now(),
     updated_at        timestamptz default now()
   );
@@ -356,6 +357,10 @@ exception when duplicate_table then null;
 end $$;
 do $$ begin
   create index profiles_email_idx on public.profiles (email);
+exception when duplicate_index then null;
+end $$;
+do $$ begin
+  create index profiles_is_admin_idx on public.profiles (is_admin) where is_admin = true;
 exception when duplicate_index then null;
 end $$;
 

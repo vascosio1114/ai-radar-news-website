@@ -1,39 +1,31 @@
 import { NextResponse } from "next/server";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { requireAdminApi } from "@/lib/admin-auth";
 import { logger } from "@/lib/logger";
+
+export const dynamic = "force-dynamic";
 
 const log = logger.child({ component: "admin-users" });
 
 export async function GET() {
   try {
-    const supabase = createSupabaseAdminClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = await requireAdminApi();
+    if (!auth.ok) return auth.response;
+    const supabase = auth.adminDb;
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("is_admin")
-      .eq("id", user.id)
-      .single();
-
-    if (!profile?.is_admin) {
-      return NextResponse.json({ error: "Admin access required" }, { status: 403 });
-    }
-
-    // Get all users with their profile is_admin status
-    const { data: authUsers, error: authError } = await supabase
-      .from("auth.users")
-      .select("id, email, created_at, last_sign_in_at")
-      .order("created_at", { ascending: false });
+    // Get all Auth users with their profile is_admin status. Auth users live in the
+    // private auth schema, so use the Admin Auth API instead of querying auth.users.
+    const { data: authData, error: authError } = await supabase.auth.admin.listUsers({
+      page: 1,
+      perPage: 1000,
+    });
 
     if (authError) {
       log.error({ err: authError }, "Failed to fetch users");
       return NextResponse.json({ error: authError.message }, { status: 500 });
     }
 
-    const userIds = authUsers?.map((u) => u.id) || [];
+    const authUsers = authData.users;
+    const userIds = authUsers.map((u) => u.id);
     const { data: profiles, error: profileError } = await supabase
       .from("profiles")
       .select("id, is_admin")
@@ -50,7 +42,7 @@ export async function GET() {
       email: u.email,
       created_at: u.created_at,
       last_sign_in_at: u.last_sign_in_at,
-      is_admin: profileMap.get(u.id)?.is_admin ?? false,
+      is_admin: u.app_metadata?.role === "admin" || profileMap.get(u.id)?.is_admin === true,
     })) || [];
 
     return NextResponse.json({ users });

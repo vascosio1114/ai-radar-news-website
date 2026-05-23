@@ -1,17 +1,15 @@
 import { NextResponse } from "next/server";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireAdminApi } from "@/lib/admin-auth";
 import { sendHtmlEmail } from "@/lib/mail";
 import { buildDigestHtml } from "@/lib/digest-html";
 
-export async function POST(request: Request) {
-  const adminDb = createSupabaseAdminClient();
-  const serverClient = createSupabaseServerClient();
+export const dynamic = "force-dynamic";
 
-  const { data: { user } } = await serverClient.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export async function POST(request: Request) {
+  const auth = await requireAdminApi();
+  if (!auth.ok) return auth.response;
+  const adminDb = auth.adminDb;
+  const user = auth.user;
 
   const body = await request.json().catch(() => ({}));
   const overrideEmail = body.to;

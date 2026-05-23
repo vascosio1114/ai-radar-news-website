@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { requireAdminApi } from "@/lib/admin-auth";
 import { logger } from "@/lib/logger";
+
+export const dynamic = "force-dynamic";
 
 const log = logger.child({ component: "admin-articles-id" });
 
@@ -10,21 +12,9 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const supabase = createSupabaseAdminClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("is_admin")
-      .eq("id", user.id)
-      .single();
-
-    if (!profile?.is_admin) {
-      return NextResponse.json({ error: "Admin access required" }, { status: 403 });
-    }
+    const auth = await requireAdminApi();
+    if (!auth.ok) return auth.response;
+    const supabase = auth.adminDb;
 
     const { error } = await supabase.from("articles").delete().eq("id", id);
 
@@ -47,21 +37,9 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = await req.json();
-    const supabase = createSupabaseAdminClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("is_admin")
-      .eq("id", user.id)
-      .single();
-
-    if (!profile?.is_admin) {
-      return NextResponse.json({ error: "Admin access required" }, { status: 403 });
-    }
+    const auth = await requireAdminApi();
+    if (!auth.ok) return auth.response;
+    const supabase = auth.adminDb;
 
     const { error } = await supabase
       .from("articles")
