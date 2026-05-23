@@ -59,7 +59,7 @@ export function LanguageSwitcher() {
 
   // Accessible label for the target language
   const targetLabel = targetLang === "zh" ? "中" : "EN";
-  const tooltip = targetLang === "zh" ? "Switch to 中文" : "切換到 English";
+  const tooltip = targetLang === "zh" ? "Switch to Chinese" : "Switch to English";
 
   return (
     <button

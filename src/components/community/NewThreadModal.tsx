@@ -9,9 +9,10 @@ interface NewThreadModalProps {
   onClose: () => void;
   onSuccess: (thread: any) => void;
   isOpen?: boolean;
+  lang?: "zh" | "en";
 }
 
-export function NewThreadModal({ onClose, onSuccess, isOpen = true }: NewThreadModalProps) {
+export function NewThreadModal({ onClose, onSuccess, isOpen = true, lang = "en" }: NewThreadModalProps) {
   const [content, setContent] = useState("");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [linkUrl, setLinkUrl] = useState<string | null>(null);
@@ -109,14 +110,14 @@ export function NewThreadModal({ onClose, onSuccess, isOpen = true }: NewThreadM
       <div className="w-full max-w-lg rounded-2xl border border-ink-200 bg-white p-6 shadow-xl dark:border-ink-800 dark:bg-ink-900">
         {/* Header */}
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-display text-xl font-bold">New Thread</h2>
+          <h2 className="font-display text-xl font-bold">{lang === "zh" ? "新增討論" : "New Thread"}</h2>
           <button type="button" onClick={onClose} className="rounded-full p-1 hover:bg-ink-100 dark:hover:bg-ink-800">
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {isAuthenticated === false ? (
-          <LoginPrompt message="Login to post a thread" />
+          <LoginPrompt message={lang === "zh" ? "登入後即可發布討論" : "Log in to post a thread"} lang={lang} />
         ) : isAuthenticated === null ? (
           <div className="flex justify-center py-8">
             <Loader2 className="h-5 w-5 animate-spin text-ink-400" />
@@ -127,7 +128,7 @@ export function NewThreadModal({ onClose, onSuccess, isOpen = true }: NewThreadM
             <textarea
               ref={textareaRef}
               className="mb-4 w-full resize-none rounded-xl border border-ink-200 bg-white p-4 text-sm dark:border-ink-800 dark:bg-ink-900 min-h-[120px]"
-              placeholder="What's on your mind?"
+              placeholder={lang === "zh" ? "分享您的觀點或問題..." : "What is on your mind?"}
               value={content}
               onChange={(e) => setContent(e.target.value.slice(0, MAX_CHARS))}
             />
@@ -141,7 +142,7 @@ export function NewThreadModal({ onClose, onSuccess, isOpen = true }: NewThreadM
             className="flex items-center gap-1.5 rounded-full border border-ink-200 px-3 py-1.5 text-sm text-ink-500 transition hover:bg-ink-100 dark:border-ink-800 dark:hover:bg-ink-800"
           >
             <ImageIcon className="h-4 w-4" />
-            {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Photo"}
+            {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : lang === "zh" ? "圖片" : "Photo"}
           </button>
           <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => {
             const file = e.target.files?.[0];
@@ -161,7 +162,7 @@ export function NewThreadModal({ onClose, onSuccess, isOpen = true }: NewThreadM
         {/* Image preview */}
         {imageUrl && (
           <div className="mb-4 relative aspect-[16/9] w-full overflow-hidden rounded-xl">
-            <img src={imageUrl} alt="Upload preview" className="object-cover w-full h-full" />
+            <img src={imageUrl} alt={lang === "zh" ? "上傳預覽" : "Upload preview"} className="object-cover w-full h-full" />
             <button
               type="button"
               onClick={() => setImageUrl(null)}
@@ -177,7 +178,7 @@ export function NewThreadModal({ onClose, onSuccess, isOpen = true }: NewThreadM
           <input
             ref={linkInputRef}
             type="url"
-            placeholder="Paste a link URL..."
+            placeholder={lang === "zh" ? "貼上連結 URL..." : "Paste a link URL..."}
             className="w-full rounded-xl border border-ink-200 bg-white px-4 py-2 text-sm dark:border-ink-800 dark:bg-ink-900"
             onBlur={(e) => {
               if (e.target.value) handleLinkFetch(e.target.value);
@@ -208,7 +209,7 @@ export function NewThreadModal({ onClose, onSuccess, isOpen = true }: NewThreadM
             onClick={onClose}
             className="rounded-full border border-ink-200 px-5 py-2 text-sm font-medium text-ink-500 transition hover:bg-ink-100 dark:border-ink-800 dark:hover:bg-ink-800"
           >
-            Cancel
+            {lang === "zh" ? "取消" : "Cancel"}
           </button>
           <button
             type="button"
@@ -219,7 +220,7 @@ export function NewThreadModal({ onClose, onSuccess, isOpen = true }: NewThreadM
               (!content.trim() || posting) && "opacity-50 cursor-not-allowed"
             )}
           >
-            {posting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Post"}
+            {posting ? <Loader2 className="h-4 w-4 animate-spin" /> : lang === "zh" ? "發布" : "Post"}
           </button>
         </div>
           </>

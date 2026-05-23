@@ -7,6 +7,7 @@ import { Loader2, Mail, Lock, AlertCircle } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type Mode = "login" | "signup";
+type AuthLang = "zh" | "en";
 
 export function AuthForm({
   mode,
@@ -17,7 +18,8 @@ export function AuthForm({
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const nextUrl = searchParams.get("next") || `/${lang}`;
+  const uiLang: AuthLang = lang === "en" ? "en" : "zh";
+  const nextUrl = searchParams.get("next") || `/${uiLang}`;
 
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
@@ -51,11 +53,13 @@ export function AuthForm({
         });
         if (error) throw error;
         setInfo(
-          "✓ 註冊成功！請 check 你 inbox 嘅 confirmation email 完成驗證。"
+          uiLang === "zh"
+            ? "✓ 註冊成功！請前往收件箱完成電郵驗證。"
+            : "✓ Registration successful. Please check your inbox to confirm your email address."
         );
       }
     } catch (err) {
-      setError(translateError((err as Error).message));
+      setError(translateError((err as Error).message, uiLang));
     } finally {
       setLoading(null);
     }
@@ -74,7 +78,7 @@ export function AuthForm({
       if (error) throw error;
       // OAuth flow takes over; we never return here
     } catch (err) {
-      setError(translateError((err as Error).message));
+      setError(translateError((err as Error).message, uiLang));
       setLoading(null);
     }
   }
@@ -84,12 +88,16 @@ export function AuthForm({
   return (
     <div className="mx-auto w-full max-w-sm">
       <h1 className="font-display text-3xl font-bold tracking-tight">
-        {isLogin ? "登入 AI Radar" : "註冊 AI Radar"}
+        {uiLang === "zh" ? (isLogin ? "登入 AI Radar" : "註冊 AI Radar") : (isLogin ? "Log in to AI Radar" : "Create your AI Radar account")}
       </h1>
       <p className="mt-2 text-sm text-ink-500 dark:text-ink-400">
-        {isLogin
-          ? "歡迎返嚟。登入解鎖文章全文 + premium 內容。"
-          : "免費開戶。解鎖文章全文、收藏功能、每日 digest。"}
+        {uiLang === "zh"
+          ? isLogin
+            ? "歡迎回來。登入後即可解鎖文章全文與 premium 內容。"
+            : "免費建立帳戶，解鎖文章全文、收藏功能與每日摘要。"
+          : isLogin
+            ? "Welcome back. Log in to unlock full articles and premium content."
+            : "Create a free account to unlock full articles, bookmarks and daily digests."}
       </p>
 
       {/* Google OAuth */}
@@ -111,7 +119,7 @@ export function AuthForm({
       <div className="my-6 flex items-center gap-3">
         <div className="h-px flex-1 bg-ink-200 dark:bg-ink-800" />
         <span className="text-xs uppercase tracking-widest text-ink-500 dark:text-ink-400">
-          or
+          {uiLang === "zh" ? "或" : "or"}
         </span>
         <div className="h-px flex-1 bg-ink-200 dark:bg-ink-800" />
       </div>
@@ -151,7 +159,7 @@ export function AuthForm({
               minLength={6}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder={isLogin ? "你嘅 password" : "至少 6 個字元"}
+              placeholder={uiLang === "zh" ? (isLogin ? "您的密碼" : "至少 6 個字元") : (isLogin ? "Your password" : "At least 6 characters")}
               disabled={!!loading}
               className="w-full rounded-xl border border-ink-200 bg-white py-2.5 pl-9 pr-3 text-sm focus:border-accent-500 focus:outline-none disabled:opacity-50 dark:border-ink-800 dark:bg-ink-900"
             />
@@ -179,17 +187,17 @@ export function AuthForm({
           {loading === "email" ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : null}
-          {isLogin ? "登入" : "註冊"}
+          {uiLang === "zh" ? (isLogin ? "登入" : "註冊") : (isLogin ? "Log in" : "Sign up")}
         </button>
       </form>
 
       <p className="mt-6 text-center text-xs text-ink-500 dark:text-ink-400">
-        {isLogin ? "未有 account？" : "已經有 account？"}{" "}
+        {uiLang === "zh" ? (isLogin ? "尚未擁有帳戶？" : "已經擁有帳戶？") : (isLogin ? "No account yet?" : "Already have an account?")}{" "}
         <Link
           href={`/${lang}/${isLogin ? "signup" : "login"}`}
           className="font-semibold text-ink-900 hover:underline dark:text-white"
         >
-          {isLogin ? "立即註冊" : "去登入"}
+          {uiLang === "zh" ? (isLogin ? "立即註冊" : "前往登入") : (isLogin ? "Sign up" : "Log in")}
         </Link>
       </p>
     </div>
@@ -219,13 +227,17 @@ function GoogleIcon() {
   );
 }
 
-function translateError(msg: string): string {
-  if (msg.includes("Invalid login credentials")) return "Email 或 password 唔啱";
-  if (msg.includes("Email not confirmed"))
-    return "Email 仲未驗證，請去 inbox 撳確認 link";
-  if (msg.includes("already registered"))
-    return "呢個 email 已經註冊咗，去登入頁吧";
-  if (msg.includes("Password should be at least"))
-    return "Password 至少要 6 個字元";
+function translateError(msg: string, lang: AuthLang): string {
+  if (lang === "en") {
+    if (msg.includes("Invalid login credentials")) return "The email or password is incorrect.";
+    if (msg.includes("Email not confirmed")) return "Your email has not been verified. Please check your inbox and confirm your account.";
+    if (msg.includes("already registered")) return "This email is already registered. Please log in instead.";
+    if (msg.includes("Password should be at least")) return "Password must be at least 6 characters.";
+    return msg;
+  }
+  if (msg.includes("Invalid login credentials")) return "電子郵件或密碼不正確。";
+  if (msg.includes("Email not confirmed")) return "電子郵件尚未完成驗證，請前往收件箱確認帳戶。";
+  if (msg.includes("already registered")) return "此電子郵件已註冊，請改為登入。";
+  if (msg.includes("Password should be at least")) return "密碼至少需要 6 個字元。";
   return msg;
 }

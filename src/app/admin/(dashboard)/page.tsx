@@ -166,7 +166,7 @@ export default function AdminDashboardPage() {
         Dashboard
       </h1>
       <p className="mt-2 text-sm text-ink-500 dark:text-ink-400">
-        歡迎返嚟。呢度將顯示網站嘅整體狀態。
+        歡迎回來。此處顯示網站的整體狀態。
       </p>
 
       <div className="mt-8 grid gap-4 lg:grid-cols-[1.4fr_1fr]">
@@ -209,7 +209,7 @@ export default function AdminDashboardPage() {
             查看主頁
           </h2>
           <p className="mt-2 text-sm leading-6 text-ink-500 dark:text-ink-400">
-            檢查新文章喺主頁同 Blog 列表嘅呈現。
+            檢查新文章在主頁與 Blog 列表中的呈現。
           </p>
         </Link>
       </div>

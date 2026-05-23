@@ -20,7 +20,7 @@ export default function TrendsPage() {
           AI 趨勢分析
         </h1>
         <p className="mt-3 text-sm text-ink-500 dark:text-ink-400 md:text-base">
-          唔係淨係報新聞。我哋幫你拆解每個動向背後嘅產業邏輯。
+          我們不只整理新聞，更會拆解每個動態背後的產業邏輯。
         </p>
       </header>
 

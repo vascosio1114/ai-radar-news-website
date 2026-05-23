@@ -10,6 +10,7 @@ export interface TocItem {
 
 interface TableOfContentsProps {
   items: TocItem[];
+  lang?: "zh" | "en";
 }
 
 /**
@@ -35,7 +36,7 @@ export function parseMarkdownHeadings(content: string): TocItem[] {
   return items;
 }
 
-export default function TableOfContents({ items }: TableOfContentsProps) {
+export default function TableOfContents({ items, lang = "zh" }: TableOfContentsProps) {
   const [activeId, setActiveId] = useState<string>("");
   const [isOpen, setIsOpen] = useState(false);
 
@@ -73,7 +74,7 @@ export default function TableOfContents({ items }: TableOfContentsProps) {
         onClick={() => setIsOpen(!isOpen)}
         className="mb-4 flex w-full items-center justify-between rounded-lg border border-ink-200 bg-white px-4 py-2 text-sm font-medium dark:border-ink-700 dark:bg-ink-800 lg:hidden"
       >
-        <span>目錄</span>
+        <span>{lang === "zh" ? "目錄" : "Contents"}</span>
         <svg
           className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`}
           fill="none"
@@ -94,7 +95,7 @@ export default function TableOfContents({ items }: TableOfContentsProps) {
         className={`${isOpen ? "block" : "hidden"} rounded-lg border border-ink-200 bg-white p-4 dark:border-ink-700 dark:bg-ink-800 lg:block lg:bg-transparent lg:border-none lg:p-0`}
       >
         <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-ink-500 dark:text-ink-400">
-          目錄
+          {lang === "zh" ? "目錄" : "Contents"}
         </h3>
         <ul className="space-y-2">
           {items.map((item) => (

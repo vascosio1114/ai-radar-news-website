@@ -1,8 +1,8 @@
 import type { Article, Tool, Tutorial } from "@/types";
 
 /**
- * 用嚟做模板嘅假資料。
- * 之後接通 Supabase 之後，喺 page.tsx 用 server client 拎真正資料代替。
+ * 用於建立模板的示範資料。
+ * 接通 Supabase 後，會在 page.tsx 以 server client 讀取正式資料取代。
  */
 
 export const MOCK_ARTICLES: Article[] = [
@@ -11,7 +11,7 @@ export const MOCK_ARTICLES: Article[] = [
     slug: "openai-gpt-5-launch",
     title: "OpenAI 正式發布 GPT-5：推理能力再升級",
     excerpt:
-      "GPT-5 喺 reasoning、coding 同多模態任務上有明顯突破，並推出全新 agent mode。",
+      "GPT-5 在 reasoning、coding 與多模態任務上有明顯突破，並推出全新 agent mode。",
     cover_image:
       "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1200&q=80",
     category: "AI 新聞",
@@ -24,15 +24,15 @@ export const MOCK_ARTICLES: Article[] = [
     is_published: true,
     content: `# OpenAI 正式發布 GPT-5：推理能力再升級
 
-經過數月猜測，OpenAI 終於正式發布 GPT-5。今次更新唔只係常規嘅效能提升，而係加入咗一系列全新能力，包括升級嘅推理引擎、改良嘅 agent mode，以及更強大嘅多模態處理。
+經過數月猜測，OpenAI 終於正式發布 GPT-5。本次更新不只是常規效能提升，而是加入了一系列全新能力，包括升級的推理引擎、改良的 agent mode，以及更強大的多模態處理。
 
 ## 主要新功能
 
 ### 推理引擎升級
-GPT-5 採用咗全新嘅推理架構，喺複雜數學同邏輯推理任務上表現顯著提升。根據 OpenAI 官方嘅 Benchmark，GPT-5 喺 MATH dataset 上達到 **92%** 準確率，遠超 GPT-4 嘅 68%。
+GPT-5 採用了全新的推理架構，在複雜數學與邏輯推理任務上表現顯著提升。根據 OpenAI 官方的 Benchmark，GPT-5 在 MATH dataset 上達到 **92%** 準確率，遠高於 GPT-4 的 68%。
 
 ### Agent Mode 正式推出
-今次發布最受矚目嘅係 Agent Mode。開發者可以俾 GPT-5 一系列工具（browser、code executor、file system），佢會自動規劃同執行複雜任務。
+本次發布最受矚目的是 Agent Mode。開發者可以為 GPT-5 配置一系列工具（browser、code executor、file system），模型會自動規劃並執行複雜任務。
 
 \`\`\`python
 # Agent Mode 示例：自動research任務
@@ -44,10 +44,10 @@ response = client.agents.create(
 \`\`\`
 
 ### 多模態升級
-除咗文字，GPT-5 嘅 vision 能力都有大幅提升，依家可以：
+除了文字，GPT-5 的 vision 能力亦有大幅提升，目前可以：
 
 - 即時分析長影片串流
-- 理解複雜圖表同數據視覺化
+- 理解複雜圖表與數據視覺化
 - 高精度 OCR 文件處理
 
 ## 定價
@@ -60,7 +60,7 @@ response = client.agents.create(
 
 ## 結論
 
-GPT-5 嘅發布標誌住 LLM 邏輯推理邏辑推理嘅一大步。不過 Agent Mode 嘅實際表現仍有待觀察，建議開發者先喺沙盒環境測試再決定係咪正式採用。
+GPT-5 的發布標誌著 LLM 邏輯推理能力的一大步。不過 Agent Mode 的實際表現仍有待觀察，建議開發者先在沙盒環境測試，再決定是否正式採用。
 
 > 注意：Agent Mode 目前仍在 beta 階段，部分場景可能出現預期外行為。`,
   },
@@ -69,7 +69,7 @@ GPT-5 嘅發布標誌住 LLM 邏輯推理邏辑推理嘅一大步。不過 Agent
     slug: "anthropic-claude-opus-4-6",
     title: "Anthropic 推 Claude Opus 4.6：長 context + agent skills",
     excerpt:
-      "Opus 4.6 提升了長文檔處理同 tool use 穩定性，同時引入 skill 系統。",
+      "Opus 4.6 提升了長文檔處理與 tool use 穩定性，同時引入 skill 系統。",
     cover_image:
       "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=1200&q=80",
     category: "AI 新聞",
@@ -103,7 +103,7 @@ GPT-5 嘅發布標誌住 LLM 邏輯推理邏辑推理嘅一大步。不過 Agent
     slug: "ai-image-trends-2026",
     title: "2026 AI 生圖趨勢：寫實 + 實時 + 角色一致性",
     excerpt:
-      "今年 AI 生圖最大進步唔再係解像度，而係角色一致性同 real-time inference。",
+      "今年 AI 生圖最大進步不再只是解像度，而是角色一致性與 real-time inference。",
     cover_image:
       "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=1200&q=80",
     category: "趨勢分析",
@@ -120,7 +120,7 @@ GPT-5 嘅發布標誌住 LLM 邏輯推理邏辑推理嘅一大步。不過 Agent
     slug: "open-source-llm-2026",
     title: "開源 LLM 大爆發：Llama / Qwen / DeepSeek 之爭",
     excerpt:
-      "三大開源模型陣營策略差異越拉越大，揀邊個 train 你嘅 in-house agent？",
+      "三大開源模型陣營策略差異越拉越大，選擇哪個模型訓練內部 agent？",
     cover_image:
       "https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&q=80",
     category: "趨勢分析",
@@ -137,7 +137,7 @@ GPT-5 嘅發布標誌住 LLM 邏輯推理邏辑推理嘅一大步。不過 Agent
     slug: "ai-coding-agents-comparison",
     title: "AI Coding Agents 對決：Cursor vs Claude Code vs Copilot",
     excerpt:
-      "三大 coding agent 用緊嘅 workflow 究竟有咩唔同？實測十個常見任務。",
+      "三大 coding agent 使用的 workflow 有何差異？實測十個常見任務。",
     cover_image:
       "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200&q=80",
     category: "AI 工具",
@@ -156,7 +156,7 @@ export const MOCK_TOOLS: Tool[] = [
     id: "t1",
     slug: "chatgpt",
     name: "ChatGPT",
-    tagline: "最普及嘅對話式 AI",
+    tagline: "最普及的對話式 AI",
     description:
       "OpenAI 旗艦對話模型，內建瀏覽、code interpreter、圖像生成等多種 tool。",
     logo: "https://cdn.openai.com/API/logo-openai.svg",
@@ -172,7 +172,7 @@ export const MOCK_TOOLS: Tool[] = [
     name: "Claude",
     tagline: "強推理 + 長 context",
     description:
-      "Anthropic 出嘅 LLM，特別擅長長文件、code 同 nuanced 對話。",
+      "Anthropic 推出的 LLM，特別擅長長文件、code 與細膩對話。",
     logo: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=200&q=80",
     website: "https://claude.ai",
     category: "writing",
@@ -238,7 +238,7 @@ export const MOCK_TOOLS: Tool[] = [
     slug: "perplexity",
     name: "Perplexity",
     tagline: "AI 答問引擎",
-    description: "結合 search + LLM，答問同時附引文，研究神器。",
+    description: "結合 search + LLM，回答問題時同步附上引用來源，研究神器。",
     logo: "https://images.unsplash.com/photo-1611606063065-ee7946f0787a?w=200&q=80",
     website: "https://perplexity.ai",
     category: "productivity",
@@ -290,7 +290,7 @@ export const MOCK_TUTORIALS: Tutorial[] = [
     duration: "15 分鐘",
     cover_image:
       "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=1200&q=80",
-    excerpt: "唔係叫你 cheat，而係教你點用 AI 做出更高分嘅功課。",
+    excerpt: "不是鼓勵作弊，而是教您如何以 AI 提升學習與作業質素。",
   },
   {
     id: "tu4",

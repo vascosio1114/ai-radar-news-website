@@ -3,19 +3,22 @@ import { redirect } from "next/navigation";
 import { AuthForm } from "@/components/auth/AuthForm";
 import { getUser } from "@/lib/auth/server";
 
-export const metadata: Metadata = {
-  title: "登入",
-  description: "登入 AI Radar 解鎖文章全文 + premium 內容。",
-};
-
-export default async function LoginPage({
-  params,
-  searchParams,
-}: {
+type Props = {
   params: { lang: string };
   searchParams: { next?: string };
-}) {
-  // 已 login 就 redirect
+};
+
+export function generateMetadata({ params }: { params: { lang: string } }): Metadata {
+  const isEn = params.lang === "en";
+  return {
+    title: isEn ? "Log in" : "登入",
+    description: isEn
+      ? "Log in to AI Radar to unlock full articles and premium content."
+      : "登入 AI Radar，以解鎖文章全文與 premium 內容。",
+  };
+}
+
+export default async function LoginPage({ params, searchParams }: Props) {
   const user = await getUser();
   if (user) {
     redirect(searchParams.next || `/${params.lang}`);

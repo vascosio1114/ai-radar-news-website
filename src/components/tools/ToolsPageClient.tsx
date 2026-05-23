@@ -31,7 +31,7 @@ export function ToolsPageClient({ tools, lang = "zh" }: Props) {
                 : "border-ink-200 bg-white/60 text-ink-600 hover:border-accent-400 hover:text-accent-600 dark:border-ink-800 dark:bg-ink-900/60 dark:text-ink-300 dark:hover:text-accent-400"
             )}
           >
-            {cat.label}
+            {lang === "en" && cat.slug === "all" ? "All" : cat.label}
           </button>
         ))}
       </div>
@@ -44,7 +44,7 @@ export function ToolsPageClient({ tools, lang = "zh" }: Props) {
 
       {filtered.length === 0 && (
         <p className="mt-10 text-center text-sm text-ink-500 dark:text-ink-400">
-          呢個分類仲未有工具，stay tuned。
+          {lang === "zh" ? "此分類目前尚未收錄工具，請稍後再查看。" : "No tools are available in this category yet. Please check back later."}
         </p>
       )}
     </>

@@ -3,18 +3,22 @@ import { redirect } from "next/navigation";
 import { AuthForm } from "@/components/auth/AuthForm";
 import { getUser } from "@/lib/auth/server";
 
-export const metadata: Metadata = {
-  title: "註冊",
-  description: "免費註冊 AI Radar，解鎖文章全文同 premium 內容。",
-};
-
-export default async function SignupPage({
-  params,
-  searchParams,
-}: {
+type Props = {
   params: { lang: string };
   searchParams: { next?: string };
-}) {
+};
+
+export function generateMetadata({ params }: { params: { lang: string } }): Metadata {
+  const isEn = params.lang === "en";
+  return {
+    title: isEn ? "Sign up" : "註冊",
+    description: isEn
+      ? "Create a free AI Radar account to unlock full articles and premium content."
+      : "免費註冊 AI Radar，以解鎖文章全文與 premium 內容。",
+  };
+}
+
+export default async function SignupPage({ params, searchParams }: Props) {
   const user = await getUser();
   if (user) {
     redirect(searchParams.next || `/${params.lang}`);

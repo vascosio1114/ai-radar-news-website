@@ -10,7 +10,7 @@ export function SourceStatus({ sources }: { sources: SourceRow[] }) {
           📡 10 個 Source 健康狀態
         </h2>
         <span className="text-xs text-ink-500 dark:text-ink-400">
-          每 12 小時自動 check
+          每 12 小時自動檢查
         </span>
       </div>
 
@@ -21,9 +21,9 @@ export function SourceStatus({ sources }: { sources: SourceRow[] }) {
               <th className="px-4 py-3 font-medium">Source</th>
               <th className="px-4 py-3 font-medium">Kind</th>
               <th className="hidden px-4 py-3 font-medium md:table-cell">
-                收咗
+                已收集
               </th>
-              <th className="px-4 py-3 font-medium">最後 fetch</th>
+              <th className="px-4 py-3 font-medium">最後擷取</th>
               <th className="px-4 py-3 font-medium">狀態</th>
             </tr>
           </thead>
@@ -58,7 +58,7 @@ export function SourceStatus({ sources }: { sources: SourceRow[] }) {
                   colSpan={5}
                   className="bg-white px-4 py-12 text-center text-xs text-ink-500 dark:bg-ink-900 dark:text-ink-400"
                 >
-                  未有 source data。
+                  尚未有 source data。
                 </td>
               </tr>
             )}

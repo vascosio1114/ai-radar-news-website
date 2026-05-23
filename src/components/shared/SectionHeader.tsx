@@ -6,7 +6,7 @@ export function SectionHeader({
   title,
   description,
   href,
-  cta = "睇全部",
+  cta = "查看全部",
 }: {
   eyebrow?: React.ReactNode;
   title: string;

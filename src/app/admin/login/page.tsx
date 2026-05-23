@@ -1,11 +1,22 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
+import { Loader2 } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
+function translateLoginError(message: string) {
+  const lower = message.toLowerCase();
+  if (lower.includes("invalid login credentials")) {
+    return "電郵或密碼不正確。";
+  }
+  if (lower.includes("email not confirmed")) {
+    return "請先完成電郵驗證後再登入。";
+  }
+  return message || "登入失敗，請稍後再試。";
+}
+
 export default function AdminLoginPage() {
-  const router = useRouter();
+  const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -16,58 +27,92 @@ export default function AdminLoginPage() {
     setError(null);
     setLoading(true);
 
-    const supabase = createSupabaseBrowserClient();
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
 
-    if (error) {
-      setError(error.message);
+      if (signInError) throw signInError;
+
+      if (!data.session || !data.user) {
+        throw new Error("登入未能建立 session，請確認帳戶是否已完成電郵驗證。");
+      }
+
+      const role = data.user.app_metadata?.role;
+      if (role !== "admin") {
+        await supabase.auth.signOut();
+        throw new Error(
+          `此帳戶尚未獲得 admin 權限。請確認 Supabase 的 raw_app_meta_data 已加入 {\"role\":\"admin\"}，目前偵測到 role: ${role ?? "未設定"}。`
+        );
+      }
+
+      // Use a full navigation so the server-side admin layout can read the new Supabase cookies.
+      window.location.assign("/admin");
+    } catch (err) {
+      setError(translateLoginError((err as Error).message));
       setLoading(false);
-    } else {
-      router.push("/admin");
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6 text-center">Admin Login</h1>
+    <div className="flex min-h-screen items-center justify-center bg-black px-4 text-white">
+      <div className="w-full max-w-md rounded-3xl border border-white/10 bg-zinc-950/90 p-8 shadow-2xl shadow-blue-950/20">
+        <div className="mb-8 text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-blue-300/80">
+            Admin Console
+          </p>
+          <h1 className="mt-3 font-display text-3xl font-bold">登入管理後台</h1>
+          <p className="mt-2 text-sm text-zinc-400">
+            請使用已獲授權的管理員帳戶登入。
+          </p>
+        </div>
+
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-zinc-500">
               Email
             </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-blue-400/60 focus:ring-2 focus:ring-blue-400/20"
+              autoComplete="email"
+              inputMode="email"
+              placeholder="admin@example.com"
               required
             />
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-zinc-500">
               Password
             </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-blue-400/60 focus:ring-2 focus:ring-blue-400/20"
+              autoComplete="current-password"
+              placeholder="••••••••"
               required
             />
           </div>
+
           {error && (
-            <div className="text-red-600 text-sm">{error}</div>
+            <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+              {error}
+            </div>
           )}
+
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-semibold text-black transition hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {loading ? "Logging in..." : "Login"}
+            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+            {loading ? "登入中…" : "登入"}
           </button>
         </form>
       </div>

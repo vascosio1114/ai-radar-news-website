@@ -5,7 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Clock, Eye } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getLocalizedContent, getUIStrings } from "@/lib/i18n";
+import { containsCJK, getLocalizedContent, getUIStrings } from "@/lib/i18n";
 import type { Lang } from "@/lib/site";
 import { formatDate } from "@/lib/utils";
 import { MOCK_ARTICLES } from "@/data/mock";
@@ -72,8 +72,11 @@ export default async function ArticlePage({ params }: Props) {
 
   const localized = getLocalizedContent(rawArticle, lang);
   const articleContent = localized.content ?? null;
+  const englishUnavailable =
+    lang === "en" &&
+    containsCJK([localized.title, localized.excerpt, localized.content, localized.content_html]);
 
-  const tocItems = articleContent ? parseMarkdownHeadings(articleContent) : [];
+  const tocItems = articleContent && !englishUnavailable ? parseMarkdownHeadings(articleContent) : [];
 
   return (
     <article className="container-page section-pad">
@@ -87,13 +90,13 @@ export default async function ArticlePage({ params }: Props) {
 
       <header className="mx-auto max-w-3xl">
         <span className="rounded-full bg-accent-500/10 px-3 py-1 text-xs font-semibold text-accent-700 dark:text-accent-400">
-          {localized.category ?? rawArticle.category ?? ""}
+          {englishUnavailable ? "AI Article" : localized.category ?? rawArticle.category ?? ""}
         </span>
         <h1 className="mt-4 font-display text-3xl font-bold leading-tight md:text-5xl">
-          {localized.title ?? rawArticle.title ?? ""}
+          {englishUnavailable ? "English version unavailable" : localized.title ?? rawArticle.title ?? ""}
         </h1>
         <p className="mt-4 text-base text-ink-500 dark:text-ink-400 md:text-lg">
-          {localized.excerpt ?? rawArticle.excerpt ?? ""}
+          {englishUnavailable ? "This article has not been prepared in English yet." : localized.excerpt ?? rawArticle.excerpt ?? ""}
         </p>
         <div className="mt-6 flex flex-wrap items-center gap-6 text-xs text-ink-500 dark:text-ink-400">
           <span>{localized.author ?? rawArticle.author ?? ""}</span>
@@ -121,7 +124,13 @@ export default async function ArticlePage({ params }: Props) {
         )}
       </header>
 
-      {rawArticle.cover_image && (
+      {englishUnavailable ? (
+        <div className="mx-auto mt-10 max-w-3xl rounded-3xl border border-ink-200/70 bg-white p-8 text-sm leading-6 text-ink-600 dark:border-ink-800/70 dark:bg-ink-900 dark:text-ink-300">
+          This article is not available in English yet. Please switch to the Chinese version or return to the article list.
+        </div>
+      ) : null}
+
+      {!englishUnavailable && rawArticle.cover_image && (
         <div className="relative mx-auto mt-10 aspect-[16/9] w-full max-w-5xl overflow-hidden rounded-3xl">
           <Image
             src={rawArticle.cover_image}
@@ -137,7 +146,7 @@ export default async function ArticlePage({ params }: Props) {
       <div className="mx-auto mt-12 max-w-6xl">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_240px]">
           <div className="min-w-0">
-            {localized.content_html ? (
+            {englishUnavailable ? null : localized.content_html ? (
               <HtmlRenderer content={localized.content_html} />
             ) : articleContent ? (
               <MarkdownRenderer content={articleContent} />
@@ -149,22 +158,24 @@ export default async function ArticlePage({ params }: Props) {
               </div>
             )}
 
-            <AuthorCard name={localized.author ?? rawArticle.author ?? "Editorial Team"} />
+            {!englishUnavailable && <AuthorCard name={localized.author ?? rawArticle.author ?? "Editorial Team"} lang={lang} />}
           </div>
 
           <aside className="hidden lg:block">
             <div className="sticky top-24">
-              <TableOfContents items={tocItems} />
+              <TableOfContents items={tocItems} lang={lang} />
             </div>
           </aside>
         </div>
 
         <div className="mt-12 border-t border-ink-200 pt-8 dark:border-ink-800">
-          <RelatedArticles
-            articles={MOCK_ARTICLES}
-            currentSlug={params.slug}
-            lang={lang}
-          />
+          {!englishUnavailable && (
+            <RelatedArticles
+              articles={lang === "en" ? [] : MOCK_ARTICLES}
+              currentSlug={params.slug}
+              lang={lang}
+            />
+          )}
         </div>
       </div>
     </article>

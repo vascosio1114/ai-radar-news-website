@@ -32,8 +32,9 @@ export function Footer() {
             <span className="text-lg font-semibold">{SITE_NAME}</span>
           </Link>
           <p className="mt-4 max-w-md text-sm leading-relaxed text-ink-500 dark:text-ink-400">
-            最新 AI 文章、AI 工具評測、AI 教學同趨勢分析。
-            繁體中文，每日更新，幫你跟得上 AI 浪潮。
+            {lang === "zh"
+              ? "最新 AI 文章、AI 工具評測、AI 教學與趨勢分析。繁體中文內容每日更新，協助您掌握 AI 浪潮。"
+              : "AI articles, tool reviews, tutorials and trend analysis — updated regularly to help you follow the AI wave."}
           </p>
           <div className="mt-6 flex items-center gap-2">
             <SocialIcon
@@ -57,7 +58,7 @@ export function Footer() {
         {/* Site map */}
         <div>
           <h4 className="text-xs font-semibold uppercase tracking-widest text-ink-500 dark:text-ink-400">
-            導覽
+            {lang === "zh" ? "導覽" : "Navigation"}
           </h4>
           <ul className="mt-4 space-y-2 text-sm">
             {navItems.map((item) => (
@@ -76,7 +77,7 @@ export function Footer() {
         {/* Resources */}
         <div>
           <h4 className="text-xs font-semibold uppercase tracking-widest text-ink-500 dark:text-ink-400">
-            資源
+            {lang === "zh" ? "資源" : "Resources"}
           </h4>
           <ul className="mt-4 space-y-2 text-sm">
             <li>
@@ -84,7 +85,7 @@ export function Footer() {
                 href="/about"
                 className="text-ink-700 transition hover:text-accent-600 dark:text-ink-200 dark:hover:text-accent-400"
               >
-                關於我哋
+                {lang === "zh" ? "關於我們" : "About"}
               </Link>
             </li>
             <li>
@@ -92,7 +93,7 @@ export function Footer() {
                 href="/contact"
                 className="text-ink-700 transition hover:text-accent-600 dark:text-ink-200 dark:hover:text-accent-400"
               >
-                聯絡
+                {lang === "zh" ? "聯絡" : "Contact"}
               </Link>
             </li>
             <li>
@@ -100,7 +101,7 @@ export function Footer() {
                 href="/privacy"
                 className="text-ink-700 transition hover:text-accent-600 dark:text-ink-200 dark:hover:text-accent-400"
               >
-                私隱政策
+                {lang === "zh" ? "私隱政策" : "Privacy Policy"}
               </Link>
             </li>
             <li>
@@ -118,7 +119,7 @@ export function Footer() {
       <div className="border-t border-ink-200/70 dark:border-ink-800/70">
         <div className="container-page flex flex-col items-center justify-between gap-2 py-6 text-xs text-ink-500 dark:text-ink-400 md:flex-row">
           <p>© {year} {SITE_NAME}. All rights reserved.</p>
-          <p>用 ❤ + Next.js + Supabase 起</p>
+          <p>{lang === "zh" ? "使用 Next.js 與 Supabase 建立" : "Built with Next.js and Supabase"}</p>
         </div>
       </div>
     </footer>

@@ -33,7 +33,7 @@ export function LogoutButton({ lang = "zh" }: { lang?: string }) {
       ) : (
         <LogOut className="h-4 w-4" />
       )}
-      登出
+      {lang === "zh" ? "登出" : "Log out"}
     </button>
   );
 }

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ArticleCard } from "@/components/cards/ArticleCard";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getUIStrings, type Lang } from "@/lib/i18n";
+import { getUIStrings, hasEnglishDisplayContent, type Lang } from "@/lib/i18n";
 import { DEFAULT_LANG } from "@/lib/site";
 
 type Props = { params: { lang: string } };
@@ -17,7 +17,9 @@ export default async function NewsPage({ params }: Props) {
     .eq("is_published", true)
     .order("published_at", { ascending: false });
 
-  const articles = data ?? [];
+  const articles = lang === "en"
+    ? (data ?? []).filter((article) => hasEnglishDisplayContent(article, ["title", "excerpt", "category"]))
+    : data ?? [];
 
   return (
     <div className="container-page section-pad">
@@ -33,11 +35,17 @@ export default async function NewsPage({ params }: Props) {
         </p>
       </header>
 
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {articles.map((a) => (
-          <ArticleCard key={a.id} article={a} lang={lang} />
-        ))}
-      </div>
+      {articles.length > 0 ? (
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {articles.map((a) => (
+            <ArticleCard key={a.id} article={a} lang={lang} />
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-3xl border border-ink-200/70 bg-white p-8 text-sm text-ink-500 dark:border-ink-800/70 dark:bg-ink-900 dark:text-ink-400">
+          {lang === "zh" ? "目前尚未有已發佈文章。" : "No English articles are available yet."}
+        </div>
+      )}
     </div>
   );
 }

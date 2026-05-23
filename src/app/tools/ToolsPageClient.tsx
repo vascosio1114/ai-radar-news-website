@@ -26,7 +26,7 @@ export default function ToolsPageClient({
           熱門 AI 工具
         </h1>
         <p className="mt-3 max-w-2xl text-sm text-ink-500 dark:text-ink-400 md:text-base">
-          每星期評測，分類齊全。揀岩你嘅工具，由免費到 enterprise 都有。
+          每週評測並分類整理，協助您選擇合適的 AI 工具，涵蓋免費方案至企業級方案。
         </p>
       </header>
 
@@ -57,7 +57,7 @@ export default function ToolsPageClient({
 
       {filtered.length === 0 && (
         <p className="mt-10 text-center text-sm text-ink-500 dark:text-ink-400">
-          呢個分類仲未有工具，stay tuned。
+          此分類目前尚未收錄工具，請稍後再查看。
         </p>
       )}
     </div>

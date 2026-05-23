@@ -19,7 +19,7 @@ export function StatsHero({ stats }: { stats: DashboardStats }) {
             今日 AI 動態
           </h1>
           <p className="mt-2 text-sm text-ink-500 dark:text-ink-400">
-            10 個 AI source 每 12 小時自動收集嘅 raw data，real-time 更新。
+            10 個 AI source 每 12 小時自動收集 raw data，並即時更新。
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -31,7 +31,7 @@ export function StatsHero({ stats }: { stats: DashboardStats }) {
           <span className="text-xs text-ink-500 dark:text-ink-400">
             {stats.last_fetch_at
               ? `上次更新 ${timeAgo(stats.last_fetch_at)}`
-              : "未有 ingest 紀錄"}
+              : "尚未有 ingest 紀錄"}
           </span>
         </div>
       </div>

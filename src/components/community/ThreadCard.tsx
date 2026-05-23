@@ -11,11 +11,12 @@ interface ThreadCardProps {
   liked?: boolean;
   onLike?: () => void;
   currentUserId?: string | null;
+  lang?: "zh" | "en";
 }
 
 const FALLBACK_AVATAR = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&h=80&fit=crop";
 
-export function ThreadCard({ thread, liked = false, onLike, currentUserId }: ThreadCardProps) {
+export function ThreadCard({ thread, liked = false, onLike, currentUserId, lang = "en" }: ThreadCardProps) {
   const authorMeta = thread.author as any;
   const authorName = authorMeta?.raw_user_meta_data?.full_name ?? authorMeta?.email ?? "Anonymous";
   const authorAvatar = authorMeta?.raw_user_meta_data?.avatar_url ?? FALLBACK_AVATAR;
@@ -43,7 +44,7 @@ export function ThreadCard({ thread, liked = false, onLike, currentUserId }: Thr
       </div>
 
       {/* Content */}
-      <Link href={`/community/${thread.id}`} className="block">
+      <Link href={`/${lang}/community/${thread.id}`} className="block">
         <p className="mb-3 line-clamp-4 whitespace-pre-wrap text-sm leading-relaxed">
           {thread.content.length > 150 ? thread.content.slice(0, 150) + "…" : thread.content}
         </p>
@@ -108,7 +109,7 @@ export function ThreadCard({ thread, liked = false, onLike, currentUserId }: Thr
         />
 
         <Link
-          href={`/community/${thread.id}`}
+          href={`/${lang}/community/${thread.id}`}
           className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium text-ink-500 transition hover:bg-ink-100 dark:text-ink-400 dark:hover:bg-ink-800"
         >
           <MessageCircle className="h-4 w-4" />
@@ -119,7 +120,7 @@ export function ThreadCard({ thread, liked = false, onLike, currentUserId }: Thr
           type="button"
           onClick={() => {
             if (typeof navigator !== "undefined") {
-              navigator.clipboard.writeText(`${window.location.origin}/community/${thread.id}`);
+              navigator.clipboard.writeText(`${window.location.origin}/${lang}/community/${thread.id}`);
             }
           }}
           className="ml-auto flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium text-ink-500 transition hover:bg-ink-100 dark:text-ink-400 dark:hover:bg-ink-800"

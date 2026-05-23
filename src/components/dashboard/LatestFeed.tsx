@@ -19,7 +19,7 @@ export function LatestFeed({ items }: { items: LatestItem[] }) {
           🔴 最新收集
         </h2>
         <span className="text-xs text-ink-500 dark:text-ink-400">
-          AI 仲未寫成 blog 嘅原料
+          尚未整理成 Blog 的 AI 原始資料
         </span>
       </div>
 
@@ -52,7 +52,7 @@ export function LatestFeed({ items }: { items: LatestItem[] }) {
         ))}
         {items.length === 0 && (
           <div className="px-4 py-12 text-center text-sm text-ink-500 dark:text-ink-400">
-            未有 ingest 紀錄，等 cron 第一次跑。
+            尚未有 ingest 紀錄，請等待 cron 完成首次執行。
           </div>
         )}
       </div>

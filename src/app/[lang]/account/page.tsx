@@ -5,18 +5,21 @@ import { Mail, Calendar, User } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { LogoutButton } from "@/components/auth/LogoutButton";
 
-export const metadata: Metadata = {
-  title: "我嘅 Account",
-};
+export function generateMetadata({ params }: { params: { lang: string } }): Metadata {
+  return {
+    title: params.lang === "en" ? "My Account" : "我的帳戶",
+  };
+}
 
 export default async function AccountPage({
   params,
 }: {
   params: { lang: string };
 }) {
+  const lang = params.lang === "en" ? "en" : "zh";
   const { user, profile } = await getUserWithProfile();
   if (!user) {
-    redirect(`/${params.lang}/login?next=/${params.lang}/account`);
+    redirect(`/${lang}/login?next=/${lang}/account`);
   }
 
   const displayName =
@@ -27,10 +30,10 @@ export default async function AccountPage({
     <div className="container-page section-pad">
       <div className="mx-auto max-w-2xl">
         <h1 className="font-display text-3xl font-bold tracking-tight">
-          我嘅 Account
+          {lang === "zh" ? "我的帳戶" : "My Account"}
         </h1>
         <p className="mt-2 text-sm text-ink-500 dark:text-ink-400">
-          管理你嘅 profile 同 preferences。
+          {lang === "zh" ? "管理您的個人資料與偏好設定。" : "Manage your profile and preferences."}
         </p>
 
         <div className="mt-8 rounded-2xl border border-ink-200/70 bg-white p-6 dark:border-ink-800/70 dark:bg-ink-900">
@@ -82,12 +85,12 @@ export default async function AccountPage({
 
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-ink-200/70 bg-white p-5 dark:border-ink-800/70 dark:bg-ink-900">
           <div>
-            <div className="font-semibold">登出</div>
+            <div className="font-semibold">{lang === "zh" ? "登出" : "Log out"}</div>
             <div className="text-xs text-ink-500 dark:text-ink-400">
-              結束呢個 session，下次入站要重新登入
+              {lang === "zh" ? "結束目前工作階段，下次進入網站時需要重新登入。" : "End this session. You will need to log in again next time."}
             </div>
           </div>
-          <LogoutButton lang={params.lang} />
+          <LogoutButton lang={lang} />
         </div>
       </div>
     </div>

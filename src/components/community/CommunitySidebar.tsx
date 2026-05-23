@@ -2,12 +2,13 @@
 
 interface TrendingTagsProps {
   tags: string[];
+  lang?: "zh" | "en";
 }
 
-export function TrendingTags({ tags }: TrendingTagsProps) {
+export function TrendingTags({ tags, lang = "en" }: TrendingTagsProps) {
   return (
     <div>
-      <h3 className="mb-3 text-sm font-semibold text-ink-600 dark:text-ink-300">Trending</h3>
+      <h3 className="mb-3 text-sm font-semibold text-ink-600 dark:text-ink-300">{lang === "zh" ? "熱門話題" : "Trending"}</h3>
       <div className="flex flex-wrap gap-2">
         {tags.map((tag) => (
           <button
@@ -25,12 +26,13 @@ export function TrendingTags({ tags }: TrendingTagsProps) {
 
 interface ActiveMembersProps {
   members: Array<{ name: string; avatar: string }>;
+  lang?: "zh" | "en";
 }
 
-export function ActiveMembers({ members }: ActiveMembersProps) {
+export function ActiveMembers({ members, lang = "en" }: ActiveMembersProps) {
   return (
     <div>
-      <h3 className="mb-3 text-sm font-semibold text-ink-600 dark:text-ink-300">Active Members</h3>
+      <h3 className="mb-3 text-sm font-semibold text-ink-600 dark:text-ink-300">{lang === "zh" ? "活躍成員" : "Active Members"}</h3>
       <div className="space-y-2">
         {members.map((m, i) => (
           <div key={i} className="flex items-center gap-2">
@@ -43,7 +45,7 @@ export function ActiveMembers({ members }: ActiveMembersProps) {
   );
 }
 
-export function CommunitySidebar() {
+export function CommunitySidebar({ lang = "en" }: { lang?: "zh" | "en" }) {
   const tags = ["ChatGPT", "Gemini", "Cursor", "AI Agents", "Midjourney", "LLM"];
   const members = [
     { name: "Alex Chen", avatar: "" },
@@ -56,10 +58,10 @@ export function CommunitySidebar() {
   return (
     <aside className="space-y-6">
       <div className="rounded-2xl border border-ink-200/70 bg-white p-4 dark:border-ink-800/70 dark:bg-ink-900">
-        <TrendingTags tags={tags} />
+        <TrendingTags tags={tags} lang={lang} />
       </div>
       <div className="rounded-2xl border border-ink-200/70 bg-white p-4 dark:border-ink-800/70 dark:bg-ink-900">
-        <ActiveMembers members={members} />
+        <ActiveMembers members={members} lang={lang} />
       </div>
     </aside>
   );

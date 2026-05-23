@@ -15,11 +15,12 @@ interface ThreadDetailClientProps {
   threadId: string;
   initialThread?: Thread;
   initialComments?: ThreadComment[];
+  lang?: "zh" | "en";
 }
 
 const FALLBACK_AVATAR = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&h=80&fit=crop";
 
-export function ThreadDetailClient({ threadId, initialThread, initialComments }: ThreadDetailClientProps) {
+export function ThreadDetailClient({ threadId, initialThread, initialComments, lang = "en" }: ThreadDetailClientProps) {
   const [thread, setThread] = useState<Thread | null>(initialThread ?? null);
   const [comments, setComments] = useState<ThreadComment[]>(initialComments ?? []);
   const [loading, setLoading] = useState(!initialThread);
@@ -134,7 +135,7 @@ export function ThreadDetailClient({ threadId, initialThread, initialComments }:
     return (
       <div className="py-20 text-center">
         <p className="text-ink-400">Thread not found.</p>
-        <Link href="/community" className="mt-4 text-accent-500 hover:underline">Back to community</Link>
+        <Link href={`/${lang}/community`} className="mt-4 text-accent-500 hover:underline">{lang === "zh" ? "返回社群" : "Back to community"}</Link>
       </div>
     );
   }
@@ -155,9 +156,9 @@ export function ThreadDetailClient({ threadId, initialThread, initialComments }:
         </div>
       )}
       {/* Back */}
-      <Link href="/community" className="mb-6 inline-flex items-center gap-2 text-sm text-ink-400 hover:text-ink-600">
+      <Link href={`/${lang}/community`} className="mb-6 inline-flex items-center gap-2 text-sm text-ink-400 hover:text-ink-600">
         <ArrowLeft className="h-4 w-4" />
-        Back to community
+        {lang === "zh" ? "返回社群" : "Back to community"}
       </Link>
 
       {/* Thread */}
@@ -208,13 +209,13 @@ export function ThreadDetailClient({ threadId, initialThread, initialComments }:
         <div className="mt-6 rounded-2xl border border-ink-200/70 bg-white p-4 dark:border-ink-800/70 dark:bg-ink-900">
           {replyingTo && (
             <div className="mb-2 text-sm text-ink-400">
-              Replying to comment{" "}
-              <button onClick={() => setReplyingTo(null)} className="text-accent-500 hover:underline">Cancel</button>
+              {lang === "zh" ? "正在回覆留言" : "Replying to comment"}{" "}
+              <button onClick={() => setReplyingTo(null)} className="text-accent-500 hover:underline">{lang === "zh" ? "取消" : "Cancel"}</button>
             </div>
           )}
           <textarea
             className="w-full resize-none rounded-xl border border-ink-200 bg-white p-3 text-sm dark:border-ink-800 dark:bg-ink-900 min-h-[80px]"
-            placeholder="Write a comment..."
+            placeholder={lang === "zh" ? "撰寫留言..." : "Write a comment..."}
             value={commentText}
             onChange={(e) => setCommentText(e.target.value.slice(0, 1000))}
           />
@@ -225,14 +226,14 @@ export function ThreadDetailClient({ threadId, initialThread, initialComments }:
               disabled={!commentText.trim() || posting}
               className="rounded-full bg-accent-500 px-4 py-2 text-sm font-medium text-white transition disabled:opacity-50"
             >
-              {posting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Comment"}
+              {posting ? <Loader2 className="h-4 w-4 animate-spin" /> : lang === "zh" ? "留言" : "Comment"}
             </button>
           </div>
         </div>
       ) : (
         <div className="mt-6 rounded-2xl border border-ink-200/70 bg-white p-4 text-center dark:border-ink-800/70 dark:bg-ink-900">
           <p className="text-sm text-ink-400">
-            <Link href={`/login?next=${encodeURIComponent(currentPath)}`} className="text-accent-500 hover:underline">Login</Link> to comment
+            <Link href={`/${lang}/login?next=${encodeURIComponent(currentPath)}`} className="text-accent-500 hover:underline">{lang === "zh" ? "登入" : "Log in"}</Link>{lang === "zh" ? "後即可留言" : " to comment"}
           </p>
         </div>
       )}

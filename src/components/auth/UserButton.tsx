@@ -56,13 +56,13 @@ export function UserButton({ initialUser }: Props) {
           href={`/${lang}/login?next=${encodeURIComponent(pathname)}`}
           className="rounded-full px-3 py-1.5 text-sm font-medium text-ink-700 transition hover:text-ink-900 dark:text-ink-300 dark:hover:text-white"
         >
-          登入
+          {lang === "zh" ? "登入" : "Log in"}
         </Link>
         <Link
           href={`/${lang}/signup`}
           className="rounded-full bg-ink-900 px-4 py-1.5 text-sm font-semibold text-white transition hover:bg-ink-800 dark:bg-white dark:text-ink-900 dark:hover:bg-ink-100"
         >
-          註冊
+          {lang === "zh" ? "註冊" : "Sign up"}
         </Link>
       </div>
     );
@@ -110,7 +110,7 @@ export function UserButton({ initialUser }: Props) {
               className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-ink-50 dark:hover:bg-ink-800"
             >
               <UserIcon className="h-4 w-4" />
-              我嘅 Account
+              {lang === "zh" ? "我的帳戶" : "My Account"}
             </Link>
             <Link
               href={`/${lang}/account/settings`}
@@ -118,7 +118,7 @@ export function UserButton({ initialUser }: Props) {
               className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-ink-50 dark:hover:bg-ink-800"
             >
               <Settings className="h-4 w-4" />
-              設定
+              {lang === "zh" ? "設定" : "Settings"}
             </Link>
           </div>
           <div className="border-t border-ink-200/70 py-1 dark:border-ink-800/70">
@@ -133,7 +133,7 @@ export function UserButton({ initialUser }: Props) {
               ) : (
                 <LogOut className="h-4 w-4" />
               )}
-              登出
+              {lang === "zh" ? "登出" : "Log out"}
             </button>
           </div>
         </div>

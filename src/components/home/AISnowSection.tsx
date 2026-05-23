@@ -8,7 +8,28 @@ const particles = Array.from({ length: 42 }, (_, i) => ({
   opacity: 0.22 + ((i * 11) % 45) / 100,
 }));
 
-export function AISnowSection() {
+export function AISnowSection({ lang = "zh" }: { lang?: "zh" | "en" }) {
+  const copy = lang === "zh"
+    ? {
+        badge: "{copy.badge}",
+        title: "持續更新的 AI 訊號流",
+        desc: "我們每 12 小時從 AI 實驗室、Reddit、GitHub、arXiv 與科技媒體收集原始訊號，並整理成專題文章、內部儀表板與電子報，協助讀者持續掌握 AI 世界的最新變化。",
+        cards: [
+          { label: "來源", value: "10", desc: "AI 訊號來源" },
+          { label: "更新", value: "12h", desc: "自動擷取" },
+          { label: "輸出", value: "文章", desc: "中文解讀" },
+        ],
+      }
+    : {
+        badge: "Live AI signal stream",
+        title: "A continuously updated AI signal stream",
+        desc: "Every 12 hours, we collect raw signals from AI labs, Reddit, GitHub, arXiv and technology media, then turn them into articles, internal dashboards and email briefings.",
+        cards: [
+          { label: "Sources", value: "10", desc: "AI signal feeds" },
+          { label: "Refresh", value: "12h", desc: "auto ingest" },
+          { label: "Output", value: "Blog", desc: "analysis" },
+        ],
+      };
   return (
     <section className="container-page section-pad pt-0">
       <div className="relative overflow-hidden rounded-3xl border border-ink-200/70 bg-ink-950 px-6 py-12 text-white shadow-soft dark:border-ink-800/80 md:px-10 md:py-16">
@@ -36,18 +57,17 @@ export function AISnowSection() {
               Live AI signal stream
             </div>
             <h2 className="font-display text-3xl font-bold tracking-tight md:text-5xl">
-              每日落雪咁更新嘅 AI 訊號
+              {copy.title}
             </h2>
             <p className="mt-4 max-w-2xl text-sm leading-7 text-white/68 md:text-base">
-              我哋每 12 小時由 AI lab、Reddit、GitHub、arXiv、科技媒體收集 raw signals，
-              再整理成文章、Admin dashboard、email digest。你每日返嚟，都會見到 AI 世界新一層變化。
+              {copy.desc}
             </p>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-            <SignalCard icon={<Radar className="h-4 w-4" />} label="Sources" value="10" desc="AI blog signals" />
-            <SignalCard icon={<Cpu className="h-4 w-4" />} label="Refresh" value="12h" desc="auto ingest" />
-            <SignalCard icon={<Sparkles className="h-4 w-4" />} label="Output" value="Blog" desc="中文解讀" />
+            <SignalCard icon={<Radar className="h-4 w-4" />} {...copy.cards[0]} />
+            <SignalCard icon={<Cpu className="h-4 w-4" />} {...copy.cards[1]} />
+            <SignalCard icon={<Sparkles className="h-4 w-4" />} {...copy.cards[2]} />
           </div>
         </div>
       </div>

@@ -14,7 +14,7 @@ import { JobImpactTicker } from "@/components/dashboard/JobImpactTicker";
 
 export const metadata: Metadata = {
   title: "Agent 動態｜Admin",
-  description: "查看 AI Radar 自動 ingest agent 收集到嘅來源、最新 raw items、source health 同趨勢數據。",
+  description: "查看 AI Radar 自動擷取 agent 收集到的來源、最新 raw items、source health 與趨勢數據。",
 };
 
 export const revalidate = 60;
@@ -38,7 +38,7 @@ export default async function AdminAgentPage() {
           今日 Agent 收集動態
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-ink-500 dark:text-ink-400">
-          呢度係內部監控頁：睇到每 12 小時自動 ingest pipeline 收咗啲乜、邊個 source 正常、邊個 source 有 error，以及最近收集到嘅 raw items。
+          這是內部監控頁：可查看每 12 小時自動擷取 pipeline 收集的內容、各 source 的狀態與錯誤，以及最近收集到的 raw items。
         </p>
       </div>
 

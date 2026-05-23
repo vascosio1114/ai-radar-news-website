@@ -25,32 +25,32 @@ const fontMono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_NAME} — 中文 AI 最新資訊`,
+    default: `${SITE_NAME} — AI Intelligence Platform`,
     template: `%s · ${SITE_NAME}`,
   },
   description:
-    "最新 AI 文章、AI 工具評測、AI 教學同趨勢分析，每日更新，繁體中文。",
+    "AI articles, tools, tutorials and trend analysis for people building with artificial intelligence.",
   keywords: [
     "AI",
-    "人工智能",
+    "Artificial Intelligence",
     "ChatGPT",
-    "AI 工具",
-    "AI 文章",
-    "AI 教學",
-    "AI 趨勢",
+    "AI tools",
+    "AI blog",
+    "AI tutorials",
+    "AI trends",
   ],
   openGraph: {
-    title: `${SITE_NAME} — 中文 AI 最新資訊`,
-    description: "最新 AI 文章、工具、教學、趨勢分析",
+    title: `${SITE_NAME} — AI Intelligence Platform`,
+    description: "AI articles, tools, tutorials and trend analysis.",
     url: SITE_URL,
     siteName: SITE_NAME,
-    locale: "zh_HK",
+    locale: "en_US",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: SITE_NAME,
-    description: "最新 AI 文章、工具、教學",
+    description: "AI articles, tools, tutorials and trend analysis.",
   },
   robots: { index: true, follow: true },
   icons: { icon: "/favicon.svg" },
@@ -70,7 +70,7 @@ export default function RootLayout({
 }) {
   return (
     <html
-      lang="zh-Hant"
+      lang="en"
       suppressHydrationWarning
       className={`${fontSans.variable} ${fontDisplay.variable} ${fontMono.variable}`}
     >

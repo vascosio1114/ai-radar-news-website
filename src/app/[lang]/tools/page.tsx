@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ToolsPageClient } from "@/components/tools/ToolsPageClient";
-import { getUIStrings, type Lang } from "@/lib/i18n";
+import { getUIStrings, hasEnglishDisplayContent, type Lang } from "@/lib/i18n";
 import { DEFAULT_LANG } from "@/lib/site";
 
 type Props = { params: { lang: string } };
@@ -31,7 +31,10 @@ export default async function ToolsPage({ params }: Props) {
         </p>
       </header>
 
-      <ToolsPageClient tools={tools ?? []} lang={lang} />
+      <ToolsPageClient
+        tools={lang === "en" ? (tools ?? []).filter((tool) => hasEnglishDisplayContent(tool, ["name", "tagline", "description"])) : tools ?? []}
+        lang={lang}
+      />
     </div>
   );
 }

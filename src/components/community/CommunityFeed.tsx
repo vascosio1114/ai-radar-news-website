@@ -9,9 +9,10 @@ import type { Thread } from "@/types/database.types";
 
 interface CommunityFeedProps {
   initialThreads?: Thread[];
+  lang?: "zh" | "en";
 }
 
-export function CommunityFeed({ initialThreads = [] }: CommunityFeedProps) {
+export function CommunityFeed({ initialThreads = [], lang = "en" }: CommunityFeedProps) {
   const [threads, setThreads] = useState<Thread[]>(initialThreads);
   const [loading, setLoading] = useState(!initialThreads.length);
   const [hasMore, setHasMore] = useState(true);
@@ -84,8 +85,8 @@ export function CommunityFeed({ initialThreads = [] }: CommunityFeedProps) {
   const handleNewThread = useCallback((thread: Thread) => {
     setThreads((prev) => [thread, ...prev]);
     setShowNewModal(false);
-    setStatusMessage("Thread posted successfully");
-  }, []);
+    setStatusMessage(lang === "zh" ? "討論已成功發布" : "Thread posted successfully");
+  }, [lang]);
 
   return (
     <>
@@ -103,6 +104,7 @@ export function CommunityFeed({ initialThreads = [] }: CommunityFeedProps) {
               liked={userLikes[thread.id] ?? false}
               onLike={() => handleLike(thread.id)}
               currentUserId={currentUserId}
+              lang={lang}
             />
           ))}
 
@@ -117,13 +119,13 @@ export function CommunityFeed({ initialThreads = [] }: CommunityFeedProps) {
 
           {!loading && threads.length === 0 && (
             <div className="py-16 text-center">
-              <p className="text-ink-400">No threads yet. Be the first to post!</p>
+              <p className="text-ink-400">{lang === "zh" ? "目前尚未有討論，歡迎發布第一則內容。" : "No threads yet. Be the first to post."}</p>
             </div>
           )}
         </div>
 
         <div className="hidden md:block">
-          <CommunitySidebar />
+          <CommunitySidebar lang={lang} />
         </div>
       </div>
 
@@ -140,6 +142,7 @@ export function CommunityFeed({ initialThreads = [] }: CommunityFeedProps) {
       {/* New Thread Modal */}
       {showNewModal && (
         <NewThreadModal
+          lang={lang}
           onClose={() => setShowNewModal(false)}
           onSuccess={handleNewThread}
         />

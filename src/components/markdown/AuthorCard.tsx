@@ -5,13 +5,14 @@ interface AuthorCardProps {
   name: string;
   bio?: string;
   avatar?: string;
+  lang?: "zh" | "en";
 }
 
 /**
  * Article footer author card.
  * Shows author avatar, name, and optional bio.
  */
-export default function AuthorCard({ name, bio, avatar }: AuthorCardProps) {
+export default function AuthorCard({ name, bio, avatar, lang = "zh" }: AuthorCardProps) {
   return (
     <div className="mt-12 rounded-2xl border border-ink-200 bg-white p-6 dark:border-ink-800 dark:bg-ink-900">
       <div className="flex items-start gap-4">
@@ -30,7 +31,7 @@ export default function AuthorCard({ name, bio, avatar }: AuthorCardProps) {
         </div>
         <div>
           <p className="text-xs font-medium uppercase tracking-wider text-ink-500 dark:text-ink-400">
-            作者
+            {lang === "zh" ? "作者" : "Author"}
           </p>
           <h4 className="mt-1 font-display text-lg font-semibold">{name}</h4>
           {bio && (

@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Clock, GraduationCap } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getUIStrings, type Lang } from "@/lib/i18n";
+import { getLocalizedContent, getUIStrings, hasEnglishDisplayContent, type Lang } from "@/lib/i18n";
 import { DEFAULT_LANG } from "@/lib/site";
 
 type Props = { params: { lang: string } };
@@ -25,7 +25,26 @@ export default async function TutorialsPage({ params }: Props) {
     .eq("is_published", true)
     .order("created_at", { ascending: false });
 
-  const tutorials = data ?? [];
+  const tutorials = lang === "en"
+    ? (data ?? []).filter((tutorial) => hasEnglishDisplayContent(tutorial, ["title", "excerpt"]))
+    : data ?? [];
+
+  const levelLabel = (level: string) => {
+    if (lang === "en") {
+      if (level === "新手") return "Beginner";
+      if (level === "中級") return "Intermediate";
+      if (level === "進階") return "Advanced";
+    }
+    return level;
+  };
+
+  const durationLabel = (duration: string) => {
+    if (lang !== "en") return duration;
+    return duration
+      .replace(/分鐘/g, "min")
+      .replace(/小時/g, "hr")
+      .replace(/日/g, "days");
+  };
 
   return (
     <div className="container-page section-pad">
@@ -41,8 +60,11 @@ export default async function TutorialsPage({ params }: Props) {
         </p>
       </header>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        {tutorials.map((t) => (
+      {tutorials.length > 0 ? (
+        <div className="grid gap-6 md:grid-cols-2">
+        {tutorials.map((t) => {
+          const localized = getLocalizedContent(t, lang);
+          return (
           <Link
             key={t.id}
             href={`/${lang}/tutorials/${t.slug}`}
@@ -51,7 +73,7 @@ export default async function TutorialsPage({ params }: Props) {
             <div className="relative aspect-square w-40 shrink-0 overflow-hidden md:w-56">
               <Image
                 src={t.cover_image}
-                alt={t.title}
+                alt={localized.title}
                 fill
                 sizes="(min-width: 768px) 220px, 160px"
                 className="object-cover transition duration-500 group-hover:scale-105"
@@ -63,23 +85,29 @@ export default async function TutorialsPage({ params }: Props) {
                   className={`rounded-full px-2.5 py-0.5 font-semibold ${LEVEL_STYLE[t.level] ?? ""}`}
                 >
                   <GraduationCap className="mr-1 inline h-3 w-3" />
-                  {t.level}
+                  {levelLabel(t.level)}
                 </span>
                 <span className="inline-flex items-center gap-1 text-ink-500 dark:text-ink-400">
                   <Clock className="h-3.5 w-3.5" />
-                  {t.duration}
+                  {durationLabel(t.duration)}
                 </span>
               </div>
               <h3 className="line-clamp-2 font-display text-lg font-semibold leading-snug">
-                {t.title}
+                {localized.title}
               </h3>
               <p className="line-clamp-3 text-sm text-ink-500 dark:text-ink-400">
-                {t.excerpt}
+                {localized.excerpt}
               </p>
             </div>
           </Link>
-        ))}
-      </div>
+          );
+        })}
+        </div>
+      ) : (
+        <div className="rounded-3xl border border-ink-200/70 bg-white p-8 text-sm text-ink-500 dark:border-ink-800/70 dark:bg-ink-900 dark:text-ink-400">
+          {lang === "zh" ? "目前尚未有已發佈教學。" : "No English tutorials are available yet."}
+        </div>
+      )}
     </div>
   );
 }

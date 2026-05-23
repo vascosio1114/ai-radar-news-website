@@ -50,8 +50,8 @@ export default function NewArticlePage() {
         </h1>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-ink-500 dark:text-ink-400">
           {createdArticle.is_published
-            ? "文章已發佈，會自動出現喺首頁最新文章同 Blog 列表。"
-            : "文章已儲存為草稿，發佈後就會出現喺首頁最新文章同 Blog 列表。"}
+            ? "文章已發佈，將自動顯示於首頁最新文章與 Blog 列表。"
+            : "文章已儲存為草稿，發佈後將顯示於首頁最新文章與 Blog 列表。"}
         </p>
 
         <div className="mt-7 flex flex-wrap gap-3">
@@ -70,7 +70,7 @@ export default function NewArticlePage() {
             target="_blank"
             className="inline-flex items-center gap-2 rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm font-semibold text-ink-800 transition hover:bg-ink-50 dark:border-ink-700 dark:bg-ink-900 dark:text-ink-100 dark:hover:bg-ink-800"
           >
-            去主頁睇
+            查看主頁
             <Home className="h-4 w-4" />
           </Link>
           <Link
@@ -110,7 +110,7 @@ export default function NewArticlePage() {
           寫新 Blog 文章
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-ink-500 dark:text-ink-400">
-          用 Markdown 寫文章。勾選「已發佈」後，文章會直接連到主頁「最新 AI 文章」同 Blog 列表。
+          使用 Markdown 撰寫文章。勾選「已發佈」後，文章將顯示於主頁「最新 AI 文章」與 Blog 列表。
         </p>
       </div>
 

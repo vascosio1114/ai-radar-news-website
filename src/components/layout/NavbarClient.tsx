@@ -95,7 +95,7 @@ export function NavbarClient({ initialUser }: Props) {
           </div>
           <button
             type="button"
-            aria-label="開啟選單"
+            aria-label={lang === "zh" ? "開啟選單" : "Open menu"}
             onClick={() => setOpen((v) => !v)}
             className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-ink-200 bg-white/70 text-ink-700 transition dark:border-ink-800 dark:bg-ink-900/70 dark:text-ink-200 md:hidden"
           >

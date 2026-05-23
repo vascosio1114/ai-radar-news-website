@@ -1,4 +1,4 @@
-import { AlertTriangle, ArrowDownRight, ArrowUpRight, Info, TrendingUp } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Info, TrendingUp } from "lucide-react";
 import type { JobImpactTrend } from "@/lib/dashboard/queries";
 import type { Lang } from "@/lib/site";
 
@@ -7,6 +7,19 @@ function formatMonth(day: string, lang: Lang) {
     lang === "zh" ? "zh-Hant-HK" : "en-US",
     { year: "numeric", month: "short" }
   );
+}
+
+function formatLargeNumber(value: number, lang: Lang) {
+  if (lang === "zh") {
+    if (value >= 100_000_000) return `${(value / 100_000_000).toFixed(1).replace(/\.0$/, "")}億`;
+    if (value >= 10_000) return `${Math.round(value / 10_000).toLocaleString("zh-Hant-HK")}萬`;
+    return value.toLocaleString("zh-Hant-HK");
+  }
+
+  if (value >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(1).replace(/\.0$/, "")}B`;
+  if (value >= 1_000_000) return `${Math.round(value / 1_000_000).toLocaleString("en-US")}M`;
+  if (value >= 1_000) return `${Math.round(value / 1_000).toLocaleString("en-US")}K`;
+  return value.toLocaleString("en-US");
 }
 
 function buildPath(values: number[], width: number, height: number, pad = 18) {
@@ -47,45 +60,61 @@ export function JobImpactTicker({
     lang === "zh"
       ? {
           badge: "AI 就業影響觀察",
-          title: "疫情後 AI 就業影響曲線",
+          title: "AI 對就業人數的影響估算",
           description:
-            "由 2020 年疫情後的數碼化浪潮開始，到 ChatGPT、Copilot 與 AI agents 逐步進入企業流程，這條曲線呈現 AI 對職位影響壓力的長期上升趨勢。數字屬估算模型與指數，並非官方失業統計。",
-          affectedRoles: "估算受影響職位",
+            "此圖以 Goldman Sachs、IMF、McKinsey 與 World Economic Forum 等公開研究為參考，呈現 AI 可能影響或重塑的職位規模。數字代表「受影響／曝險」估算，並不等同裁員或失業人數。",
+          affectedRoles: "估算受影響人數",
           people: "人",
           monthlyChange: "月度變化",
-          signalTotal: "模型訊號累計",
-          impactIndex: "影響指數",
-          now: "現在",
-          range: "區間",
-          chartLabel: "由 2020 年至今的 AI 就業影響曲線",
-          chatgptBoom: "ChatGPT 熱潮",
-          aiAgents: "AI agents",
-          affectedCurve: "估算受影響職位曲線",
-          indexLine: "AI 就業影響指數",
-          modelNote: "由疫情後 AI 採用訊號建立的估算模型",
+          signalTotal: "研究訊號累計",
+          impactIndex: "曝險指數",
+          now: "目前",
+          range: "估算區間",
+          chartLabel: "AI 對就業人數影響估算曲線",
+          firstLabel: "2023",
+          secondLabel: "生成式 AI 普及",
+          thirdLabel: "企業導入",
+          affectedCurve: "估算受影響人數曲線",
+          indexLine: "AI 就業曝險指數",
+          modelNote: "研究參考模型，非官方失業統計",
           methodology:
-            "方法說明：這是一個編輯估算模型，以疫情後自動化、生成式 AI、企業重組與 AI agents 採用等公開訊號建立長期趨勢。它適合用來觀察方向與變化速度；下一版可接入裁員追蹤資料、政府勞工數據與公司公告，建立更嚴謹的估算。",
+            "方法說明：曲線以公開研究作為錨點，再以編輯模型平滑呈現趨勢。Goldman Sachs 估計全球約 3 億個全職等值職位可能受 AI 自動化影響；IMF 指出接近 40% 的全球就業暴露於 AI；McKinsey 估計生成式 AI 與既有技術可自動化佔員工時間 60–70% 的工作活動；WEF 則預測至 2030 年將有 9,200 萬個職位被取代、1.7 億個新職位被創造。",
+          sources: "參考：Goldman Sachs Research、IMF、McKinsey Global Institute、World Economic Forum。",
+          referenceCap: "研究參考上限",
+          globalExposure: "全球職位曝險",
+          labourShift: "2030 勞動轉型",
+          referenceCapValue: "3億+",
+          globalExposureValue: "約 40%",
+          labourShiftValue: "9,200萬 / 1.7億",
         }
       : {
-          badge: "AI Job Impact Watch",
-          title: "Post-pandemic AI job impact curve",
+          badge: "AI Workforce Exposure Watch",
+          title: "Estimated workforce exposure to AI",
           description:
-            "From the 2020 digital acceleration to ChatGPT, Copilot and AI agents entering enterprise workflows, this curve shows the long-term rise of AI-related pressure on roles. The numbers are modelled estimates and index values, not official unemployment statistics.",
-          affectedRoles: "Estimated affected roles",
-          people: "people",
+            "This chart uses public research from Goldman Sachs, the IMF, McKinsey and the World Economic Forum as reference anchors. The numbers estimate roles affected or exposed to AI-driven workflow change; they are not layoff or unemployment figures.",
+          affectedRoles: "Estimated affected workers",
+          people: "workers",
           monthlyChange: "Monthly change",
-          signalTotal: "Model signal total",
-          impactIndex: "Impact index",
+          signalTotal: "Research signals",
+          impactIndex: "Exposure index",
           now: "Now",
           range: "Range",
-          chartLabel: "AI job impact line chart from 2020 to today",
-          chatgptBoom: "ChatGPT boom",
-          aiAgents: "AI agents",
-          affectedCurve: "Estimated affected roles curve",
-          indexLine: "AI Job Impact Index",
-          modelNote: "Modelled from pandemic-era AI adoption signals",
+          chartLabel: "Estimated workforce exposure to AI line chart",
+          firstLabel: "2023",
+          secondLabel: "GenAI adoption",
+          thirdLabel: "Enterprise rollout",
+          affectedCurve: "Estimated affected workers curve",
+          indexLine: "AI workforce exposure index",
+          modelNote: "Research-informed model, not official unemployment data",
           methodology:
-            "Methodology: this is an editorial model based on public signals such as post-pandemic automation, generative AI adoption, enterprise restructuring and AI agents entering workflows. It is useful for reading direction and velocity; a later version can connect layoff trackers, government labour data and company announcements for a stricter estimate.",
+            "Methodology: the curve uses public research as anchor points, then smooths them into an editorial trend model. Goldman Sachs estimates that roughly 300 million full-time-equivalent jobs globally could be exposed to AI automation; the IMF says nearly 40% of global employment is exposed to AI; McKinsey estimates that generative AI and existing technologies could automate work activities absorbing 60–70% of employee time; WEF projects 92 million jobs displaced and 170 million created by 2030.",
+          sources: "Sources: Goldman Sachs Research, IMF, McKinsey Global Institute, World Economic Forum.",
+          referenceCap: "Research exposure estimate",
+          globalExposure: "Global job exposure",
+          labourShift: "2030 labour-market shift",
+          referenceCapValue: "300M+",
+          globalExposureValue: "~40%",
+          labourShiftValue: "92M / 170M",
         };
 
   return (
@@ -111,17 +140,17 @@ export function JobImpactTicker({
               </div>
 
               <div className="grid grid-cols-2 gap-3 sm:min-w-[380px]">
-                <Metric label={copy.affectedRoles} value={latest.estimated_affected_roles.toLocaleString()} suffix={copy.people} />
+                <Metric label={copy.affectedRoles} value={formatLargeNumber(latest.estimated_affected_roles, lang)} suffix={copy.people} />
                 <Metric label={copy.monthlyChange} value={`${isUp ? "+" : ""}${trend.change_pct}%`} tone={isUp ? "up" : "down"} />
-                <Metric label={copy.signalTotal} value={trend.total_signal_count.toLocaleString()} suffix="pts" />
-                <Metric label={copy.impactIndex} value={latest.index.toLocaleString()} />
+                <Metric label={copy.referenceCap} value={copy.referenceCapValue} />
+                <Metric label={copy.globalExposure} value={copy.globalExposureValue} />
               </div>
             </div>
 
             <div className="mt-7 rounded-2xl border border-ink-200/70 bg-white/80 p-4 dark:border-emerald-400/15 dark:bg-black/70">
-              <div className="mb-3 flex items-center justify-between text-xs text-ink-500 dark:text-emerald-50/55">
-                <span>{startLabel ? formatMonth(startLabel.day, lang) : "2020"} → {lastLabel ? formatMonth(lastLabel.day, lang) : copy.now}</span>
-                <span>{copy.range} {min.toLocaleString()} – {max.toLocaleString()}</span>
+              <div className="mb-3 flex flex-col gap-1 text-xs text-ink-500 dark:text-emerald-50/55 sm:flex-row sm:items-center sm:justify-between">
+                <span>{startLabel ? formatMonth(startLabel.day, lang) : "2023"} → {lastLabel ? formatMonth(lastLabel.day, lang) : copy.now}</span>
+                <span>{copy.range} {formatLargeNumber(min, lang)} – {formatLargeNumber(max, lang)}</span>
               </div>
 
               <div className="relative h-[280px] overflow-hidden rounded-xl bg-gradient-to-b from-ink-50 to-white dark:from-black dark:to-[#020403]">
@@ -161,7 +190,8 @@ export function JobImpactTicker({
                     const range = Math.max(1, max - min);
                     const x = 18 + (i / Math.max(1, trend.points.length - 1)) * (width - 36);
                     const y = 18 + (1 - (p.estimated_affected_roles - min) / range) * (height - 36);
-                    const isMilestone = p.day.endsWith("-01") || p.day === "2022-11" || p.day === "2023-03" || p.day === "2024-05";
+                    const month = Number(p.day.slice(5, 7));
+                    const isMilestone = month === 1 || p.day === "2023-03" || p.day === "2024-01" || p.day === "2025-01";
                     return isMilestone ? (
                       <circle key={p.day} cx={x} cy={y} r="3.5" fill="#020403" stroke="#86efac" strokeWidth="2" />
                     ) : null;
@@ -169,9 +199,9 @@ export function JobImpactTicker({
                 </svg>
 
                 <div className="pointer-events-none absolute bottom-3 left-4 right-4 flex justify-between text-[10px] font-medium text-ink-400 dark:text-emerald-50/35">
-                  <span>2020</span>
-                  <span>{copy.chatgptBoom}</span>
-                  <span>{copy.aiAgents}</span>
+                  <span>{copy.firstLabel}</span>
+                  <span>{copy.secondLabel}</span>
+                  <span>{copy.thirdLabel}</span>
                   <span>{copy.now}</span>
                 </div>
               </div>
@@ -192,10 +222,14 @@ export function JobImpactTicker({
               </div>
             </div>
 
-            <div className="mt-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4 text-xs leading-6 text-amber-800 dark:text-amber-100/80">
-              <div className="flex gap-2">
-                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+            <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_0.8fr]">
+              <div className="rounded-2xl border border-emerald-500/15 bg-emerald-500/10 p-4 text-xs leading-6 text-emerald-900 dark:text-emerald-100/78">
                 <p>{copy.methodology}</p>
+                <p className="mt-2 text-emerald-700/75 dark:text-emerald-100/45">{copy.sources}</p>
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1">
+                <Metric label={copy.labourShift} value={copy.labourShiftValue} />
+                <Metric label={copy.impactIndex} value={latest.index.toLocaleString(lang === "zh" ? "zh-Hant-HK" : "en-US")} />
               </div>
             </div>
           </div>

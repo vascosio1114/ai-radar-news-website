@@ -97,7 +97,7 @@ const featureListZh = `
         <div style="margin-bottom:8px;"><strong style="color:#ffffff;">你將會收到：</strong></div>
         <div>• 每日 AI 文章重點整理</div>
         <div>• 新 AI 工具 / GitHub trending / arXiv paper 快速掃描</div>
-        <div>• 由 AI Radar 編輯角度整理嘅中文解讀</div>
+        <div>• 由 AI Radar 編輯角度整理的中文解讀</div>
       </td>
     </tr>
   </table>`;
@@ -125,19 +125,19 @@ export function buildConfirmationHtml(params: TemplateParams): string {
     title: isEn ? "Confirm your subscription" : "確認訂閱 AI Radar",
     intro: isEn
       ? "One click and you're in. We'll send curated AI signals, tools, and trend summaries to your inbox."
-      : "差一步就完成。確認後，我哋會將每日 AI 文章、工具更新同趨勢重點送到你 inbox。",
+      : "只差一步即可完成訂閱。確認後，我們會將每日 AI 文章、工具更新與趨勢重點送到您的收件箱。",
     children: `
       <div style="text-align:center;margin:6px 0 22px;">
         ${button(isEn ? "Confirm subscription" : "確認訂閱", url)}
       </div>
       ${isEn ? featureListEn : featureListZh}
       <p style="margin:0;color:#94a3b8;font-size:13px;line-height:1.75;text-align:center;">
-        ${isEn ? "If the button doesn't work, copy and paste this link into your browser:" : "如果按鈕開唔到，可以複製以下連結到瀏覽器："}<br />
+        ${isEn ? "If the button doesn't work, copy and paste this link into your browser:" : "如果按鈕無法開啟，請複製以下連結到瀏覽器："}<br />
         <a href="${url}" style="color:#7dd3fc;word-break:break-all;text-decoration:none;">${url}</a>
       </p>`,
     footerNote: isEn
       ? "You received this email because someone subscribed to AI Radar with this address."
-      : "你收到呢封 email，因為有人用呢個 email 訂閱 AI Radar。若唔係你本人操作，可以直接忽略。",
+      : "您收到此電郵，是因為有人使用此電子郵件地址訂閱 AI Radar。若不是您本人操作，可以直接忽略。",
   });
 }
 
@@ -151,10 +151,10 @@ export function buildWelcomeHtml(params: TemplateParams): string {
     title: isEn ? "You're subscribed ✅" : "訂閱成功 ✅",
     intro: isEn
       ? "Welcome aboard. Your AI signal feed is now active."
-      : "歡迎加入。由今日開始，你會定期收到 AI Radar 精選嘅 AI 動態同趨勢重點。",
+      : "歡迎加入。由今日開始，您會定期收到 AI Radar 精選的 AI 動態與趨勢重點。",
     children: `
       <div style="text-align:center;margin:6px 0 22px;">
-        ${button(isEn ? "Read AI Radar" : "立即睇 AI Radar", siteUrl, "#0ea5e9")}
+        ${button(isEn ? "Read AI Radar" : "立即查看 AI Radar", siteUrl, "#0ea5e9")}
       </div>
       ${isEn ? featureListEn : featureListZh}
       <p style="margin:0;color:#94a3b8;font-size:13px;line-height:1.75;text-align:center;">
@@ -163,7 +163,7 @@ export function buildWelcomeHtml(params: TemplateParams): string {
       </p>`,
     footerNote: isEn
       ? "Thanks for reading AI Radar."
-      : "多謝你訂閱 AI Radar。我哋會盡量只 send 真正值得睇嘅內容。",
+      : "感謝您訂閱 AI Radar。我們會盡量只發送真正值得閱讀的內容。",
   });
 }
 
@@ -176,16 +176,16 @@ export function buildUnsubscribeHtml(params: TemplateParams): string {
     title: isEn ? "Unsubscribe?" : "確認取消訂閱？",
     intro: isEn
       ? "Click below to stop receiving AI Radar emails."
-      : "如果你確定唔想再收到 AI Radar email，可以按下面按鈕完成取消訂閱。",
+      : "如果您確定不想再收到 AI Radar 電郵，可以按下方按鈕完成取消訂閱。",
     children: `
       <div style="text-align:center;margin:6px 0 22px;">
         ${button(isEn ? "Confirm unsubscribe" : "確認取消訂閱", url, "#dc2626")}
       </div>
       <p style="margin:0;color:#94a3b8;font-size:13px;line-height:1.75;text-align:center;">
-        ${isEn ? "If this was a mistake, you can ignore this email." : "如果只係誤按，可以直接忽略呢封 email。"}
+        ${isEn ? "If this was a mistake, you can ignore this email." : "如果只是誤按，可以直接忽略此電郵。"}
       </p>`,
     footerNote: isEn
       ? "You're in control of your subscription preferences."
-      : "你可以隨時管理自己嘅訂閱狀態。",
+      : "您可以隨時管理自己的訂閱狀態。",
   });
 }

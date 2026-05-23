@@ -22,7 +22,7 @@ export default function RelatedArticles({ articles, currentSlug, lang = "zh" }: 
 
   return (
     <section className="mt-12">
-      <h2 className="mb-6 font-display text-xl font-semibold">相關文章</h2>
+      <h2 className="mb-6 font-display text-xl font-semibold">{lang === "zh" ? "相關文章" : "Related articles"}</h2>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {related.map((article) => (
           <Link
@@ -60,7 +60,7 @@ export default function RelatedArticles({ articles, currentSlug, lang = "zh" }: 
           href={`/${lang}/news`}
           className="inline-flex items-center gap-1 text-sm font-medium text-accent-600 transition hover:text-accent-700 dark:text-accent-400 dark:hover:text-accent-300"
         >
-          查看全部文章
+          {lang === "zh" ? "查看全部文章" : "View all articles"}
           <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
