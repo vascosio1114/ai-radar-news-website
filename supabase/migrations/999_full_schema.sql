@@ -213,7 +213,8 @@ do $$ begin
     email           text unique not null,
     opted_in        boolean default false,
     subscribed_at   timestamptz default now(),
-    is_confirmed    boolean default false
+    is_confirmed    boolean default false,
+    confirmation_token text unique
   );
 exception when duplicate_table then null;
 end $$;
@@ -661,10 +662,9 @@ security definer
 set search_path = public
 as $$
 begin
-  insert into public.profiles (id, email, display_name, avatar_url)
+  insert into public.profiles (id, display_name, avatar_url)
   values (
     new.id,
-    new.email,
     coalesce(new.raw_user_meta_data->>'name', new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1)),
     new.raw_user_meta_data->>'avatar_url'
   )

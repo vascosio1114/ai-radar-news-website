@@ -1,4 +1,5 @@
 // Pure client-side email HTML builder — no server dependencies
+import { renderDigestTemplate } from "./digest-template";
 function escapeHtml(text: string): string {
   return text.replace(/[&<>"']/g, (c) => {
     switch (c) {
@@ -22,8 +23,11 @@ export function buildDigestHtml(params: {
     published_at: string;
     cover_image?: string;
   }>;
+  emailBodyTemplate?: string;
+  dateStr?: string;
+  unsubscribeUrl?: string;
 }): string {
-  const { headerHtml, footerHtml, articles } = params;
+  const { headerHtml, footerHtml, articles, emailBodyTemplate, dateStr, unsubscribeUrl } = params;
 
   const articleRows = articles
     .map((a) => {
@@ -46,6 +50,16 @@ export function buildDigestHtml(params: {
       `;
     })
     .join("<hr style='border:none;border-top:1px solid #eee;margin:24px 0;' />");
+
+  if (emailBodyTemplate) {
+    return renderDigestTemplate(emailBodyTemplate, {
+      articles: articleRows,
+      header: headerHtml,
+      footer: footerHtml,
+      date: dateStr ?? "",
+      unsubscribe_url: unsubscribeUrl ?? "",
+    });
+  }
 
   return `
     <!DOCTYPE html>

@@ -29,7 +29,6 @@ export async function GET() {
   }
 }
 
-
 function normalizeSlug(value: string) {
   return String(value || "")
     .toLowerCase()
@@ -60,6 +59,7 @@ export async function POST(req: Request) {
     const auth = await requireAdminApi();
     if (!auth.ok) return auth.response;
     const supabase = auth.adminDb;
+
     const publishedAt = body.published_at
       ? new Date(body.published_at).toISOString()
       : new Date().toISOString();

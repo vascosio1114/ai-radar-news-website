@@ -49,6 +49,7 @@ export default function AdminLoginPage() {
 
       // Use a full navigation so the server-side admin layout can read the new Supabase cookies
       // and perform the final admin permission check server-side.
+
       window.location.assign("/admin");
     } catch (err) {
       setError(translateLoginError((err as Error).message));

@@ -10,9 +10,17 @@ import type { Thread } from "@/types/database.types";
 interface CommunityFeedProps {
   initialThreads?: Thread[];
   lang?: "zh" | "en";
+  sidebarData?: {
+    tags: string[];
+    members: Array<{ name: string; avatar: string }>;
+  };
 }
 
-export function CommunityFeed({ initialThreads = [], lang = "en" }: CommunityFeedProps) {
+export function CommunityFeed({
+  initialThreads = [],
+  lang = "en",
+  sidebarData,
+}: CommunityFeedProps) {
   const [threads, setThreads] = useState<Thread[]>(initialThreads);
   const [loading, setLoading] = useState(!initialThreads.length);
   const [hasMore, setHasMore] = useState(true);
@@ -131,7 +139,11 @@ export function CommunityFeed({ initialThreads = [], lang = "en" }: CommunityFee
         </div>
 
         <div className="hidden md:block">
-          <CommunitySidebar lang={lang} />
+          <CommunitySidebar
+            lang={lang}
+            tags={sidebarData?.tags}
+            members={sidebarData?.members}
+          />
         </div>
       </div>
 

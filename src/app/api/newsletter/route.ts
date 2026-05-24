@@ -87,7 +87,8 @@ export async function POST(request: Request) {
 
     // If daily_opt_in, insert into mail_subscribers with is_confirmed=false
     if (dailyOptIn) {
-      const confirmUrl = `${SITE_URL}/api/confirm/${Buffer.from(email).toString("base64url")}`;
+      const token = crypto.randomUUID();
+      const confirmUrl = `${SITE_URL}/api/confirm/${token}`;
       const confirmHtml = buildConfirmationHtml({ confirmUrl, lang: "zh" });
 
       await supabase
@@ -97,6 +98,7 @@ export async function POST(request: Request) {
             email,
             opted_in: false,
             is_confirmed: false,
+            confirmation_token: token,
             subscribed_at: new Date().toISOString(),
           },
           { onConflict: "email" }

@@ -48,10 +48,11 @@ export async function POST(request: Request) {
     email_subject_template: body.email_subject_template,
     email_header_html: body.email_header_html,
     email_footer_html: body.email_footer_html,
+    email_body_template: body.email_body_template,
+    skip_empty_digest: body.skip_empty_digest,
     updated_at: new Date().toISOString(),
   };
 
-  // Upsert: fetch existing row to get id, then upsert
   const { data: existing } = await supabase
     .from("mail_settings")
     .select("id")

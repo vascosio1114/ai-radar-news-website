@@ -12,8 +12,6 @@ export async function GET() {
     if (!auth.ok) return auth.response;
     const supabase = auth.adminDb;
 
-    // Get all Auth users with their profile is_admin status. Auth users live in the
-    // private auth schema, so use the Admin Auth API instead of querying auth.users.
     const { data: authData, error: authError } = await supabase.auth.admin.listUsers({
       page: 1,
       perPage: 1000,
@@ -37,13 +35,13 @@ export async function GET() {
     }
 
     const profileMap = new Map(profiles?.map((p) => [p.id, p]) || []);
-    const users = authUsers?.map((u) => ({
+    const users = authUsers.map((u) => ({
       id: u.id,
       email: u.email,
       created_at: u.created_at,
       last_sign_in_at: u.last_sign_in_at,
       is_admin: u.app_metadata?.role === "admin" || profileMap.get(u.id)?.is_admin === true,
-    })) || [];
+    }));
 
     return NextResponse.json({ users });
   } catch (e) {

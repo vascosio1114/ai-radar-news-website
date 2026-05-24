@@ -65,15 +65,24 @@ export default async function ArticlePage({ params }: Props) {
     return NextResponse.redirect(`/${lang}/summarize/${params.slug}`);
   }
 
-  // Use articles_public view for auth-gated content
+  // Use articles_public for auth-gated content - only get gated fields here
   const { data: article } = await supabase
     .from("articles_public")
     .select("*")
     .eq("slug", params.slug)
     .single();
 
-  const mockArticle = MOCK_ARTICLES.find((a) => a.slug === params.slug);
-  const rawArticle = article ?? mockArticle ?? null;
+  // For full content, query the articles table directly (authenticated RLS allows access)
+  const { data: fullArticle } = await supabase
+    .from("articles")
+    .select("*")
+    .eq("slug", params.slug)
+    .single();
+
+  // Merge: base article fields from articles_public, content from articles table
+  const rawArticle = fullArticle
+    ? { ...article, ...fullArticle }
+    : article ?? null;
 
   if (!rawArticle) notFound();
 

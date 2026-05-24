@@ -19,8 +19,10 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (error) {
       console.error("[auth/callback] exchange failed", error);
+      // Try to determine locale from next path or default to zh
+      const locale = safeNext.startsWith("/en") ? "en" : "zh";
       return NextResponse.redirect(
-        new URL(`/zh/login?error=${encodeURIComponent(error.message)}`, request.url)
+        new URL(`/${locale}/login?error=${encodeURIComponent(error.message)}`, request.url)
       );
     }
   }

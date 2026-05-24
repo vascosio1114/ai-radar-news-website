@@ -52,22 +52,22 @@ export default async function SummaryPage({ params }: Props) {
     return NextResponse.redirect(`/${lang}/news/${params.slug}`);
   }
 
-  // Fetch article from articles_public view (auth-gated - unauthenticated only see summary_content)
+  // Use articles_public for auth check (gated view) - only for unauthenticated users
   const { data: article } = await supabase
     .from("articles_public")
     .select("*")
     .eq("slug", params.slug)
     .single();
 
-  const mockArticle = MOCK_ARTICLES.find((a) => a.slug === params.slug);
-  const rawArticle = article ?? mockArticle ?? null;
+  // summary_content is only shown to unauthenticated users (it's in the public view)
+  const rawArticle = article ?? null;
 
   if (!rawArticle) notFound();
 
   const localized = getLocalizedContent(rawArticle, lang);
   const englishUnavailable = lang === "en" && containsCJK([localized.title, localized.excerpt, localized.content, localized.content_html]);
 
-  // Get summary content: English first, then Chinese fallback
+  // summary_content is only available to unauthenticated users via the articles_public view
   const summaryContent =
     lang === "zh"
       ? (localized as any).summary_content_zh ?? (localized as any).summary_content ?? null

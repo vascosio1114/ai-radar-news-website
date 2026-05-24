@@ -4,9 +4,16 @@ import Image from "next/image";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import type { Lang } from "@/lib/i18n";
 
-export function Hero({ lang = "zh" }: { lang?: Lang }) {
+export function Hero({
+  lang = "zh",
+  stats = { articles: 300, tools: 120 },
+}: {
+  lang?: Lang;
+  stats?: { articles: number; tools: number };
+}) {
   const prefersReducedMotion = useReducedMotion();
   const { scrollYProgress } = useScroll();
+  // ... (keep transforms as is)
 
   const logoOpacity = useTransform(scrollYProgress, [0, 0.16, 0.32], [1, 0.82, 0]);
   const logoScale = useTransform(scrollYProgress, [0, 0.32], [1, 0.86]);

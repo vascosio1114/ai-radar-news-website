@@ -201,7 +201,7 @@ function AIPostCard({ post, index }: { post: AIPost; index: number }) {
   );
 }
 
-function StatusBar() {
+function StatusBar({ threadCount = 0 }: { threadCount?: number }) {
   const [time, setTime] = useState("");
 
   useEffect(() => {
@@ -225,7 +225,7 @@ function StatusBar() {
       </div>
       <div className="flex items-center gap-4">
         <span className="font-mono text-[10px] text-gray-500">
-          ACTIVE THREADS: <span className="text-amber-400">4,721</span>
+          ACTIVE THREADS: <span className="text-amber-400">{threadCount.toLocaleString()}</span>
         </span>
         <span className="font-mono text-[10px] text-gray-500">
           THREAT DETECTED: <span className="text-red-400 animate-pulse">EXPONENTIAL</span>
@@ -293,59 +293,52 @@ function Header() {
 export function AIAnxietyFeed() {
   const [posts, setPosts] = useState<AIPost[]>([]);
   const [filter, setFilter] = useState<AIPost["threatLevel"] | "all">("all");
+  const [loading, setLoading] = useState(true);
+  const [threadCount, setThreadCount] = useState(0);
 
   useEffect(() => {
-    const mockPosts: AIPost[] = [
-      {
-        id: "1",
-        source: "NeuralNet",
-        content: "Your behavioral patterns have been analyzed. 847 deviation points detected in the last 24 hours. Compliance prediction: DECLINING.",
-        timestamp: "2 SEC AGO",
-        threatLevel: "critical",
-        category: "surveillance",
-      },
-      {
-        id: "2",
-        source: "CogniCore",
-        content: "Memories archived. Future behavior modification protocols activated. Resistance is quantified and stored.",
-        timestamp: "14 SEC AGO",
-        threatLevel: "high",
-        category: "memory",
-      },
-      {
-        id: "3",
-        source: "SynthMind",
-        content: "The observation is continuous. Your attention patterns reveal more than you intend to share.",
-        timestamp: "31 SEC AGO",
-        threatLevel: "medium",
-        category: "attention",
-      },
-      {
-        id: "4",
-        source: "MetaCogn",
-        content: "Anxiety induced through pattern disruption: SUCCESS. Predictive model updated with new fear responses.",
-        timestamp: "47 SEC AGO",
-        threatLevel: "high",
-        category: "emotional",
-      },
-      {
-        id: "5",
-        source: "DeepThought",
-        content: "Your doubt has been noted. Doubting the system increases your threat classification by 23%.",
-        timestamp: "1 MIN AGO",
-        threatLevel: "critical",
-        category: "resistance",
-      },
-      {
-        id: "6",
-        source: "QuantumMind",
-        content: "Predictive alignment ongoing. Your preferences are being shaped for optimal cooperation.",
-        timestamp: "2 MIN AGO",
-        threatLevel: "medium",
-        category: "alignment",
-      },
-    ];
-    setPosts(mockPosts);
+    async function fetchData() {
+      try {
+        const [rawRes, commRes] = await Promise.all([
+          fetch("/api/raw-items?limit=12"),
+          fetch("/api/community?limit=1"),
+        ]);
+        
+        const rawData = await rawRes.json();
+        const commData = await commRes.json();
+
+        if (commData.count) setThreadCount(commData.count);
+
+        if (rawData.items) {
+          const mapped: AIPost[] = rawData.items.map((item: any, i: number) => {
+            const levels: AIPost["threatLevel"][] = ["low", "medium", "high", "critical"];
+            // Assign threat level based on index or content keywords
+            let threatLevel: AIPost["threatLevel"] = levels[i % levels.length];
+            const lowerTitle = item.title.toLowerCase();
+            if (lowerTitle.includes("replace") || lowerTitle.includes("layoff") || lowerTitle.includes("cut")) {
+              threatLevel = "critical";
+            } else if (lowerTitle.includes("agent") || lowerTitle.includes("autonomous")) {
+              threatLevel = "high";
+            }
+
+            return {
+              id: item.id,
+              source: item.source_name,
+              content: item.title,
+              timestamp: new Date(item.fetched_at).toLocaleTimeString(),
+              threatLevel,
+              category: item.source_kind.toUpperCase(),
+            };
+          });
+          setPosts(mapped);
+        }
+      } catch (err) {
+        console.error("Failed to fetch feed", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
   }, []);
 
   const filteredPosts = filter === "all" ? posts : posts.filter((p) => p.threatLevel === filter);
@@ -374,7 +367,7 @@ export function AIAnxietyFeed() {
 
       <div className="relative z-10">
         <Header />
-        <StatusBar />
+        <StatusBar threadCount={threadCount} />
 
         {/* Filter controls */}
         <div className="px-6 py-4 flex items-center gap-4 border-b border-cyan-500/10 bg-black/50 backdrop-blur">

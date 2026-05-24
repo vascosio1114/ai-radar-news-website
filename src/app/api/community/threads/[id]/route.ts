@@ -27,10 +27,10 @@ export async function GET(
         like_count,
         comment_count,
         created_at,
-        author:auth.users!author_id(
+        author:profiles!author_id(
           id,
-          email,
-          raw_user_meta_data
+          display_name,
+          avatar_url
         )
       `)
       .eq("id", id)
@@ -52,10 +52,10 @@ export async function GET(
         is_bot_comment,
         like_count,
         created_at,
-        author:auth.users!author_id(
+        author:profiles!author_id(
           id,
-          email,
-          raw_user_meta_data
+          display_name,
+          avatar_url
         )
       `)
       .eq("thread_id", id)

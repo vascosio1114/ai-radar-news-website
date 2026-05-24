@@ -388,3 +388,69 @@ export async function getJobImpactTrend(): Promise<JobImpactTrend> {
     total_estimated_affected_roles: latest.estimated_affected_roles,
   };
 }
+
+// ============ Website dynamic data ============
+
+/** Active sources for ProtocolExperience. */
+export async function getActiveSources(): Promise<string[]> {
+  const supabase = db();
+  const { data } = await supabase
+    .from("sources")
+    .select("name")
+    .eq("is_enabled", true)
+    .order("authority", { ascending: false });
+
+  return (data as { name: string }[] | null)?.map((s) => s.name) ?? [];
+}
+
+/** Top members for CommunitySidebar. */
+export async function getCommunityMembers(limit = 5): Promise<Array<{ name: string; avatar: string }>> {
+  const supabase = db();
+  const { data } = await supabase
+    .from("profiles")
+    .select("display_name, avatar_url")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  return (data as { display_name: string; avatar_url: string }[] | null)?.map((p) => ({
+    name: p.display_name ?? "User",
+    avatar: p.avatar_url ?? "",
+  })) ?? [];
+}
+
+/** Trending tags for CommunitySidebar. */
+export async function getTrendingTags(limit = 6): Promise<string[]> {
+  const supabase = db();
+  // Extract tags from latest articles
+  const { data } = await supabase
+    .from("articles")
+    .select("tags")
+    .eq("is_published", true)
+    .order("published_at", { ascending: false })
+    .limit(20);
+
+  const allTags = (data as { tags: string[] }[] | null)?.flatMap((a) => a.tags) ?? [];
+  const counts = new Map<string, number>();
+  for (const tag of allTags) {
+    counts.set(tag, (counts.get(tag) ?? 0) + 1);
+  }
+
+  return Array.from(counts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+    .map(([tag]) => tag);
+}
+
+/** Public-safe counts for Hero component. */
+export async function getPublicStats(): Promise<{ articles: number; tools: number }> {
+  const supabase = db();
+  const [articles, tools] = await Promise.all([
+    supabase.from("articles").select("id", { count: "exact", head: true }).eq("is_published", true),
+    supabase.from("tools").select("id", { count: "exact", head: true }),
+  ]);
+
+  return {
+    articles: articles.count ?? 0,
+    tools: tools.count ?? 0,
+  };
+}

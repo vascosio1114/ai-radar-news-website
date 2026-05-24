@@ -4,23 +4,19 @@
 -- 1. profiles table
 create table if not exists public.profiles (
   id            uuid primary key references auth.users(id) on delete cascade,
-  email         text not null,
   display_name  text,
   avatar_url    text,
   created_at    timestamptz default now(),
   updated_at    timestamptz default now()
 );
 
-create index if not exists profiles_email_idx on public.profiles (email);
-
 -- 2. Auto-create profile on auth.users insert（用 trigger）
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
-  insert into public.profiles (id, email, display_name, avatar_url)
+  insert into public.profiles (id, display_name, avatar_url)
   values (
     new.id,
-    new.email,
     coalesce(new.raw_user_meta_data->>'name', new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1)),
     new.raw_user_meta_data->>'avatar_url'
   )

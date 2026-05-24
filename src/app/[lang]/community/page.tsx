@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { CommunityFeed } from "@/components/community/CommunityFeed";
+import { getCommunityMembers, getTrendingTags } from "@/lib/dashboard/queries";
 
 type Props = { params: { lang: string } };
 
@@ -13,14 +14,18 @@ export function generateMetadata({ params }: Props): Metadata {
   };
 }
 
-export default function CommunityPage({ params }: Props) {
+export default async function CommunityPage({ params }: Props) {
   const lang = params.lang === "en" ? "en" : "zh";
+  const [members, tags] = await Promise.all([
+    getCommunityMembers(5),
+    getTrendingTags(6),
+  ]);
 
   return (
     <div className="container-page section-pad">
       <header className="mb-8 max-w-2xl">
         <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-accent-600 dark:text-accent-400">
-          {lang === "zh" ? "Community" : "Community"}
+          Community
         </p>
         <h1 className="font-display text-4xl font-bold tracking-tight md:text-5xl">
           {lang === "zh" ? "AI Radar 社群" : "AI Radar Community"}
@@ -32,7 +37,7 @@ export default function CommunityPage({ params }: Props) {
         </p>
       </header>
 
-      <CommunityFeed lang={lang} />
+      <CommunityFeed lang={lang} sidebarData={{ members, tags }} />
     </div>
   );
 }

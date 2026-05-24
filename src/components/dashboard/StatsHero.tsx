@@ -2,7 +2,7 @@ import { Activity, Database, Radio, AlertTriangle, TrendingUp, TrendingDown } fr
 import type { DashboardStats } from "@/lib/dashboard/queries";
 import { timeAgo } from "@/lib/utils";
 
-export function StatsHero({ stats }: { stats: DashboardStats }) {
+export function StatsHero({ stats, totalSources = 10 }: { stats: DashboardStats, totalSources?: number }) {
   const isFresh =
     stats.last_fetch_at &&
     Date.now() - new Date(stats.last_fetch_at).getTime() < 24 * 3600 * 1000;
@@ -19,7 +19,7 @@ export function StatsHero({ stats }: { stats: DashboardStats }) {
             今日 AI 動態
           </h1>
           <p className="mt-2 text-sm text-ink-500 dark:text-ink-400">
-            10 個 AI source 每 12 小時自動收集 raw data，並即時更新。
+            {totalSources} 個 AI source 每 12 小時自動收集 raw data，並即時更新。
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -51,7 +51,7 @@ export function StatsHero({ stats }: { stats: DashboardStats }) {
         <StatCard
           icon={<Radio className="h-4 w-4" />}
           label="Active sources"
-          value={`${stats.active_sources} / 10`}
+          value={`${stats.active_sources} / ${totalSources}`}
         />
         <StatCard
           icon={<AlertTriangle className="h-4 w-4" />}
