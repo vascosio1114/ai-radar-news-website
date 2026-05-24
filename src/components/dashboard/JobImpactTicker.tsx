@@ -119,22 +119,22 @@ export function JobImpactTicker({
 
   return (
     <section className="container-page section-pad pt-0">
-      <div className="overflow-hidden rounded-3xl border border-emerald-500/20 bg-white shadow-soft dark:border-emerald-400/25 dark:bg-black">
+      <div className="overflow-hidden rounded-3xl border border-emerald-400/25 bg-black shadow-[0_24px_90px_rgba(0,0,0,0.65)]">
         <div className="relative p-6 md:p-8">
-          <div className="absolute inset-0 opacity-100 dark:bg-[radial-gradient(circle_at_15%_0%,rgba(34,197,94,0.18),transparent_34%),radial-gradient(circle_at_86%_18%,rgba(16,185,129,0.14),transparent_34%),linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.28))]" />
-          <div className="absolute inset-0 hidden dark:block dark:bg-[linear-gradient(rgba(34,197,94,.045)_1px,transparent_1px),linear-gradient(90deg,rgba(34,197,94,.045)_1px,transparent_1px)] dark:bg-[size:28px_28px]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_0%,rgba(34,197,94,0.18),transparent_34%),radial-gradient(circle_at_86%_18%,rgba(16,185,129,0.14),transparent_34%),linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.28))]" />
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(34,197,94,.045)_1px,transparent_1px),linear-gradient(90deg,rgba(34,197,94,.045)_1px,transparent_1px)] bg-[size:28px_28px]" />
 
           <div className="relative z-10">
             <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
               <div>
-                <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-emerald-600 dark:text-emerald-300">
+                <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-emerald-300">
                   <TrendingUp className="h-3.5 w-3.5" />
                   {copy.badge}
                 </div>
-                <h2 className="font-display text-2xl font-bold tracking-tight text-ink-950 dark:text-white md:text-3xl">
+                <h2 className="font-display text-2xl font-bold tracking-tight text-white md:text-3xl">
                   {copy.title}
                 </h2>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-ink-500 dark:text-emerald-50/65">
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-emerald-50/65">
                   {copy.description}
                 </p>
               </div>
@@ -147,13 +147,13 @@ export function JobImpactTicker({
               </div>
             </div>
 
-            <div className="mt-7 rounded-2xl border border-ink-200/70 bg-white/80 p-4 dark:border-emerald-400/15 dark:bg-black/70">
-              <div className="mb-3 flex flex-col gap-1 text-xs text-ink-500 dark:text-emerald-50/55 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mt-7 rounded-2xl border border-emerald-400/15 bg-black/70 p-4">
+              <div className="mb-3 flex flex-col gap-1 text-xs text-emerald-50/55 sm:flex-row sm:items-center sm:justify-between">
                 <span>{startLabel ? formatMonth(startLabel.day, lang) : "2023"} → {lastLabel ? formatMonth(lastLabel.day, lang) : copy.now}</span>
                 <span>{copy.range} {formatLargeNumber(min, lang)} – {formatLargeNumber(max, lang)}</span>
               </div>
 
-              <div className="relative h-[280px] overflow-hidden rounded-xl bg-gradient-to-b from-ink-50 to-white dark:from-black dark:to-[#020403]">
+              <div className="relative h-[280px] overflow-hidden rounded-xl bg-gradient-to-b from-black to-[#020403]">
                 <svg viewBox={`0 0 ${width} ${height}`} className="h-full w-full" role="img" aria-label={copy.chartLabel}>
                   <defs>
                     <linearGradient id="jobImpactStrokeGreen" x1="0" x2="1" y1="0" y2="0">
@@ -198,7 +198,7 @@ export function JobImpactTicker({
                   })}
                 </svg>
 
-                <div className="pointer-events-none absolute bottom-3 left-4 right-4 flex justify-between text-[10px] font-medium text-ink-400 dark:text-emerald-50/35">
+                <div className="pointer-events-none absolute bottom-3 left-4 right-4 flex justify-between text-[10px] font-medium text-emerald-50/35">
                   <span>{copy.firstLabel}</span>
                   <span>{copy.secondLabel}</span>
                   <span>{copy.thirdLabel}</span>
@@ -206,7 +206,7 @@ export function JobImpactTicker({
                 </div>
               </div>
 
-              <div className="mt-4 grid gap-2 text-xs text-ink-500 dark:text-emerald-50/55 md:grid-cols-3">
+              <div className="mt-4 grid gap-2 text-xs text-emerald-50/55 md:grid-cols-3">
                 <div className="inline-flex items-center gap-2">
                   <span className="h-2 w-6 rounded-full bg-gradient-to-r from-lime-400 to-emerald-400" />
                   {copy.affectedCurve}
@@ -223,9 +223,9 @@ export function JobImpactTicker({
             </div>
 
             <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_0.8fr]">
-              <div className="rounded-2xl border border-emerald-500/15 bg-emerald-500/10 p-4 text-xs leading-6 text-emerald-900 dark:text-emerald-100/78">
+              <div className="rounded-2xl border border-emerald-500/15 bg-emerald-500/10 p-4 text-xs leading-6 text-emerald-100/78">
                 <p>{copy.methodology}</p>
-                <p className="mt-2 text-emerald-700/75 dark:text-emerald-100/45">{copy.sources}</p>
+                <p className="mt-2 text-emerald-100/45">{copy.sources}</p>
               </div>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1">
                 <Metric label={copy.labourShift} value={copy.labourShiftValue} />
@@ -251,15 +251,15 @@ function Metric({
   tone?: "up" | "down";
 }) {
   return (
-    <div className="rounded-2xl border border-ink-200/70 bg-white/75 p-4 backdrop-blur dark:border-emerald-400/15 dark:bg-zinc-950/80">
-      <div className="text-[11px] font-semibold uppercase tracking-widest text-ink-500 dark:text-emerald-50/45">
+    <div className="rounded-2xl border border-emerald-400/15 bg-zinc-950/80 p-4 backdrop-blur">
+      <div className="text-[11px] font-semibold uppercase tracking-widest text-emerald-50/45">
         {label}
       </div>
-      <div className="mt-2 flex items-center gap-1 font-display text-2xl font-bold text-ink-950 dark:text-emerald-50">
+      <div className="mt-2 flex items-center gap-1 font-display text-2xl font-bold text-emerald-50">
         {tone === "up" && <ArrowUpRight className="h-4 w-4 text-emerald-400" />}
         {tone === "down" && <ArrowDownRight className="h-4 w-4 text-rose-400" />}
         <span>{value}</span>
-        {suffix && <span className="text-sm font-medium text-ink-500 dark:text-emerald-50/45">{suffix}</span>}
+        {suffix && <span className="text-sm font-medium text-emerald-50/45">{suffix}</span>}
       </div>
     </div>
   );
