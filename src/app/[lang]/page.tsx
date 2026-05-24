@@ -32,7 +32,7 @@ export default async function HomePage({ params }: Props) {
   return (
     <>
       <Hero lang={lang} stats={publicStats} />
-      <div className="relative -mt-32 space-y-0 bg-gradient-to-b from-black via-black/80 to-transparent pb-8 md:-mt-44">
+      <div className="relative -mt-32 space-y-0 bg-white pb-8 dark:bg-gradient-to-b dark:from-black dark:via-black/80 dark:to-transparent md:-mt-44">
         <ScrollReveal>
           <LatestNews articles={latest} lang={lang} featuredOnly />
         </ScrollReveal>
