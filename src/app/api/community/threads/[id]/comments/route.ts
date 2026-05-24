@@ -82,7 +82,20 @@ export async function POST(
     // Fetch the comment with the author join
     const { data: newComment, error: fetchError } = await supabase
       .from("thread_comments")
-      .select(`*, authorCM:profiles!author_id(id, display_name, avatar_url, raw_user_meta_data)`)
+      .select(`
+        id,
+        thread_id,
+        parent_comment_id,
+        content,
+        is_bot_comment,
+        like_count,
+        created_at,
+        author:profiles!author_id(
+          id,
+          display_name,
+          avatar_url
+        )
+      `)
       .eq("id", comment.id)
       .single();
 

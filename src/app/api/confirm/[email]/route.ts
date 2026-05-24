@@ -4,24 +4,41 @@ import { buildWelcomeHtml } from "@/lib/email-templates";
 import { generateUnsubscribeToken } from "@/lib/unsubscribe-token";
 import { sendHtmlEmail, MailSettings } from "@/lib/mail";
 
+/**
+ * Confirmation route — called when a user clicks the link in their email.
+ * Uses a secure confirmation token to look up and confirm the subscriber.
+ */
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ email: string }> }
 ) {
-  const { email: emailB64 } = await params;
-  let email: string;
-  try {
-    email = Buffer.from(emailB64, "base64url").toString("utf8");
-  } catch {
+  // Note: the folder is [email], so the param is named 'email', 
+  // but we are passing a secure token here now.
+  const { email: token } = await params;
+
+  if (!token) {
     return new Response("Invalid confirmation link.", { status: 400 });
   }
 
   const supabase = createSupabaseAdminClient();
 
-  // Update subscriber to confirmed
+  // Find subscriber by confirmation_token
+  const { data: subscriber, error: findError } = await supabase
+    .from("mail_subscribers")
+    .select("email")
+    .eq("confirmation_token", token)
+    .single();
+
+  if (findError || !subscriber) {
+    return new Response("Invalid or expired confirmation link.", { status: 400 });
+  }
+
+  const email = subscriber.email;
+
+  // Update subscriber to confirmed and clear the token
   const { error } = await supabase
     .from("mail_subscribers")
-    .update({ opted_in: true, is_confirmed: true })
+    .update({ opted_in: true, is_confirmed: true, confirmation_token: null })
     .eq("email", email);
 
   if (error) {

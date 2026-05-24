@@ -32,8 +32,7 @@ body {
   background-color: #020204;
   background-image:
     radial-gradient(circle at 50% 42%, rgb(37 99 235 / 0.16), transparent 34rem),
-    linear-gradient(180deg, rgb(0 0 0 / 0.18) 0%, rgb(0 0 0 / 0.72) 56%, rgb(0 0 0 / 0.92) 100%),
-    url("/images/radar-ai-studio-bg.jpeg");
+    linear-gradient(180deg, rgb(0 0 0 / 0.18) 0%, rgb(0 0 0 / 0.72) 56%, rgb(0 0 0 / 0.92) 100%);
   background-attachment: fixed;
   background-position: center top;
   background-repeat: no-repeat;

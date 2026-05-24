@@ -27,16 +27,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid email" }, { status: 400 });
   }
 
-  const supabase = createSupabaseAdminClient();
+  // Use server client for session (reads cookies)
+  const supabase = createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const admin = createSupabaseAdminClient();
   const confirmUrl = `${SITE_URL}/api/confirm/${Buffer.from(body.email).toString("base64url")}`;
   const confirmHtml = buildConfirmationHtml({ confirmUrl, lang: body.lang || "zh" });
 
-  const { data: settings } = await supabase
+  const { data: settings } = await admin
     .from("mail_settings")
     .select("smtp_host, smtp_port, smtp_user, smtp_pass_encrypted, smtp_from_address, smtp_from_name")
     .limit(1)
@@ -49,7 +51,7 @@ export async function POST(request: Request) {
     subscribed_at: new Date().toISOString(),
   };
 
-  const { error } = await supabase
+  const { error } = await admin
     .from("mail_subscribers")
     .upsert(insertPayload, { onConflict: "email" });
 

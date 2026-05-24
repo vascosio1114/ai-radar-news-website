@@ -40,7 +40,7 @@ export default function AdminLoginPage() {
       }
 
       const role = data.user.app_metadata?.role;
-      if (role !== "admin" && !data.user.id) {
+      if (role !== "admin") {
         await supabase.auth.signOut();
         throw new Error(
           `此帳戶尚未獲得 admin 權限。請聯絡系統管理員。`

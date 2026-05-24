@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { logger } from "@/lib/logger";
 
@@ -11,13 +12,16 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = await req.json();
-    const supabase = createSupabaseAdminClient();
+    // Use server client for session (reads cookies)
+    const supabase = createSupabaseServerClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { data: profile } = await supabase
+    // Check is_admin via admin client (bypasses RLS)
+    const admin = createSupabaseAdminClient();
+    const { data: profile } = await admin
       .from("profiles")
       .select("is_admin")
       .eq("id", user.id)
@@ -27,7 +31,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Admin access required" }, { status: 403 });
     }
 
-    const { error } = await supabase
+    const { error } = await admin
       .from("profiles")
       .update({ is_admin: body.is_admin })
       .eq("id", id);

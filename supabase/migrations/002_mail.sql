@@ -8,7 +8,8 @@ create table if not exists public.mail_subscribers (
   email           text unique not null,
   opted_in        boolean default false,
   subscribed_at   timestamptz default now(),
-  is_confirmed    boolean default false
+  is_confirmed    boolean default false,
+  confirmation_token text unique
 );
 
 alter table public.mail_subscribers enable row level security;

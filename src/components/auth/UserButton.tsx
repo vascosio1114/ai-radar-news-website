@@ -21,9 +21,47 @@ export function UserButton({ initialUser }: Props) {
   const pathname = usePathname();
   const [open, setOpen] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
+  const [user, setUser] = React.useState(initialUser);
   const menuRef = React.useRef<HTMLDivElement>(null);
+  const supabase = React.useMemo(() => createSupabaseBrowserClient(), []);
 
   const lang = SUPPORTED_LANGS.find((l) => pathname.startsWith(`/${l}`)) ?? "zh";
+
+  // Listen for browser-side auth changes so navbar reflects login/logout immediately
+  React.useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUser({
+          id: session.user.id,
+          email: session.user.email ?? "",
+          display_name: initialUser?.display_name ?? null,
+          avatar_url: initialUser?.avatar_url ?? null,
+        });
+      } else {
+        setUser(null);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [supabase, initialUser]);
+
+  // Also fetch session on mount to sync with any server-side cookies
+  React.useEffect(() => {
+    fetch("/api/auth/session")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.user) {
+          setUser({
+            id: data.user.id,
+            email: data.user.email ?? "",
+            display_name: initialUser?.display_name ?? null,
+            avatar_url: initialUser?.avatar_url ?? null,
+          });
+        } else if (user !== null) {
+          setUser(null);
+        }
+      })
+      .catch(() => {});
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   React.useEffect(() => {
     function onClick(e: MouseEvent) {
@@ -42,6 +80,7 @@ export function UserButton({ initialUser }: Props) {
     try {
       const supabase = createSupabaseBrowserClient();
       await supabase.auth.signOut();
+      setUser(null);
       router.push(`/${lang}`);
       router.refresh();
     } finally {
@@ -51,7 +90,7 @@ export function UserButton({ initialUser }: Props) {
   }
 
   // 未登入 → 顯示 Login / Signup
-  if (!initialUser) {
+  if (!user) {
     return (
       <div className="flex items-center gap-1">
         <Link
@@ -71,7 +110,8 @@ export function UserButton({ initialUser }: Props) {
   }
 
   // 已登入 → avatar + dropdown
-  const initial = (initialUser.display_name ?? initialUser.email)
+  const displayUser = user.display_name ?? user.email;
+  const initial = displayUser
     .slice(0, 1)
     .toUpperCase();
 
@@ -83,10 +123,10 @@ export function UserButton({ initialUser }: Props) {
         className="flex h-9 w-9 items-center justify-center rounded-full border border-ink-200 bg-white/70 text-sm font-bold text-ink-700 transition hover:border-accent-400 dark:border-ink-800 dark:bg-ink-900/70 dark:text-ink-200"
         aria-label="User menu"
       >
-        {initialUser.avatar_url ? (
+        {user.avatar_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={initialUser.avatar_url}
+            src={user.avatar_url}
             alt=""
             className="h-full w-full rounded-full object-cover"
           />
@@ -99,10 +139,10 @@ export function UserButton({ initialUser }: Props) {
         <div className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-ink-200/70 bg-white shadow-soft dark:border-ink-800/70 dark:bg-ink-900">
           <div className="border-b border-ink-200/70 px-4 py-3 dark:border-ink-800/70">
             <div className="truncate text-sm font-semibold">
-              {initialUser.display_name ?? initialUser.email.split("@")[0]}
+              {displayUser.split("@")[0]}
             </div>
             <div className="truncate text-xs text-ink-500 dark:text-ink-400">
-              {initialUser.email}
+              {user.email}
             </div>
           </div>
           <div className="py-1">

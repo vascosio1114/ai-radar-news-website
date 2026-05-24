@@ -12,7 +12,7 @@ export async function GET(request: Request) {
   try {
     const supabase = createSupabaseServerClient();
 
-    const { data: threads, error } = await supabase
+    const { data: threads, error, count } = await supabase
       .from("threads")
       .select(`
         id,
@@ -26,12 +26,12 @@ export async function GET(request: Request) {
         like_count,
         comment_count,
         created_at,
-        author:auth.users!author_id(
+        author:profiles!author_id(
           id,
-          email,
-          raw_user_meta_data
+          display_name,
+          avatar_url
         )
-      `)
+      `, { count: "exact" })
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -40,7 +40,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Failed to fetch threads" }, { status: 500 });
     }
 
-    return NextResponse.json({ threads: threads ?? [], offset, limit });
+    return NextResponse.json({ threads: threads ?? [], count, offset, limit });
   } catch (e) {
     communityLogger.error({ err: e }, "Unexpected error fetching threads");
     return NextResponse.json({ error: "Server error" }, { status: 500 });
@@ -115,10 +115,10 @@ export async function POST(request: Request) {
         like_count,
         comment_count,
         created_at,
-        author:auth.users!author_id(
+        author:profiles!author_id(
           id,
-          email,
-          raw_user_meta_data
+          display_name,
+          avatar_url
         )
       `)
       .single();

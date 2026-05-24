@@ -42,7 +42,7 @@ export default async function AdminAgentPage() {
         </p>
       </div>
 
-      <StatsHero stats={stats} />
+      <StatsHero stats={stats} totalSources={sources.length} />
       <DailyChart data={daily} />
       <JobImpactTicker trend={jobImpact} />
       <LatestFeed items={latest} />

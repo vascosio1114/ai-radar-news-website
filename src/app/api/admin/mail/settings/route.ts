@@ -1,15 +1,17 @@
 import { NextResponse } from "next/server";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { encryptPassword } from "@/lib/mail";
 
 export async function GET() {
-  const supabase = createSupabaseAdminClient();
+  const supabase = createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { data: profile } = await supabase
+  const admin = createSupabaseAdminClient();
+  const { data: profile } = await admin
     .from("profiles")
     .select("is_admin")
     .eq("id", user.id)
@@ -19,7 +21,7 @@ export async function GET() {
     return NextResponse.json({ error: "Admin access required" }, { status: 403 });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await admin
     .from("mail_settings")
     .select("*")
     .limit(1)
@@ -33,13 +35,14 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const supabase = createSupabaseAdminClient();
+  const supabase = createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { data: profile } = await supabase
+  const admin = createSupabaseAdminClient();
+  const { data: profile } = await admin
     .from("profiles")
     .select("is_admin")
     .eq("id", user.id)
@@ -70,11 +73,13 @@ export async function POST(request: Request) {
     email_subject_template: body.email_subject_template,
     email_header_html: body.email_header_html,
     email_footer_html: body.email_footer_html,
+    email_body_template: body.email_body_template,
+    skip_empty_digest: body.skip_empty_digest,
     updated_at: new Date().toISOString(),
   };
 
   // Upsert: fetch existing row to get id, then upsert
-  const { data: existing } = await supabase
+  const { data: existing } = await admin
     .from("mail_settings")
     .select("id")
     .limit(1)
@@ -84,7 +89,7 @@ export async function POST(request: Request) {
     ? { ...payload, id: existing.id }
     : payload;
 
-  const { error } = await supabase
+  const { error } = await admin
     .from("mail_settings")
     .upsert(upsertData, { onConflict: "id" });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

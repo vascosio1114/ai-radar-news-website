@@ -45,16 +45,21 @@ export function ActiveMembers({ members, lang = "en" }: ActiveMembersProps) {
   );
 }
 
-export function CommunitySidebar({ lang = "en" }: { lang?: "zh" | "en" }) {
-  const tags = ["ChatGPT", "Gemini", "Cursor", "AI Agents", "Midjourney", "LLM"];
-  const members = [
+export function CommunitySidebar({
+  lang = "en",
+  tags = ["ChatGPT", "Gemini", "Cursor", "AI Agents", "Midjourney", "LLM"],
+  members = [
     { name: "Alex Chen", avatar: "" },
     { name: "Maria Garcia", avatar: "" },
     { name: "James Kim", avatar: "" },
     { name: "Sarah Lee", avatar: "" },
     { name: "David Wu", avatar: "" },
-  ];
-
+  ],
+}: {
+  lang?: "zh" | "en";
+  tags?: string[];
+  members?: Array<{ name: string; avatar: string }>;
+}) {
   return (
     <aside className="space-y-6">
       <div className="rounded-2xl border border-ink-200/70 bg-white p-4 dark:border-ink-800/70 dark:bg-ink-900">

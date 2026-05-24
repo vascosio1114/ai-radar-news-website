@@ -50,8 +50,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Admin routes — require admin authentication
-  if (pathname.startsWith("/admin")) {
+  // Admin routes — require admin authentication (except /admin/setup for initial bootstrap)
+  if (pathname.startsWith("/admin") && !pathname.startsWith("/admin/setup")) {
     const supabase = createAdminAuthClient(request);
     const { data: { user }, error } = await supabase.auth.getUser();
 
@@ -60,11 +60,8 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/zh/login", request.url));
     }
 
-    const role = user.app_metadata?.role;
-    if (role !== "admin") {
-      log.warn({ pathname, userId: user.id, reason: "not_admin" }, "Admin access denied - not admin");
-      return NextResponse.redirect(new URL("/zh/login", request.url));
-    }
+    // Note: is_admin is checked in the admin layout server-side via profiles.is_admin.
+    // We still require a valid session here to block completely anonymous users.
 
     const response = NextResponse.next();
     log.info({
@@ -118,6 +115,6 @@ export const config = {
      * - robots.txt, sitemap.xml (SEO files)
      * - admin (admin dashboard)
      */
-    "/((?!api|_next/static|_next/image|favicon.ico|favicon.svg|robots.txt|sitemap.xml|admin).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|favicon.svg|robots.txt|sitemap.xml).*)",
   ],
 };

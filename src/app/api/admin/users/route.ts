@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { logger } from "@/lib/logger";
 
@@ -6,13 +7,16 @@ const log = logger.child({ component: "admin-users" });
 
 export async function GET() {
   try {
-    const supabase = createSupabaseAdminClient();
+    // Use server client for session (reads cookies)
+    const supabase = createSupabaseServerClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { data: profile } = await supabase
+    // Check is_admin via admin client (bypasses RLS)
+    const admin = createSupabaseAdminClient();
+    const { data: profile } = await admin
       .from("profiles")
       .select("is_admin")
       .eq("id", user.id)
@@ -22,11 +26,9 @@ export async function GET() {
       return NextResponse.json({ error: "Admin access required" }, { status: 403 });
     }
 
-    // Get all users with their profile is_admin status
-    const { data: authUsers, error: authError } = await supabase
-      .from("auth.users")
-      .select("id, email, created_at, last_sign_in_at")
-      .order("created_at", { ascending: false });
+    // Use GoTrue admin API to list users (bypasses auth.users REST limitation)
+    const { data: authUsers, error: authError } = await admin
+      .auth.admin.listUsers();
 
     if (authError) {
       log.error({ err: authError }, "Failed to fetch users");

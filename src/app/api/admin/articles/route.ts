@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { logger } from "@/lib/logger";
 
@@ -6,13 +7,16 @@ const log = logger.child({ component: "admin-articles" });
 
 export async function GET() {
   try {
-    const supabase = createSupabaseAdminClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    // session client reads browser cookies
+    const session = createSupabaseServerClient();
+    const { data: { user } } = await session.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { data: profile } = await supabase
+    // admin client bypasses RLS for data queries
+    const admin = createSupabaseAdminClient();
+    const { data: profile } = await admin
       .from("profiles")
       .select("is_admin")
       .eq("id", user.id)
@@ -22,7 +26,7 @@ export async function GET() {
       return NextResponse.json({ error: "Admin access required" }, { status: 403 });
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await admin
       .from("articles")
       .select("*")
       .order("created_at", { ascending: false });
@@ -55,21 +59,39 @@ function createSlug(date: string, title: string) {
 
 function estimateReadingTime(content: string) {
   const words = content.trim().split(/\s+/).filter(Boolean).length;
-  const cjkChars = (content.match(/[\u4e00-\u9fff]/g) ?? []).length;
+  const cjkChars = (content.match(/[一-鿿]/g) ?? []).length;
   return Math.max(1, Math.ceil(Math.max(words / 220, cjkChars / 450)));
 }
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const supabase = createSupabaseAdminClient();
+    // session client reads browser cookies
+    const session = createSupabaseServerClient();
+    const { data: { user } } = await session.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // admin client bypasses RLS for data queries
+    const admin = createSupabaseAdminClient();
+    const { data: profile } = await admin
+      .from("profiles")
+      .select("is_admin")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile?.is_admin) {
+      return NextResponse.json({ error: "Admin access required" }, { status: 403 });
+    }
+
     const publishedAt = body.published_at
       ? new Date(body.published_at).toISOString()
       : new Date().toISOString();
     const slug = body.slug || createSlug(publishedAt, body.title || body.title_zh || "blog-post");
     const content = body.content_zh || body.content || "";
 
-    const { data, error } = await supabase
+    const { data, error } = await admin
       .from("articles")
       .insert({
         title: body.title_zh || body.title,

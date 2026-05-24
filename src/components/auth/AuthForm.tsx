@@ -91,13 +91,8 @@ export function AuthForm({
 
   const strength = React.useMemo(() => {
     if (password.length === 0) return null;
-    let score = 0;
-    if (password.length >= 8) score++;
-    if (/[A-Z]/.test(password)) score++;
-    if (/[a-z]/.test(password)) score++;
-    if (/\d/.test(password)) score++;
-    if (/[^A-Za-z0-9]/.test(password)) score++;
-    return { score, label: score < 2 ? "弱" : score < 4 ? "中" : "強", color: score < 2 ? "bg-rose-500" : score < 4 ? "bg-amber-500" : "bg-emerald-500" };
+    const score = password.length >= 6 ? 1 : 0;
+    return { score, label: score < 1 ? "弱" : "強", color: score < 1 ? "bg-rose-500" : "bg-emerald-500" };
   }, [password]);
 
   return (
@@ -171,12 +166,12 @@ export function AuthForm({
               type="password"
               required
               autoComplete={isLogin ? "current-password" : "new-password"}
-              pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$"
-              title="Must be at least 8 characters with uppercase, lowercase, and number"
-              minLength={8}
+              pattern=".{6,}$"
+              title="Must be at least 6 characters"
+              minLength={6}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder={uiLang === "zh" ? (isLogin ? "您的密碼" : "至少 8 個字元，並包含大小寫字母與數字") : (isLogin ? "Your password" : "At least 8 characters with upper/lowercase letters and a number")}
+              placeholder={uiLang === "zh" ? (isLogin ? "您的密碼" : "至少 6 個字元") : (isLogin ? "Your password" : "At least 6 characters")}
               disabled={!!loading}
               className="w-full rounded-xl border border-ink-200 bg-white py-2.5 pl-9 pr-3 text-sm focus:border-accent-500 focus:outline-none disabled:opacity-50 dark:border-ink-800 dark:bg-ink-900"
             />
@@ -184,9 +179,7 @@ export function AuthForm({
           {strength && (
             <div className="mt-1.5 flex items-center gap-2">
               <div className="flex flex-1 gap-0.5">
-                {[1,2,3,4,5].map(i => (
-                  <div key={i} className={`h-1 flex-1 rounded-full ${i <= strength.score ? strength.color : "bg-ink-200 dark:bg-ink-700"}`} />
-                ))}
+                <div className={`h-1 flex-1 rounded-full ${strength.score >= 1 ? strength.color : "bg-ink-200 dark:bg-ink-700"}`} />
               </div>
               <span className="text-xs text-ink-400">{strength.label}</span>
             </div>
@@ -259,7 +252,7 @@ function translateError(msg: string, lang: AuthLang): string {
     if (msg.includes("Invalid login credentials")) return "The email or password is incorrect.";
     if (msg.includes("Email not confirmed")) return "Your email has not been verified. Please check your inbox and confirm your account.";
     if (msg.includes("already registered") || msg.includes("User already registered")) return "This email is already registered. Please log in instead.";
-    if (msg.includes("Password should be at least") || msg.includes("too short")) return "Password must be at least 8 characters.";
+    if (msg.includes("Password should be at least") || msg.includes("too short")) return "Password must be at least 6 characters.";
     if (msg.includes("Invalid email")) return "Please enter a valid email address.";
     if (msg.includes("Not authorized")) return "You are not authorized. Please log in again.";
     if (msg.includes("Signup is disabled")) return "Sign-up is temporarily unavailable. Please try again later.";
@@ -270,7 +263,7 @@ function translateError(msg: string, lang: AuthLang): string {
   if (msg.includes("Invalid login credentials")) return "電子郵件或密碼不正確。";
   if (msg.includes("Email not confirmed")) return "電子郵件尚未完成驗證，請前往收件箱確認帳戶。";
   if (msg.includes("already registered") || msg.includes("User already registered")) return "此電子郵件已註冊，請改為登入。";
-  if (msg.includes("Password should be at least") || msg.includes("too short")) return "密碼至少需要 8 個字元。";
+  if (msg.includes("Password should be at least") || msg.includes("too short")) return "密碼至少需要 6 個字元。";
   if (msg.includes("Invalid email")) return "請輸入有效的電子郵件地址。";
   if (msg.includes("Not authorized")) return "您沒有權限，請重新登入。";
   if (msg.includes("Signup is disabled")) return "暫時未能註冊，請稍後再試。";

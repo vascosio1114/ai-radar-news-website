@@ -20,6 +20,13 @@ export function createSupabaseAdminClient() {
       auth: {
         autoRefreshToken: false,
         persistSession: false,
+        detectSessionInUrl: false,
+      },
+      global: {
+        headers: {
+          "apikey": process.env.SUPABASE_SERVICE_ROLE_KEY!,
+          "Authorization": `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`,
+        },
       },
     }
   );
