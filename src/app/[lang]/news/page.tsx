@@ -17,7 +17,7 @@ export default async function NewsPage({ params }: Props) {
 
   const localized = (data ?? []).map((article) => getLocalizedContent(article, lang));
   const articles = lang === "en"
-    ? localized.filter((article) => hasEnglishDisplayContent(article, ["title", "excerpt", "category"]))
+    ? localized.filter((article) => hasEnglishDisplayContent(article, ["title"]))
     : localized;
 
   const categories = Array.from(new Set(articles.map((a) => a.category).filter(Boolean))).sort();

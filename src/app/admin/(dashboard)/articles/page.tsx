@@ -8,7 +8,9 @@ type Article = {
   id: string;
   slug: string;
   title: string;
+  title_zh: string | null;
   excerpt: string | null;
+  excerpt_zh: string | null;
   cover_image: string | null;
   category: string;
   tags: string[];
@@ -19,6 +21,9 @@ type Article = {
   is_featured: boolean;
   is_published: boolean;
   content?: string | null;
+  content_zh?: string | null;
+  summary_content?: string | null;
+  summary_content_zh?: string | null;
 };
 
 export default function AdminArticlesPage() {
@@ -63,6 +68,7 @@ export default function AdminArticlesPage() {
   const filteredArticles = articles.filter((article) => {
     const matchSearch = search === "" ||
       article.title.toLowerCase().includes(search.toLowerCase()) ||
+      (article.title_zh || "").toLowerCase().includes(search.toLowerCase()) ||
       article.slug.toLowerCase().includes(search.toLowerCase()) ||
       article.category.toLowerCase().includes(search.toLowerCase());
     const matchCategory = filterCategory === "" || article.category === filterCategory;
@@ -166,7 +172,8 @@ export default function AdminArticlesPage() {
           <table className="w-full">
             <thead className="border-b border-ink-200 bg-ink-50 dark:border-ink-800 dark:bg-ink-900">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ink-500">標題</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ink-500">中文標題</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ink-500">英文標題</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ink-500">分類</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ink-500">狀態</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ink-500">瀏覽</th>
@@ -177,7 +184,10 @@ export default function AdminArticlesPage() {
               {filteredArticles.map((article) => (
                 <tr key={article.id} className="hover:bg-ink-50 dark:hover:bg-ink-900/50">
                   <td className="px-4 py-3">
-                    <div className="font-medium text-ink-900 dark:text-ink-50">{article.title}</div>
+                    <div className="font-medium text-ink-900 dark:text-ink-50">{article.title_zh || "—"}</div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="font-medium text-ink-900 dark:text-ink-50">{article.title || "—"}</div>
                     <div className="text-xs text-ink-500">{article.slug}</div>
                   </td>
                   <td className="px-4 py-3 text-sm text-ink-600 dark:text-ink-400">{article.category}</td>

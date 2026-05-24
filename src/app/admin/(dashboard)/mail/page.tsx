@@ -1,7 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Mail, Send, Loader2, Mailbox } from "lucide-react";
+import {
+  Mail, Send, Settings2, Users, Clock, FileText,
+  CheckCircle, XCircle, AlertCircle, Loader2,
+  ChevronRight, Globe, Timer, UserCheck
+} from "lucide-react";
 import { buildDigestHtml } from "@/lib/digest-html";
 import { MailSubscribers } from "@/components/admin/MailSubscribers";
 
@@ -18,122 +22,62 @@ interface MailSettings {
   email_subject_template: string;
   email_header_html: string;
   email_footer_html: string;
-  email_body_template: string;
-  skip_empty_digest: boolean;
-}
-
-interface DigestPreset {
-  id: string;
-  name: string;
-  description: string | null;
-  mode: "manual" | "criteria";
-  article_ids: string[];
-  criteria: Record<string, unknown>;
-  is_default: boolean;
-  created_at: string;
-}
-
-interface ArticleOption {
-  id: string;
-  slug: string;
-  title: string;
-  published_at: string;
-  category: string;
 }
 
 const TIMEZONES = [
-  "Asia/Hong_Kong",
-  "Asia/Shanghai",
-  "Asia/Singapore",
-  "America/New_York",
-  "America/Los_Angeles",
-  "Europe/London",
-  "Europe/Paris",
+  "Asia/Hong_Kong", "Asia/Shanghai", "Asia/Singapore",
+  "America/New_York", "America/Los_Angeles", "Europe/London", "Europe/Paris",
 ];
 
 const DEFAULT_SETTINGS: MailSettings = {
-  smtp_host: "",
-  smtp_port: 587,
-  smtp_user: "",
-  smtp_pass: "",
-  smtp_from_address: "",
-  smtp_from_name: "",
-  daily_enabled: false,
-  daily_hour: 9,
-  daily_timezone: "Asia/Hong_Kong",
-  email_subject_template: "",
-  email_header_html: "",
-  email_footer_html: "",
-  email_body_template: "",
-  skip_empty_digest: true,
+  smtp_host: "", smtp_port: 587, smtp_user: "", smtp_pass: "",
+  smtp_from_address: "", smtp_from_name: "",
+  daily_enabled: false, daily_hour: 9, daily_timezone: "Asia/Hong_Kong",
+  email_subject_template: "", email_header_html: "", email_footer_html: "",
 };
+
+type Tab = "smtp" | "schedule" | "template" | "subscribers";
 
 export default function AdminMailPage() {
   const [settings, setSettings] = useState<MailSettings>(DEFAULT_SETTINGS);
+  const [activeTab, setActiveTab] = useState<Tab>("smtp");
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [sendingDigest, setSendingDigest] = useState(false);
   const [statusMsg, setStatusMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [previewHtml, setPreviewHtml] = useState("");
   const [showPreview, setShowPreview] = useState(false);
-  const [activeTab, setActiveTab] = useState<"settings" | "subscribers" | "presets">("settings");
-
-  // Presets state
-  const [presets, setPresets] = useState<DigestPreset[]>([]);
-  const [showPresetModal, setShowPresetModal] = useState(false);
-  const [editingPreset, setEditingPreset] = useState<DigestPreset | null>(null);
-  const [presetForm, setPresetForm] = useState({ name: "", description: "", mode: "criteria" as "manual" | "criteria", article_ids: [] as string[], criteria: { date_range: "last_7days", limit: 5 }, is_default: false });
-  const [allArticles, setAllArticles] = useState<ArticleOption[]>([]);
-  const [presetSaving, setPresetSaving] = useState(false);
-
-  // Test send modal
-  const [showTestModal, setShowTestModal] = useState(false);
-  const [testEmail, setTestEmail] = useState("");
-  const [testPresetId, setTestPresetId] = useState<string>("");
-  const [testArticleIds, setTestArticleIds] = useState<string[]>([]);
-  const [testSending, setTestSending] = useState(false);
+  const [subscriberCount, setSubscriberCount] = useState<number | null>(null);
 
   useEffect(() => {
     fetch("/api/admin/mail/settings")
       .then((r) => r.ok ? r.json() : null)
       .then((data) => {
         if (data?.settings) {
-          setSettings((prev) => ({
-            ...prev,
-            smtp_host: data.settings.smtp_host ?? "",
-            smtp_port: data.settings.smtp_port ?? 587,
-            smtp_user: data.settings.smtp_user ?? "",
+          const s = data.settings;
+          setSettings({
+            smtp_host: s.smtp_host ?? "",
+            smtp_port: s.smtp_port ?? 587,
+            smtp_user: s.smtp_user ?? "",
             smtp_pass: "",
-            smtp_from_address: data.settings.smtp_from_address ?? "",
-            smtp_from_name: data.settings.smtp_from_name ?? "",
-            daily_enabled: data.settings.daily_enabled ?? false,
-            daily_hour: data.settings.daily_hour ?? 9,
-            daily_timezone: data.settings.daily_timezone ?? "Asia/Hong_Kong",
-            email_subject_template: data.settings.email_subject_template ?? "",
-            email_header_html: data.settings.email_header_html ?? "",
-            email_footer_html: data.settings.email_footer_html ?? "",
-            email_body_template: data.settings.email_body_template ?? "",
-            skip_empty_digest: data.settings.skip_empty_digest ?? true,
-          }));
+            smtp_from_address: s.smtp_from_address ?? "",
+            smtp_from_name: s.smtp_from_name ?? "",
+            daily_enabled: s.daily_enabled ?? false,
+            daily_hour: s.daily_hour ?? 9,
+            daily_timezone: s.daily_timezone ?? "Asia/Hong_Kong",
+            email_subject_template: s.email_subject_template ?? "",
+            email_header_html: s.email_header_html ?? "",
+            email_footer_html: s.email_footer_html ?? "",
+          });
         }
       });
+
+    fetch("/api/admin/mail/subscribers")
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (data?.count !== undefined) setSubscriberCount(data.count);
+      });
   }, []);
-
-  // Load presets
-  useEffect(() => {
-    if (activeTab !== "presets") return;
-    fetch("/api/admin/mail/presets")
-      .then((r) => r.ok ? r.json() : [])
-      .then(setPresets);
-  }, [activeTab]);
-
-  // Load all articles for preset picker
-  useEffect(() => {
-    if (activeTab !== "presets") return;
-    fetch("/api/admin/articles")
-      .then((r) => r.ok ? r.json() : [])
-      .then((data: ArticleOption[]) => setAllArticles(data));
-  }, [activeTab]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -147,13 +91,13 @@ export default function AdminMailPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        setStatusMsg({ type: "success", text: "Settings saved." });
-        setSettings((prev) => ({ ...prev, smtp_pass: "" }));
+        setStatusMsg({ type: "success", text: "儲存成功" });
+        setSettings((p) => ({ ...p, smtp_pass: "" }));
       } else {
-        setStatusMsg({ type: "error", text: data.error || "Failed to save." });
+        setStatusMsg({ type: "error", text: data.error || "儲存失敗" });
       }
     } catch {
-      setStatusMsg({ type: "error", text: "Network error." });
+      setStatusMsg({ type: "error", text: "網絡錯誤" });
     }
     setSaving(false);
   };
@@ -162,25 +106,24 @@ export default function AdminMailPage() {
     setTesting(true);
     setStatusMsg(null);
     try {
-      const res = await fetch("/api/admin/mail/test", {
+      const res = await fetch("/api/admin/mail/send-digest", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ to: settings.smtp_from_address }),
+        body: JSON.stringify({ is_preview: true }),
       });
-      const data = await res.json();
-      if (res.ok) {
-        setStatusMsg({ type: "success", text: `Test email sent to ${data.to}.` });
-      } else {
-        setStatusMsg({ type: "error", text: data.error || "Failed to send test email." });
+      const previewData = await res.json();
+      if (previewData.html) {
+        setPreviewHtml(previewData.html);
+        setShowPreview(true);
       }
     } catch {
-      setStatusMsg({ type: "error", text: "Network error." });
+      setStatusMsg({ type: "error", text: "網絡錯誤" });
     }
     setTesting(false);
   };
 
   const handleSendDigest = async () => {
-    if (!confirm("Send digest to ALL confirmed subscribers?")) return;
+    if (!confirm("確定要發送每日精選到所有確認訂閱者？")) return;
     setSendingDigest(true);
     setStatusMsg(null);
     try {
@@ -190,192 +133,249 @@ export default function AdminMailPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        setStatusMsg({ type: "success", text: `Digest sent to ${data.sent}/${data.total} subscribers.` });
+        setStatusMsg({ type: "success", text: `已發送給 ${data.sent}/${data.total} 位訂閱者` });
       } else {
-        setStatusMsg({ type: "error", text: data.error || data.message || "Failed to send digest." });
+        setStatusMsg({ type: "error", text: data.error || "發送失敗" });
       }
     } catch {
-      setStatusMsg({ type: "error", text: "Network error." });
+      setStatusMsg({ type: "error", text: "網絡錯誤" });
     }
     setSendingDigest(false);
   };
 
+  const NAV_TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
+    { id: "smtp", label: "SMTP 設定", icon: Globe },
+    { id: "schedule", label: "發送時間", icon: Clock },
+    { id: "template", label: "郵件範本", icon: FileText },
+    { id: "subscribers", label: "訂閱者", icon: Users },
+  ];
+
   return (
-    <div>
-      <div className="mb-6 flex items-center gap-3">
-        <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-primary-100 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400">
-          <Mail className="h-5 w-5" />
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-500 ring-1 ring-blue-500/20">
+            <Mail className="h-6 w-6" />
+          </div>
+          <div>
+            <h1 className="font-display text-2xl font-bold tracking-tight">Email 管理</h1>
+            <p className="text-sm text-ink-400">SMTP、發送排程、訂閱者一次搞定</p>
+          </div>
         </div>
-        <div>
-          <h1 className="font-display text-3xl font-bold tracking-tight">
-            Email Admin
-          </h1>
-          <p className="text-sm text-ink-500 dark:text-ink-400">
-            SMTP 設定、訂閱者管理、每日 Digest 排程
-          </p>
-        </div>
+        {subscriberCount !== null && (
+          <div className="flex items-center gap-2 rounded-xl bg-ink-900 px-4 py-2 ring-1 ring-ink-800">
+            <Users className="h-4 w-4 text-ink-400" />
+            <span className="text-sm font-semibold text-ink-200">{subscriberCount}</span>
+            <span className="text-sm text-ink-500">位訂閱者</span>
+          </div>
+        )}
       </div>
 
-      <div className="mb-6 flex items-center gap-4 border-b border-ink-200 dark:border-ink-700">
-        <button
-          onClick={() => setActiveTab("settings")}
-          className={`flex items-center gap-2 pb-3 text-sm font-medium ${activeTab === "settings" ? "border-b-2 border-primary-600 text-primary-600" : "text-ink-500 hover:text-ink-700"}`}
-        >
-          <Mailbox className="h-4 w-4" />
-          Settings
-        </button>
-        <button
-          onClick={() => setActiveTab("presets")}
-          className={`flex items-center gap-2 pb-3 text-sm font-medium ${activeTab === "presets" ? "border-b-2 border-primary-600 text-primary-600" : "text-ink-500 hover:text-ink-700"}`}
-        >
-          <Send className="h-4 w-4" />
-          Presets
-        </button>
-        <button
-          onClick={() => setActiveTab("subscribers")}
-          className={`flex items-center gap-2 pb-3 text-sm font-medium ${activeTab === "subscribers" ? "border-b-2 border-primary-600 text-primary-600" : "text-ink-500 hover:text-ink-700"}`}
-        >
-          <Send className="h-4 w-4" />
-          Subscribers
-        </button>
+      {/* Tab Navigation */}
+      <div className="flex items-center gap-1 rounded-2xl bg-ink-900 p-1 ring-1 ring-ink-800">
+        {NAV_TABS.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as Tab)}
+            className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all ${
+              activeTab === tab.id
+                ? "bg-blue-500 text-white shadow-blue-500/25 shadow-lg"
+                : "text-ink-400 hover:text-ink-100 hover:bg-ink-800"
+            }`}
+          >
+            <tab.icon className="h-4 w-4" />
+            {tab.label}
+          </button>
+        ))}
       </div>
 
-      {activeTab === "settings" && (
-        <form onSubmit={handleSave} className="space-y-6">
-          <div className="rounded-2xl border border-ink-200/70 bg-white p-6 dark:border-ink-800/70 dark:bg-ink-900">
-            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-ink-500 dark:text-ink-400">
-              SMTP
-            </h3>
+      {/* SMTP Tab */}
+      {activeTab === "smtp" && (
+        <form onSubmit={handleSave} className="space-y-5">
+          <SectionCard
+            title="SMTP 伺服器"
+            description="連接你的郵件發送服務"
+            icon={<Globe className="h-4 w-4" />}
+          >
             <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-ink-700 dark:text-ink-300">
-                  Host
-                </label>
+              <Field label="主機" htmlFor="smtp_host" required>
                 <input
+                  id="smtp_host"
                   type="text"
                   value={settings.smtp_host}
                   onChange={(e) => setSettings((p) => ({ ...p, smtp_host: e.target.value }))}
-                  placeholder="smtp.example.com"
-                  className="w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-ink-700 dark:bg-ink-950 dark:text-ink-50"
+                  placeholder="smtp.gmail.com"
+                  className="input-field"
                 />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-ink-700 dark:text-ink-300">
-                  Port
-                </label>
+              </Field>
+              <Field label="連接埠" htmlFor="smtp_port" required>
                 <input
+                  id="smtp_port"
                   type="number"
                   value={settings.smtp_port}
                   onChange={(e) => setSettings((p) => ({ ...p, smtp_port: parseInt(e.target.value) || 587 }))}
                   placeholder="587"
-                  className="w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-ink-700 dark:bg-ink-950 dark:text-ink-50"
+                  className="input-field"
                 />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-ink-700 dark:text-ink-300">
-                  User
-                </label>
+              </Field>
+              <Field label="使用者名稱" htmlFor="smtp_user" required>
                 <input
+                  id="smtp_user"
                   type="text"
                   value={settings.smtp_user}
                   onChange={(e) => setSettings((p) => ({ ...p, smtp_user: e.target.value }))}
-                  placeholder="user@example.com"
-                  className="w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-ink-700 dark:bg-ink-950 dark:text-ink-50"
+                  placeholder="your@email.com"
+                  className="input-field"
                 />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-ink-700 dark:text-ink-300">
-                  Password <span className="text-xs text-ink-400">(leave empty to keep existing)</span>
-                </label>
+              </Field>
+              <Field label="密碼" htmlFor="smtp_pass">
                 <input
+                  id="smtp_pass"
                   type="password"
                   value={settings.smtp_pass}
                   onChange={(e) => setSettings((p) => ({ ...p, smtp_pass: e.target.value }))}
-                  placeholder="••••••••"
-                  className="w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-ink-700 dark:bg-ink-950 dark:text-ink-50"
+                  placeholder="留空以保持現有密碼"
+                  className="input-field"
                 />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-ink-700 dark:text-ink-300">
-                  From Address
-                </label>
+              </Field>
+            </div>
+          </SectionCard>
+
+          <SectionCard
+            title="發件人資訊"
+            description="訂閱者看到的寄件者名稱和地址"
+            icon={<UserCheck className="h-4 w-4" />}
+          >
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="發件地址" htmlFor="smtp_from_address" required>
                 <input
+                  id="smtp_from_address"
                   type="email"
                   value={settings.smtp_from_address}
                   onChange={(e) => setSettings((p) => ({ ...p, smtp_from_address: e.target.value }))}
-                  placeholder="your@email.com"
-                  className="w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-ink-700 dark:bg-ink-950 dark:text-ink-50"
+                  placeholder="newsletter@yourdomain.com"
+                  className="input-field"
                 />
-                <p className="mt-1 text-xs text-ink-400">Sender address shown in outgoing emails</p>
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-ink-700 dark:text-ink-300">
-                  From Name
-                </label>
+                <Field.Hint>訂閱者會看到的寄件人地址</Field.Hint>
+              </Field>
+              <Field label="發件人名稱" htmlFor="smtp_from_name" required>
                 <input
+                  id="smtp_from_name"
                   type="text"
                   value={settings.smtp_from_name}
                   onChange={(e) => setSettings((p) => ({ ...p, smtp_from_name: e.target.value }))}
-                  placeholder="AI Radar"
-                  className="w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-ink-700 dark:bg-ink-950 dark:text-ink-50"
+                  placeholder="AI Radar 每日精選"
+                  className="input-field"
                 />
-                <p className="mt-1 text-xs text-ink-400">Name shown in email From header</p>
-              </div>
+                <Field.Hint>訂閱者會看到的寄件人名稱</Field.Hint>
+              </Field>
             </div>
-          </div>
+          </SectionCard>
 
-          <div className="rounded-2xl border border-ink-200/70 bg-white p-6 dark:border-ink-800/70 dark:bg-ink-900">
-            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-ink-500 dark:text-ink-400">
-              Daily Digest Schedule
-            </h3>
-            <div className="flex flex-wrap items-center gap-4">
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="daily_enabled"
-                  checked={settings.daily_enabled}
-                  onChange={(e) => setSettings((p) => ({ ...p, daily_enabled: e.target.checked }))}
-                  className="h-4 w-4 rounded border-ink-300 text-primary-600 focus:ring-primary-500"
-                />
-                <label htmlFor="daily_enabled" className="text-sm font-medium text-ink-700 dark:text-ink-300">
-                  Enabled
+          <SaveBar statusMsg={statusMsg} saving={saving} onSave={handleSave} />
+        </form>
+      )}
+
+      {/* Schedule Tab */}
+      {activeTab === "schedule" && (
+        <form onSubmit={handleSave} className="space-y-5">
+          <SectionCard
+            title="自動發送設定"
+            description="設定每日自動發送精選的時間"
+            icon={<Clock className="h-4 w-4" />}
+          >
+            <div className="flex flex-wrap items-end gap-6">
+              <div className="flex items-center gap-3">
+                <label className="relative inline-flex cursor-pointer items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={settings.daily_enabled}
+                    onChange={(e) => setSettings((p) => ({ ...p, daily_enabled: e.target.checked }))}
+                    className="peer sr-only"
+                  />
+                  <div className="peer h-6 w-11 rounded-full bg-ink-700 transition peer-checked:bg-blue-500 peer-focus:ring-2 peer-focus:ring-blue-500/50" />
+                  <div className="peer-checked:translate-x-5 absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition peer-checked:translate-x-5" />
+                  <span className="text-sm font-medium text-ink-300">
+                    {settings.daily_enabled ? "已啟用" : "已停用"}
+                  </span>
                 </label>
               </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-ink-700 dark:text-ink-300">
-                  Hour (0–23)
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  max="23"
-                  value={settings.daily_hour}
-                  onChange={(e) => setSettings((p) => ({ ...p, daily_hour: parseInt(e.target.value) || 0 }))}
-                  className="w-20 rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-ink-700 dark:bg-ink-950 dark:text-ink-50"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-ink-700 dark:text-ink-300">
-                  Timezone
-                </label>
+              <Field label="發送時間" htmlFor="daily_hour">
+                <div className="flex items-center gap-2">
+                  <input
+                    id="daily_hour"
+                    type="number"
+                    min={0}
+                    max={23}
+                    value={settings.daily_hour}
+                    onChange={(e) => setSettings((p) => ({ ...p, daily_hour: parseInt(e.target.value) || 0 }))}
+                    className="input-field w-20"
+                  />
+                  <span className="text-sm text-ink-500">:00</span>
+                </div>
+              </Field>
+              <Field label="時區" htmlFor="daily_timezone">
                 <select
+                  id="daily_timezone"
                   value={settings.daily_timezone}
                   onChange={(e) => setSettings((p) => ({ ...p, daily_timezone: e.target.value }))}
-                  className="rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-ink-700 dark:bg-ink-950 dark:text-ink-50"
+                  className="input-field min-w-[180px]"
                 >
                   {TIMEZONES.map((tz) => (
                     <option key={tz} value={tz}>{tz}</option>
                   ))}
                 </select>
-              </div>
+              </Field>
             </div>
-          </div>
+          </SectionCard>
 
-          <div className="rounded-2xl border border-ink-200/70 bg-white p-6 dark:border-ink-800/70 dark:bg-ink-900">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-ink-500 dark:text-ink-400">
-                Email Template
-              </h3>
+          <SaveBar statusMsg={statusMsg} saving={saving} onSave={handleSave} />
+        </form>
+      )}
+
+      {/* Template Tab */}
+      {activeTab === "template" && (
+        <form onSubmit={handleSave} className="space-y-5">
+          <SectionCard
+            title="郵件範本"
+            description="自訂郵件抬頭、頁尾和主旨"
+            icon={<FileText className="h-4 w-4" />}
+          >
+            <div className="space-y-4">
+              <Field label="主旨範本" htmlFor="email_subject_template">
+                <input
+                  id="email_subject_template"
+                  type="text"
+                  value={settings.email_subject_template}
+                  onChange={(e) => setSettings((p) => ({ ...p, email_subject_template: e.target.value }))}
+                  placeholder="AI Radar 每日精選 — {{date}}"
+                  className="input-field"
+                />
+                <Field.Hint>可用 &#123;&#123;date&#125;&#125; 插入日期</Field.Hint>
+              </Field>
+              <Field label="抬頭 HTML" htmlFor="email_header_html">
+                <textarea
+                  id="email_header_html"
+                  value={settings.email_header_html}
+                  onChange={(e) => setSettings((p) => ({ ...p, email_header_html: e.target.value }))}
+                  rows={4}
+                  placeholder="<h1>Welcome to AI Radar</h1>"
+                  className="input-field font-mono text-xs"
+                />
+              </Field>
+              <Field label="頁尾 HTML" htmlFor="email_footer_html">
+                <textarea
+                  id="email_footer_html"
+                  value={settings.email_footer_html}
+                  onChange={(e) => setSettings((p) => ({ ...p, email_footer_html: e.target.value }))}
+                  rows={4}
+                  placeholder="<p><a href='{{unsubscribe_url}}'>取消訂閱</a></p>"
+                  className="input-field font-mono text-xs"
+                />
+                <Field.Hint>可用 &#123;&#123;unsubscribe_url&#125;&#125; 插入取消訂閱連結</Field.Hint>
+              </Field>
+
               <button
                 type="button"
                 onClick={() => {
@@ -383,8 +383,8 @@ export default function AdminMailPage() {
                     headerHtml: settings.email_header_html,
                     footerHtml: settings.email_footer_html,
                     articles: [{
-                      title: "Sample Article",
-                      excerpt: "This is a sample article excerpt for preview purposes.",
+                      title: "測試文章標題",
+                      excerpt: "這是一篇測試文章，用於預覽郵件範本的效果。",
                       url: "#",
                       published_at: new Date().toISOString(),
                     }],
@@ -392,358 +392,154 @@ export default function AdminMailPage() {
                   setPreviewHtml(html);
                   setShowPreview(true);
                 }}
-                className="text-xs text-primary-600 hover:text-primary-700"
+                className="flex items-center gap-2 rounded-xl border border-ink-700 px-4 py-2 text-sm text-ink-300 hover:bg-ink-800 transition"
               >
-                Preview
+                <FileText className="h-4 w-4" />
+                預覽郵件
               </button>
             </div>
-            <div className="space-y-4">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-ink-700 dark:text-ink-300">
-                  Subject Template
-                </label>
-                <input
-                  type="text"
-                  value={settings.email_subject_template}
-                  onChange={(e) => setSettings((p) => ({ ...p, email_subject_template: e.target.value }))}
-                  placeholder="AI Radar Daily — {{date}}"
-                  className="w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-ink-700 dark:bg-ink-950 dark:text-ink-50"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-ink-700 dark:text-ink-300">
-                  Header HTML
-                </label>
-                <textarea
-                  value={settings.email_header_html}
-                  onChange={(e) => setSettings((p) => ({ ...p, email_header_html: e.target.value }))}
-                  rows={4}
-                  placeholder="<h1>Welcome to AI Radar</h1>"
-                  className="w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-ink-700 dark:bg-ink-950 dark:text-ink-50"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-ink-700 dark:text-ink-300">
-                  Footer HTML
-                </label>
-                <textarea
-                  value={settings.email_footer_html}
-                  onChange={(e) => setSettings((p) => ({ ...p, email_footer_html: e.target.value }))}
-                  rows={4}
-                  placeholder="<p><a href='{{unsubscribe_url}}'>Unsubscribe</a></p>"
-                  className="w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-ink-700 dark:bg-ink-950 dark:text-ink-50"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-ink-700 dark:text-ink-300">
-                  Full Email Body Template <span className="text-xs text-ink-400">(optional — overrides default layout)</span>
-                </label>
-                <textarea
-                  value={settings.email_body_template}
-                  onChange={(e) => setSettings((p) => ({ ...p, email_body_template: e.target.value }))}
-                  rows={6}
-                  placeholder={`<!DOCTYPE html>
-<html><body>
-{{header}}
-{{articles}}
-{{footer}}
-</body></html>`}
-                  className="w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-ink-700 dark:bg-ink-950 dark:text-ink-50 font-mono"
-                />
-                <p className="mt-1 text-xs text-ink-400">
-                  Placeholders: {"{{header}}"} {"{{footer}}"} {"{{articles}}"} {"{{date}}"} {"{{unsubscribe_url}}"}
-                </p>
-              </div>
-            </div>
-          </div>
+          </SectionCard>
 
-          {statusMsg && (
-            <p className={`text-sm ${statusMsg.type === "success" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
-              {statusMsg.text}
-            </p>
-          )}
-
-          <button
-            type="submit"
-            disabled={saving}
-            className="flex items-center gap-2 rounded-xl bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-700 disabled:opacity-50"
-          >
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
-            Save Settings
-          </button>
+          <SaveBar statusMsg={statusMsg} saving={saving} onSave={handleSave} />
         </form>
       )}
 
-      <div className="mt-6 flex items-center gap-3 rounded-2xl border border-ink-200/70 bg-white p-6 dark:border-ink-800/70 dark:bg-ink-900">
-        <div className="flex-1">
-          <h3 className="text-sm font-semibold text-ink-700 dark:text-ink-200">Send Emails</h3>
-          <p className="mt-0.5 text-xs text-ink-500">Test sends to your From address. Digest sends latest articles to all confirmed subscribers.</p>
-        </div>
-        <button
-          type="button"
-          onClick={() => setShowTestModal(true)}
-          disabled={testing}
-          className="flex items-center gap-2 rounded-xl border border-ink-300 px-4 py-2 text-sm font-medium text-ink-700 hover:bg-ink-50 disabled:opacity-50 dark:border-ink-700 dark:text-ink-300 dark:hover:bg-ink-800"
-        >
-          {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-          Send Test Email
-        </button>
-        <button
-          type="button"
-          onClick={handleSendDigest}
-          disabled={sendingDigest}
-          className="flex items-center gap-2 rounded-xl border border-green-600 px-4 py-2 text-sm font-medium text-green-700 hover:bg-green-50 disabled:opacity-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-900/30"
-        >
-          {sendingDigest ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-          Send Digest Now
-        </button>
-      </div>
-
-      {activeTab === "presets" && (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold">Digest Presets</h2>
-              <p className="text-sm text-ink-500">Define how articles are selected for each digest send.</p>
-            </div>
-            <button
-              onClick={() => {
-                setEditingPreset(null);
-                setPresetForm({ name: "", description: "", mode: "criteria", article_ids: [], criteria: { date_range: "last_7days", limit: 5 }, is_default: false });
-                setShowPresetModal(true);
-              }}
-              className="flex items-center gap-2 rounded-xl bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700"
-            >
-              + Create Preset
-            </button>
-          </div>
-
-          {presets.length === 0 ? (
-            <div className="rounded-2xl border border-ink-200/70 bg-white p-8 text-center text-sm text-ink-500 dark:border-ink-800/70 dark:bg-ink-900">
-              No presets yet. Create one to control which articles go into each digest.
-            </div>
-          ) : (
-            <div className="rounded-2xl border border-ink-200/70 bg-white dark:border-ink-800/70 dark:bg-ink-900 overflow-hidden">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-ink-200 dark:border-ink-700">
-                    <th className="px-4 py-3 text-left font-semibold text-ink-500">Name</th>
-                    <th className="px-4 py-3 text-left font-semibold text-ink-500">Mode</th>
-                    <th className="px-4 py-3 text-left font-semibold text-ink-500">Config</th>
-                    <th className="px-4 py-3 text-left font-semibold text-ink-500">Default</th>
-                    <th className="px-4 py-3 text-right font-semibold text-ink-500">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {presets.map((p) => (
-                    <tr key={p.id} className="border-b border-ink-100 dark:border-ink-800 last:border-0">
-                      <td className="px-4 py-3 font-medium text-ink-700 dark:text-ink-200">{p.name}</td>
-                      <td className="px-4 py-3">
-                        <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${p.mode === "manual" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-400" : "bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-400"}`}>
-                          {p.mode}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-ink-500">
-                        {p.mode === "manual" ? `${p.article_ids.length} articles` : JSON.stringify(p.criteria)}
-                      </td>
-                      <td className="px-4 py-3">{p.is_default && <span className="text-yellow-500">★</span>}</td>
-                      <td className="px-4 py-3 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <button onClick={() => { setEditingPreset(p); setPresetForm({ name: p.name, description: p.description ?? "", mode: p.mode, article_ids: p.article_ids ?? [], criteria: { date_range: (p.criteria?.date_range as string) ?? "last_7days", limit: (p.criteria?.limit as number) ?? 5 }, is_default: p.is_default }); setShowPresetModal(true); }} className="text-xs text-primary-600 hover:text-primary-700">Edit</button>
-                          {!p.is_default && <button onClick={() => fetch(`/api/admin/mail/presets/${p.id}`, { method: "POST" }).then(() => fetch("/api/admin/mail/presets").then(r => r.ok ? r.json() : []).then(setPresets))} className="text-xs text-ink-500 hover:text-ink-700">Set default</button>}
-                          <button onClick={() => { if (!confirm("Delete this preset?")) return; fetch(`/api/admin/mail/presets/${p.id}`, { method: "DELETE" }).then(() => fetch("/api/admin/mail/presets").then(r => r.ok ? r.json() : []).then(setPresets)); }} className="text-xs text-red-500 hover:text-red-700">Delete</button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      )}
-
+      {/* Subscribers Tab */}
       {activeTab === "subscribers" && <MailSubscribers />}
 
+      {/* Action Footer */}
+      <div className="rounded-2xl border border-ink-800 bg-ink-900/50 p-5">
+        <div className="mb-4 flex items-center gap-2">
+          <Send className="h-4 w-4 text-ink-400" />
+          <h3 className="text-sm font-semibold text-ink-200">手動發送</h3>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={handleTestEmail}
+            disabled={testing}
+            className="flex items-center gap-2 rounded-xl border border-ink-700 px-5 py-2.5 text-sm font-medium text-ink-200 hover:bg-ink-800 disabled:opacity-50 transition"
+          >
+            {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
+            預覽郵件
+          </button>
+          <button
+            type="button"
+            onClick={handleSendDigest}
+            disabled={sendingDigest}
+            className="flex items-center gap-2 rounded-xl bg-blue-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-600 disabled:opacity-50 transition shadow-blue-500/25"
+          >
+            {sendingDigest ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            立即發送給所有訂閱者
+          </button>
+          <span className="text-xs text-ink-500">
+            發送最新 5 篇文章到所有已確認訂閱者的郵箱
+          </span>
+        </div>
+        {statusMsg && (
+          <div className={`mt-3 flex items-center gap-2 text-sm ${
+            statusMsg.type === "success" ? "text-green-400" : "text-red-400"
+          }`}>
+            {statusMsg.type === "success"
+              ? <CheckCircle className="h-4 w-4" />
+              : <XCircle className="h-4 w-4" />}
+            {statusMsg.text}
+          </div>
+        )}
+      </div>
+
+      {/* Preview Modal */}
       {showPreview && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-2xl rounded-2xl bg-white p-6 dark:bg-ink-900">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="font-semibold">Email Preview</h3>
-              <button onClick={() => setShowPreview(false)} className="text-ink-500 hover:text-ink-700">✕</button>
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="w-full max-w-3xl rounded-2xl bg-white dark:bg-ink-900 mt-10 mb-10 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-ink-200 dark:border-ink-800 px-6 py-4">
+              <h3 className="font-semibold text-ink-900 dark:text-ink-100">郵件預覽</h3>
+              <button
+                onClick={() => setShowPreview(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-400 hover:bg-ink-100 dark:hover:bg-ink-800 transition"
+              >
+                <XCircle className="h-5 w-5" />
+              </button>
             </div>
             <iframe
               srcDoc={previewHtml}
-              className="w-full rounded-xl border border-ink-200"
-              style={{ height: "500px" }}
+              className="w-full rounded-b-2xl border-0"
+              style={{ height: "600px" }}
               title="Email preview"
             />
           </div>
         </div>
       )}
+    </div>
+  );
+}
 
-      {/* Preset Editor Modal */}
-      {showPresetModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6 dark:bg-ink-900 max-h-[90vh] overflow-y-auto">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="font-semibold">{editingPreset ? "Edit Preset" : "Create Preset"}</h3>
-              <button onClick={() => setShowPresetModal(false)} className="text-ink-500 hover:text-ink-700">✕</button>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-ink-700 dark:text-ink-300">Name</label>
-                <input type="text" value={presetForm.name} onChange={(e) => setPresetForm((p) => ({ ...p, name: e.target.value }))} placeholder="Weekly AI Digest" className="w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-ink-700 dark:bg-ink-950 dark:text-ink-50" />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-ink-700 dark:text-ink-300">Description</label>
-                <textarea value={presetForm.description} onChange={(e) => setPresetForm((p) => ({ ...p, description: e.target.value }))} rows={2} placeholder="Optional description..." className="w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-ink-700 dark:bg-ink-950 dark:text-ink-50" />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-ink-700 dark:text-ink-300">Mode</label>
-                <div className="flex gap-4">
-                  <label className="flex items-center gap-2 text-sm">
-                    <input type="radio" checked={presetForm.mode === "criteria"} onChange={() => setPresetForm((p) => ({ ...p, mode: "criteria" }))} className="text-primary-600" />
-                    Criteria
-                  </label>
-                  <label className="flex items-center gap-2 text-sm">
-                    <input type="radio" checked={presetForm.mode === "manual"} onChange={() => setPresetForm((p) => ({ ...p, mode: "manual" }))} className="text-primary-600" />
-                    Manual Pick
-                  </label>
-                </div>
-              </div>
+// --- Sub-components ---
 
-              {presetForm.mode === "manual" ? (
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-ink-700 dark:text-ink-300">Select Articles</label>
-                  <div className="max-h-48 overflow-y-auto rounded-xl border border-ink-200 bg-white p-2 dark:border-ink-700 dark:bg-ink-950">
-                    {allArticles.length === 0 ? (
-                      <p className="p-2 text-xs text-ink-400">Loading articles...</p>
-                    ) : allArticles.map((a) => (
-                      <label key={a.id} className="flex items-center gap-2 p-1.5 text-sm hover:bg-ink-50 dark:hover:bg-ink-800">
-                        <input type="checkbox" checked={presetForm.article_ids.includes(a.id)} onChange={(e) => setPresetForm((p) => ({ ...p, article_ids: e.target.checked ? [...p.article_ids, a.id] : p.article_ids.filter((id) => id !== a.id) }))} className="text-primary-600" />
-                        <span className="truncate text-ink-700 dark:text-ink-200">{a.title}</span>
-                        <span className="ml-auto text-xs text-ink-400">{new Date(a.published_at).toLocaleDateString()}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-ink-700 dark:text-ink-300">Date Range</label>
-                    <select value={(presetForm.criteria.date_range as string) ?? "last_7days"} onChange={(e) => setPresetForm((p) => ({ ...p, criteria: { ...p.criteria, date_range: e.target.value } }))} className="w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-ink-700 dark:bg-ink-950 dark:text-ink-50">
-                      <option value="today">Today</option>
-                      <option value="yesterday">Yesterday</option>
-                      <option value="last_7days">Last 7 days</option>
-                      <option value="last_30days">Last 30 days</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-ink-700 dark:text-ink-300">Max Articles</label>
-                    <input type="number" min={1} max={20} value={(presetForm.criteria.limit as number) ?? 5} onChange={(e) => setPresetForm((p) => ({ ...p, criteria: { ...p.criteria, limit: parseInt(e.target.value) || 5 } }))} className="w-24 rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-ink-700 dark:bg-ink-950 dark:text-ink-50" />
-                  </div>
-                </div>
-              )}
-
-              <label className="flex items-center gap-2 text-sm">
-                <input type="checkbox" checked={presetForm.is_default} onChange={(e) => setPresetForm((p) => ({ ...p, is_default: e.target.checked }))} className="text-primary-600" />
-                Set as default preset
-              </label>
-
-              <div className="flex justify-end gap-3 pt-2">
-                <button onClick={() => setShowPresetModal(false)} className="rounded-xl border border-ink-300 px-4 py-2 text-sm text-ink-700 hover:bg-ink-50 dark:border-ink-700 dark:text-ink-300 dark:hover:bg-ink-800">Cancel</button>
-                <button
-                  onClick={async () => {
-                    setPresetSaving(true);
-                    const url = editingPreset ? `/api/admin/mail/presets/${editingPreset.id}` : "/api/admin/mail/presets";
-                    const method = editingPreset ? "PUT" : "POST";
-                    const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(presetForm) });
-                    if (res.ok) {
-                      const updated = await fetch("/api/admin/mail/presets").then(r => r.ok ? r.json() : []);
-                      setPresets(updated);
-                      setShowPresetModal(false);
-                    }
-                    setPresetSaving(false);
-                  }}
-                  disabled={presetSaving || !presetForm.name}
-                  className="flex items-center gap-2 rounded-xl bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700 disabled:opacity-50"
-                >
-                  {presetSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                  {editingPreset ? "Update Preset" : "Create Preset"}
-                </button>
-              </div>
-            </div>
-          </div>
+function SectionCard({
+  title, description, icon, children,
+}: {
+  title: string; description: string; icon: React.ReactNode; children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-2xl border border-ink-800 bg-ink-900/50 overflow-hidden">
+      <div className="flex items-center gap-3 border-b border-ink-800 bg-ink-900 px-5 py-4">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10 text-blue-400 ring-1 ring-blue-500/20">
+          {icon}
         </div>
-      )}
-
-      {/* Test Send Modal */}
-      {showTestModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 dark:bg-ink-900">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="font-semibold">Send Test Email</h3>
-              <button onClick={() => setShowTestModal(false)} className="text-ink-500 hover:text-ink-700">✕</button>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-ink-700 dark:text-ink-300">Recipient Email</label>
-                <input type="email" value={testEmail} onChange={(e) => setTestEmail(e.target.value)} placeholder="test@example.com" className="w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-ink-700 dark:bg-ink-950 dark:text-ink-50" />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-ink-700 dark:text-ink-300">Preset</label>
-                <select value={testPresetId} onChange={(e) => setTestPresetId(e.target.value)} className="w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-ink-700 dark:bg-ink-950 dark:text-ink-50">
-                  <option value="">Default preset</option>
-                  {presets.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-ink-700 dark:text-ink-300">Or select specific articles</label>
-                <div className="max-h-40 overflow-y-auto rounded-xl border border-ink-200 bg-white p-2 dark:border-ink-700 dark:bg-ink-950">
-                  {allArticles.length === 0 ? (
-                    <p className="p-2 text-xs text-ink-400">Loading...</p>
-                  ) : allArticles.slice(0, 10).map((a) => (
-                    <label key={a.id} className="flex items-center gap-2 p-1.5 text-sm hover:bg-ink-50 dark:hover:bg-ink-800">
-                      <input type="checkbox" checked={testArticleIds.includes(a.id)} onChange={(e) => setTestArticleIds(e.target.checked ? [...testArticleIds, a.id] : testArticleIds.filter((id) => id !== a.id))} className="text-primary-600" />
-                      <span className="truncate text-ink-700 dark:text-ink-200">{a.title}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-              <div className="flex justify-end gap-3">
-                <button onClick={() => setShowTestModal(false)} className="rounded-xl border border-ink-300 px-4 py-2 text-sm text-ink-700 hover:bg-ink-50 dark:border-ink-700 dark:text-ink-300 dark:hover:bg-ink-800">Cancel</button>
-                <button
-                  onClick={async () => {
-                    setTestSending(true);
-                    const res = await fetch("/api/admin/mail/send-digest", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        to: testEmail,
-                        preset_id: testPresetId || undefined,
-                        article_ids: testArticleIds.length > 0 ? testArticleIds : undefined,
-                      }),
-                    });
-                    const data = await res.json();
-                    if (res.ok) {
-                      setStatusMsg({ type: "success", text: `Test email sent to ${testEmail}` });
-                      setShowTestModal(false);
-                    } else {
-                      setStatusMsg({ type: "error", text: data.error || "Failed to send" });
-                    }
-                    setTestSending(false);
-                  }}
-                  disabled={testSending || !testEmail}
-                  className="flex items-center gap-2 rounded-xl bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700 disabled:opacity-50"
-                >
-                  {testSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                  Send Test
-                </button>
-              </div>
-            </div>
-          </div>
+        <div>
+          <h2 className="text-sm font-semibold text-ink-100">{title}</h2>
+          <p className="text-xs text-ink-500">{description}</p>
         </div>
+      </div>
+      <div className="p-5">{children}</div>
+    </div>
+  );
+}
+
+function Field({
+  label, htmlFor, required, children,
+}: {
+  label: string; htmlFor: string; required?: boolean; children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label htmlFor={htmlFor} className="mb-1.5 block text-sm font-medium text-ink-300">
+        {label}
+        {required && <span className="ml-1 text-red-400">*</span>}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+Field.Hint = function Hint({ children }: { children: React.ReactNode }) {
+  return <p className="mt-1 text-xs text-ink-500">{children}</p>;
+};
+
+function SaveBar({
+  statusMsg, saving, onSave,
+}: {
+  statusMsg: { type: "success" | "error"; text: string } | null;
+  saving: boolean;
+  onSave: (e: React.FormEvent) => void;
+}) {
+  return (
+    <div className="flex items-center gap-4">
+      <button
+        type="submit"
+        disabled={saving}
+        onClick={onSave}
+        className="flex items-center gap-2 rounded-xl bg-blue-500 px-6 py-2.5 text-sm font-semibold text-white hover:bg-blue-600 disabled:opacity-50 transition shadow-blue-500/25"
+      >
+        {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
+        儲存設定
+      </button>
+      {statusMsg && (
+        <span className={`text-sm ${statusMsg.type === "success" ? "text-green-400" : "text-red-400"}`}>
+          {statusMsg.type === "success" ? <CheckCircle className="inline h-4 w-4 mr-1" /> : <XCircle className="inline h-4 w-4 mr-1" />}
+          {statusMsg.text}
+        </span>
       )}
     </div>
   );

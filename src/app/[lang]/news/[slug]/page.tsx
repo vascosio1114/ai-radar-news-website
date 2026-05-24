@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Clock, Eye } from "lucide-react";
+import { ArrowLeft, Clock } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { containsCJK, getLocalizedContent, getUIStrings } from "@/lib/i18n";
 import type { Lang } from "@/lib/site";
@@ -15,6 +15,7 @@ import { parseMarkdownHeadings } from "@/lib/markdown";
 import TableOfContents from "@/components/markdown/TableOfContents";
 import AuthorCard from "@/components/markdown/AuthorCard";
 import RelatedArticles from "@/components/markdown/RelatedArticles";
+import ViewCounter from "@/components/article/ViewCounter";
 
 type Props = { params: { lang: string; slug: string } };
 
@@ -88,9 +89,18 @@ export default async function ArticlePage({ params }: Props) {
 
   const localized = getLocalizedContent(rawArticle, lang);
   const articleContent = localized.content ?? null;
+
+  // For en: show "unavailable" only if there is no English title/excerpt at all
+  // (i.e. this is a Chinese-original article with no English translation)
+  // If title/en/excerpt exist and are not CJK, treat as English-available even if content has some CJK
+  const hasEnglishTitle = lang === "en"
+    ? !!rawArticle.title && !containsCJK(rawArticle.title)
+    : true;
+  const hasEnglishExcerpt = lang === "en"
+    ? !!rawArticle.excerpt && !containsCJK(rawArticle.excerpt)
+    : true;
   const englishUnavailable =
-    lang === "en" &&
-    containsCJK([localized.title, localized.excerpt, localized.content, localized.content_html]);
+    lang === "en" && (!hasEnglishTitle || !hasEnglishExcerpt);
 
   const tocItems = articleContent && !englishUnavailable ? parseMarkdownHeadings(articleContent) : [];
 
@@ -121,10 +131,10 @@ export default async function ArticlePage({ params }: Props) {
             <Clock className="h-3.5 w-3.5" />
             {localized.reading_time ?? rawArticle.reading_time ?? 0} {ui.minRead}
           </span>
-          <span className="inline-flex items-center gap-1">
-            <Eye className="h-3.5 w-3.5" />
-            {(localized.views ?? rawArticle.views ?? 0).toLocaleString()}
-          </span>
+          <ViewCounter
+            slug={params.slug}
+            initialViews={localized.views ?? rawArticle.views ?? 0}
+          />
         </div>
         {(localized.tags?.length ?? rawArticle.tags?.length ?? 0) > 0 && (
           <div className="mt-4 flex flex-wrap gap-2">
