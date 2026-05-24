@@ -19,6 +19,10 @@ export default function AdminArticlesPage() {
     setLoading(false);
   };
 
+  useEffect(() => {
+    void fetchArticles();
+  }, []);
+
   const handleDelete = async (id: string) => {
     if (!confirm("確定要刪除這篇文章嗎？")) return;
 

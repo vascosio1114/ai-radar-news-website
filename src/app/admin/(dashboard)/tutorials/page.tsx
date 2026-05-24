@@ -25,6 +25,10 @@ export default function AdminTutorialsPage() {
     setLoading(false);
   };
 
+  useEffect(() => {
+    void fetchTutorials();
+  }, []);
+
   const handleDelete = async (id: string) => {
     if (!confirm("確定要刪除這個教學嗎？")) return;
 
