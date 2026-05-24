@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import ArticleForm from "@/components/admin/ArticleForm";
 import type { ArticleFormData } from "@/components/admin/ArticleForm";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { Article } from "@/types";
 
 export default function EditArticlePage() {
@@ -15,15 +14,11 @@ export default function EditArticlePage() {
 
   useEffect(() => {
     const fetchArticle = async () => {
-      const supabase = createSupabaseBrowserClient();
-      const { data, error } = await supabase
-        .from("articles")
-        .select("*")
-        .eq("id", params.id)
-        .single();
+      const res = await fetch(`/api/admin/articles/${params.id}`);
+      const result = await res.json().catch(() => ({}));
 
-      if (!error && data) {
-        setArticle(data as Article);
+      if (res.ok && result.article) {
+        setArticle(result.article as Article);
       }
       setLoading(false);
     };
@@ -34,34 +29,18 @@ export default function EditArticlePage() {
   }, [params.id]);
 
   const handleSubmit = async (data: ArticleFormData) => {
-    const supabase = createSupabaseBrowserClient();
-    const { error } = await supabase
-      .from("articles")
-      .update({
-        title: data.title,
-        title_zh: data.title_zh || null,
-        slug: data.slug,
-        excerpt: data.excerpt,
-        excerpt_zh: data.excerpt_zh || null,
-        cover_image: data.cover_image || null,
-        content: data.content || null,
-        content_zh: data.content_zh || null,
-        summary_content: data.summary_content || null,
-        summary_content_zh: data.summary_content_zh || null,
-        category: data.category,
-        tags: data.tags,
-        published_at: data.published_at ? new Date(data.published_at).toISOString() : null,
-        is_featured: data.is_featured,
-        is_published: data.is_published,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", params.id);
+    const res = await fetch(`/api/admin/articles/${params.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    const result = await res.json().catch(() => ({}));
 
-    if (!error) {
+    if (res.ok) {
       router.push("/admin/articles");
       router.refresh();
     } else {
-      alert("更新失敗：" + error.message);
+      alert("更新失敗：" + (result.error || "Unknown error"));
     }
   };
 
@@ -91,17 +70,17 @@ export default function EditArticlePage() {
         <ArticleForm
           initialData={{
             title: article.title,
-            title_zh: (article as any).title_zh || "",
+            title_zh: article.title_zh || "",
             slug: article.slug,
             excerpt: article.excerpt || "",
-            excerpt_zh: (article as any).excerpt_zh || "",
+            excerpt_zh: article.excerpt_zh || "",
             cover_image: article.cover_image || "",
             category: article.category,
             tags: article.tags || [],
             content: article.content || "",
-            content_zh: (article as any).content_zh || "",
-            summary_content: (article as any).summary_content || "",
-            summary_content_zh: (article as any).summary_content_zh || "",
+            content_zh: article.content_zh || "",
+            summary_content: article.summary_content || "",
+            summary_content_zh: article.summary_content_zh || "",
             published_at: article.published_at
               ? article.published_at.split("T")[0]
               : new Date().toISOString().split("T")[0],

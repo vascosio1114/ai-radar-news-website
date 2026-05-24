@@ -6,8 +6,10 @@ export type Article = {
   id: string;
   slug: string;
   title: string;
+  title_zh?: string | null;
   excerpt: string;
-  cover_image: string;
+  excerpt_zh?: string | null;
+  cover_image: string | null;
   category: string;
   tags: string[];
   author: string;
@@ -16,8 +18,13 @@ export type Article = {
   views: number;
   is_featured: boolean;
   is_published: boolean;
+  is_premium?: boolean;
   /** Markdown 內容 */
-  content?: string;
+  content?: string | null;
+  content_zh?: string | null;
+  content_html?: string | null;
+  summary_content?: string | null;
+  summary_content_zh?: string | null;
 };
 
 export type Tool = {

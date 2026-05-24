@@ -30,9 +30,8 @@ export async function GET() {
 }
 
 
-function createSlug(date: string, title: string) {
-  const dateStr = date ? new Date(date).toISOString().split("T")[0] : new Date().toISOString().split("T")[0];
-  const titleSlug = String(title || "")
+function normalizeSlug(value: string) {
+  return String(value || "")
     .toLowerCase()
     .normalize("NFKD")
     .replace(/[^a-z0-9\s-]/g, "")
@@ -40,7 +39,13 @@ function createSlug(date: string, title: string) {
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "")
     .trim();
-  return `${dateStr}-${titleSlug || "blog-post"}`;
+}
+
+function createSlug(date: string, title: string) {
+  const dateStr = date ? new Date(date).toISOString().split("T")[0] : new Date().toISOString().split("T")[0];
+  const titleSlug = normalizeSlug(title);
+  const fallback = `blog-post-${Date.now().toString(36)}`;
+  return `${dateStr}-${titleSlug || fallback}`;
 }
 
 function estimateReadingTime(content: string) {
@@ -58,7 +63,7 @@ export async function POST(req: Request) {
     const publishedAt = body.published_at
       ? new Date(body.published_at).toISOString()
       : new Date().toISOString();
-    const slug = body.slug || createSlug(publishedAt, body.title || body.title_zh || "blog-post");
+    const slug = normalizeSlug(body.slug || "") || createSlug(publishedAt, body.title || body.title_zh || "blog-post");
     const content = body.content_zh || body.content || "";
 
     const { data, error } = await supabase
