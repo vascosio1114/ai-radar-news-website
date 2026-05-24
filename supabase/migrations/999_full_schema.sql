@@ -350,6 +350,7 @@ do $$ begin
     avatar_url        text,
     newsletter_optin  boolean default true,
     is_admin          boolean not null default false,
+    plan              text default 'free' check (plan in ('free', 'premium')),
     created_at        timestamptz default now(),
     updated_at        timestamptz default now()
   );
