@@ -121,7 +121,6 @@ export default function NewArticlePage() {
           isSubmitting={isSubmitting}
           initialData={{
             category: "AI 文章",
-            author: "RADAR AI Studio",
             published_at: new Date().toISOString().split("T")[0],
             is_published: true,
           } as Partial<ArticleFormData>}

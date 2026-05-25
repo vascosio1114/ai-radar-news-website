@@ -245,41 +245,6 @@ git commit -m "feat(mail): support full_content mode in buildDigestHtml"
 
 - [ ] **Step 1: Read current file to find exact line numbers**
 
-Run: `Get-Content src/app/api/admin/mail/send-digest/route.ts | Select-Object -First 30 -Last 50`
-
-Note the lines around where articles are resolved and where `buildDigestHtml` is called.
-
-- [ ] **Step 2: Update preset fetch to include content_mode**
-
-Find the preset fetch block (around line 32-36 in `send-digest/route.ts`) and add `content_mode` to the select:
-
-```typescript
-  // Find this line:
-  .select("*")
-  // Change to:
-  .select("*, content_mode")
-```
-
-- [ ] **Step 3: Update buildDigestHtml call to pass contentMode**
-
-In the `buildDigestHtml` call (around line 102-109), add `contentMode`:
-
-```typescript
-  const contentMode = preset?.content_mode ?? "excerpt";
-
-  const html = buildDigestHtml({
-    headerHtml: settings.email_header_html || "",
-    footerHtml: settings.email_footer_html || "",
-    articles: articlesWithUrl,
-    emailBodyTemplate: settings.email_body_template || undefined,
-    dateStr,
-    unsubscribeUrl: `${SITE_URL}/unsubscribe`,
-    contentMode: contentMode, // NEW: pass content_mode
-  });
-```
-
-- [ ] **Step 1: Read current file to find exact line numbers**
-
 Read `src/app/api/admin/mail/send-digest/route.ts` and note the lines around where the preset is fetched and where `buildDigestHtml` is called.
 
 - [ ] **Step 2: Update admin send-digest preset fetch to include content_mode**
@@ -338,10 +303,6 @@ Read `src/app/api/send-digest/route.ts`. Find the default preset fetch and add `
 git add src/app/api/admin/mail/send-digest/route.ts src/app/api/send-digest/route.ts
 git commit -m "feat(mail): pass content_mode from preset to buildDigestHtml"
 ```
-
----
-
-## Task 3b: Article API — include email_content and support search
 
 ---
 

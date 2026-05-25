@@ -15,9 +15,9 @@ export function getLocalizedContent<T extends Record<string, any>>(
       title: item.title_zh ?? item.title,
       excerpt: item.excerpt_zh ?? item.excerpt,
       content: item.content_zh ?? item.content,
-      content_html: item.content_html ?? item.content_zh ?? item.content,
     };
   }
+  // en: use content (markdown) — content_html is optional pre-rendered cache
   return item;
 }
 
