@@ -36,7 +36,7 @@ export async function POST(request: Request) {
     // Ad-hoc override
     const { data } = await admin
       .from("articles")
-      .select("id, slug, title, excerpt, cover_image, published_at, category, tags, is_featured")
+      .select("id, slug, title, excerpt, cover_image, published_at, category, tags, is_featured, email_content, content_html")
       .in("id", body.article_ids)
       .eq("is_published", true);
     articles = (data ?? []) as ArticleSelect[];
@@ -99,7 +99,7 @@ export async function POST(request: Request) {
 
   const articlesWithUrl = articles.map((a) => ({
     ...a,
-    url: `${SITE_URL}/news/${a.slug}`,
+    url: `${SITE_URL}/zh/news/${a.slug}`,
   }));
 
   const html = buildDigestHtml({

@@ -52,7 +52,7 @@ export async function GET(request: Request) {
     const todayStartISO = new Date(todayStart).toISOString();
     const { data } = await supabase
       .from("articles")
-      .select("id, slug, title, excerpt, cover_image, published_at, category, tags, is_featured")
+      .select("id, slug, title, excerpt, cover_image, published_at, category, tags, is_featured, email_content, content_html")
       .eq("is_published", true)
       .gte("published_at", todayStartISO)
       .order("published_at", { ascending: false })
@@ -84,7 +84,7 @@ export async function GET(request: Request) {
 
   const articlesWithUrl = articles.map((a) => ({
     ...a,
-    url: `${SITE_URL}/news/${a.slug}`,
+    url: `${SITE_URL}/zh/news/${a.slug}`,
   }));
 
   const contentMode = defaultPreset?.content_mode ?? "excerpt";

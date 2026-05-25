@@ -47,7 +47,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Article not found" }, { status: 404 });
   }
 
-  const articleUrl = `${SITE_URL}/news/${article.slug}`;
+  const articleUrl = `${SITE_URL}/zh/news/${article.slug}`;
 
   // Build email HTML — single article render
   const html = buildDigestHtml({
