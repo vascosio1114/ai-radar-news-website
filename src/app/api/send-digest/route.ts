@@ -31,7 +31,7 @@ export async function GET(request: Request) {
   // --- Load default preset or fallback ---
   const { data: defaultPreset } = await supabase
     .from("digest_presets")
-    .select("*")
+    .select("*, content_mode")
     .eq("is_default", true)
     .single();
 
@@ -87,6 +87,8 @@ export async function GET(request: Request) {
     url: `${SITE_URL}/news/${a.slug}`,
   }));
 
+  const contentMode = defaultPreset?.content_mode ?? "excerpt";
+
   const html = buildDigestHtml({
     headerHtml: settings.email_header_html || "",
     footerHtml: settings.email_footer_html || "",
@@ -94,6 +96,7 @@ export async function GET(request: Request) {
     emailBodyTemplate: settings.email_body_template || undefined,
     dateStr,
     unsubscribeUrl: `${SITE_URL}/unsubscribe`,
+    contentMode,
   });
 
   let sent = 0;

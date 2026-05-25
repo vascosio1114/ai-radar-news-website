@@ -6,16 +6,27 @@ export const dynamic = "force-dynamic";
 
 const log = logger.child({ component: "admin-articles" });
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
     const auth = await requireAdminApi();
     if (!auth.ok) return auth.response;
     const supabase = auth.adminDb;
 
-    const { data, error } = await supabase
+    const url = new URL(req.url);
+    const search = url.searchParams.get("search");
+    const limit = parseInt(url.searchParams.get("limit") || "20");
+
+    let query = supabase
       .from("articles")
-      .select("*")
-      .order("created_at", { ascending: false });
+      .select("id, slug, title, excerpt, email_content, published_at, is_published")
+      .order("created_at", { ascending: false })
+      .limit(limit);
+
+    if (search && search.length >= 2) {
+      query = query.ilike("title", `%${search}%`);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       log.error({ err: error }, "Failed to fetch articles");
@@ -49,7 +60,7 @@ function createSlug(date: string, title: string) {
 
 function estimateReadingTime(content: string) {
   const words = content.trim().split(/\s+/).filter(Boolean).length;
-  const cjkChars = (content.match(/[\u4e00-\u9fff]/g) ?? []).length;
+  const cjkChars = (content.match(/[一-鿿]/g) ?? []).length;
   return Math.max(1, Math.ceil(Math.max(words / 220, cjkChars / 450)));
 }
 
@@ -87,6 +98,7 @@ export async function POST(req: Request) {
         views: 0,
         is_featured: Boolean(body.is_featured),
         is_published: body.is_published !== false,
+        email_content: body.email_content ? String(body.email_content) : null,
       })
       .select("id, slug, is_published")
       .single();
