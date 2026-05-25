@@ -36,7 +36,13 @@ const DEFAULT_SETTINGS: MailSettings = {
   email_subject_template: "", email_header_html: "", email_footer_html: "",
 };
 
-type Tab = "smtp" | "schedule" | "template" | "subscribers";
+type Tab = "smtp" | "schedule" | "template" | "subscribers" | "send-article" | "weekly-summary";
+
+interface ArticleSearchResult {
+  id: string;
+  title: string;
+  slug: string;
+}
 
 export default function AdminMailPage() {
   const [settings, setSettings] = useState<MailSettings>(DEFAULT_SETTINGS);
@@ -48,6 +54,18 @@ export default function AdminMailPage() {
   const [previewHtml, setPreviewHtml] = useState("");
   const [showPreview, setShowPreview] = useState(false);
   const [subscriberCount, setSubscriberCount] = useState<number | null>(null);
+
+  // Article send state
+  const [selectedArticle, setSelectedArticle] = useState<ArticleSearchResult | null>(null);
+  const [articleSearch, setArticleSearch] = useState("");
+  const [searchResults, setSearchResults] = useState<ArticleSearchResult[]>([]);
+  const [sendingArticle, setSendingArticle] = useState(false);
+
+  // Weekly summary state
+  const [weeklyArticles, setWeeklyArticles] = useState<ArticleSearchResult[]>([]);
+  const [weeklySearch, setWeeklySearch] = useState("");
+  const [weeklySearchResults, setWeeklySearchResults] = useState<ArticleSearchResult[]>([]);
+  const [sendingWeekly, setSendingWeekly] = useState(false);
 
   useEffect(() => {
     fetch("/api/admin/mail/settings")
@@ -143,11 +161,76 @@ export default function AdminMailPage() {
     setSendingDigest(false);
   };
 
+  const handleArticleSearch = async (query: string) => {
+    setArticleSearch(query);
+    if (query.length < 2) { setSearchResults([]); return; }
+    const res = await fetch(`/api/admin/articles?search=${encodeURIComponent(query)}&limit=5`);
+    const data = await res.json();
+    setSearchResults(data.articles ?? []);
+  };
+
+  const handleSendArticle = async () => {
+    if (!selectedArticle) return;
+    if (!confirm(`確定發送「${selectedArticle.title}」給所有訂閱者？`)) return;
+    setSendingArticle(true);
+    setStatusMsg(null);
+    const res = await fetch("/api/admin/mail/send-article", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ article_id: selectedArticle.id }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setStatusMsg({ type: "success", text: `已發送給 ${data.sent}/${data.total} 位訂閱者` });
+    } else {
+      setStatusMsg({ type: "error", text: data.error || "發送失敗" });
+    }
+    setSendingArticle(false);
+  };
+
+  const handleWeeklySearch = async (query: string) => {
+    setWeeklySearch(query);
+    if (query.length < 2) { setWeeklySearchResults([]); return; }
+    const res = await fetch(`/api/admin/articles?search=${encodeURIComponent(query)}&limit=5`);
+    const data = await res.json();
+    setWeeklySearchResults(data.articles ?? []);
+  };
+
+  const addToWeekly = (article: ArticleSearchResult) => {
+    if (weeklyArticles.find((a) => a.id === article.id)) return;
+    setWeeklyArticles((prev) => [...prev, article]);
+  };
+
+  const removeFromWeekly = (id: string) => {
+    setWeeklyArticles((prev) => prev.filter((a) => a.id !== id));
+  };
+
+  const handleSendWeeklySummary = async () => {
+    if (weeklyArticles.length === 0) return;
+    if (!confirm(`確定發送 ${weeklyArticles.length} 篇文章給所有訂閱者？`)) return;
+    setSendingWeekly(true);
+    setStatusMsg(null);
+    const res = await fetch("/api/admin/mail/send-digest", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ article_ids: weeklyArticles.map((a) => a.id) }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setStatusMsg({ type: "success", text: `已發送給 ${data.sent}/${data.total} 位訂閱者` });
+    } else {
+      setStatusMsg({ type: "error", text: data.error || "發送失敗" });
+    }
+    setSendingWeekly(false);
+  };
+
   const NAV_TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
     { id: "smtp", label: "SMTP 設定", icon: Globe },
     { id: "schedule", label: "發送時間", icon: Clock },
     { id: "template", label: "郵件範本", icon: FileText },
     { id: "subscribers", label: "訂閱者", icon: Users },
+    { id: "send-article", label: "發送文章", icon: Mail },
+    { id: "weekly-summary", label: "每週總結", icon: Send },
   ];
 
   return (
@@ -406,6 +489,147 @@ export default function AdminMailPage() {
 
       {/* Subscribers Tab */}
       {activeTab === "subscribers" && <MailSubscribers />}
+
+      {/* Send Article Tab */}
+      {activeTab === "send-article" && (
+        <SectionCard
+          title="發送單篇文章"
+          description="選擇一篇文章發送給所有訂閱者"
+          icon={<Mail className="h-4 w-4" />}
+        >
+          <div className="space-y-4">
+            <Field label="搜尋文章" htmlFor="article-search">
+              <input
+                id="article-search"
+                type="text"
+                value={articleSearch}
+                onChange={(e) => handleArticleSearch(e.target.value)}
+                placeholder="輸入文章標題搜尋..."
+                className="input-field"
+              />
+            </Field>
+            {searchResults.length > 0 && (
+              <ul className="rounded-xl border border-ink-700 divide-y divide-ink-700 overflow-hidden">
+                {searchResults.map((a) => (
+                  <li key={a.id}>
+                    <button
+                      type="button"
+                      onClick={() => { setSelectedArticle(a); setSearchResults([]); setArticleSearch(""); }}
+                      className="w-full text-left px-4 py-3 text-sm text-ink-200 hover:bg-ink-800 transition"
+                    >
+                      {a.title}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {selectedArticle && (
+              <div className="flex items-center justify-between rounded-xl bg-ink-800 px-4 py-3">
+                <span className="text-sm font-medium text-ink-100">{selectedArticle.title}</span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedArticle(null)}
+                  className="text-xs text-ink-400 hover:text-red-400"
+                >
+                  移除
+                </button>
+              </div>
+            )}
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!selectedArticle) return;
+                  const res = await fetch("/api/admin/mail/send-article", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ article_id: selectedArticle.id, is_preview: true }),
+                  });
+                  const data = await res.json();
+                  if (data.html) { setPreviewHtml(data.html); setShowPreview(true); }
+                }}
+                disabled={!selectedArticle}
+                className="flex items-center gap-2 rounded-xl border border-ink-700 px-4 py-2 text-sm text-ink-300 hover:bg-ink-800 disabled:opacity-50"
+              >
+                <FileText className="h-4 w-4" /> 預覽
+              </button>
+              <button
+                type="button"
+                onClick={handleSendArticle}
+                disabled={!selectedArticle || sendingArticle}
+                className="flex items-center gap-2 rounded-xl bg-blue-500 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-600 disabled:opacity-50"
+              >
+                {sendingArticle ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                發送給所有訂閱者
+              </button>
+            </div>
+          </div>
+        </SectionCard>
+      )}
+
+      {/* Weekly Summary Tab */}
+      {activeTab === "weekly-summary" && (
+        <SectionCard
+          title="每週總結"
+          description="選擇多篇文章作為每週總結發送"
+          icon={<Send className="h-4 w-4" />}
+        >
+          <div className="space-y-4">
+            <Field label="搜尋文章" htmlFor="weekly-search">
+              <input
+                id="weekly-search"
+                type="text"
+                value={weeklySearch}
+                onChange={(e) => handleWeeklySearch(e.target.value)}
+                placeholder="輸入文章標題搜尋..."
+                className="input-field"
+              />
+            </Field>
+            {weeklySearchResults.length > 0 && (
+              <ul className="rounded-xl border border-ink-700 divide-y divide-ink-700 overflow-hidden">
+                {weeklySearchResults.map((a) => (
+                  <li key={a.id}>
+                    <button
+                      type="button"
+                      onClick={() => { addToWeekly(a); setWeeklySearchResults([]); setWeeklySearch(""); }}
+                      className="w-full text-left px-4 py-3 text-sm text-ink-200 hover:bg-ink-800 transition"
+                    >
+                      + {a.title}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {weeklyArticles.length > 0 && (
+              <div className="space-y-2">
+                {weeklyArticles.map((a) => (
+                  <div key={a.id} className="flex items-center justify-between rounded-xl bg-ink-800 px-4 py-2">
+                    <span className="text-sm text-ink-200">{a.title}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeFromWeekly(a.id)}
+                      className="text-xs text-ink-400 hover:text-red-400"
+                    >
+                      移除
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={handleSendWeeklySummary}
+                disabled={weeklyArticles.length === 0 || sendingWeekly}
+                className="flex items-center gap-2 rounded-xl bg-blue-500 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-600 disabled:opacity-50"
+              >
+                {sendingWeekly ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                發送 {weeklyArticles.length} 篇文章給所有訂閱者
+              </button>
+            </div>
+          </div>
+        </SectionCard>
+      )}
 
       {/* Action Footer */}
       <div className="rounded-2xl border border-ink-800 bg-ink-900/50 p-5">
