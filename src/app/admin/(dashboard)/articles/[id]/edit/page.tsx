@@ -81,6 +81,7 @@ export default function EditArticlePage() {
             content_zh: article.content_zh || "",
             summary_content: article.summary_content || "",
             summary_content_zh: article.summary_content_zh || "",
+            email_content: article.email_content || "",
             published_at: article.published_at
               ? article.published_at.split("T")[0]
               : new Date().toISOString().split("T")[0],

@@ -28,6 +28,7 @@ export interface ArticleFormData {
   published_at: string;
   is_featured: boolean;
   is_published: boolean;
+  email_content: string;
 }
 
 interface ArticleFormProps {
@@ -83,6 +84,7 @@ export default function ArticleForm({
     published_at: initialData?.published_at || new Date().toISOString().split("T")[0],
     is_featured: initialData?.is_featured || false,
     is_published: initialData?.is_published ?? true,
+    email_content: initialData?.email_content || "",
   });
 
   const [tagInput, setTagInput] = useState("");
@@ -430,6 +432,25 @@ export default function ArticleForm({
             preview="edit"
           />
         </div>
+      </div>
+
+      {/* Email Content - HTML for email sends */}
+      <div>
+        <label className="block text-sm font-medium text-ink-700 dark:text-ink-300">
+          Email 內容（HTML）
+        </label>
+        <textarea
+          value={formData.email_content}
+          onChange={(e) =>
+            setFormData((prev) => ({ ...prev, email_content: e.target.value }))
+          }
+          rows={4}
+          className="mt-1 block w-full rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm text-ink-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-ink-700 dark:bg-ink-800 dark:text-ink-50 font-mono text-xs"
+          placeholder="<p>為電子郵件優化的 HTML 內容...</p>"
+        />
+        <p className="mt-1 text-xs text-ink-500">
+          用於「完整文章內容」模式。如留空，則使用摘要。
+        </p>
       </div>
 
       {/* Toggles */}
