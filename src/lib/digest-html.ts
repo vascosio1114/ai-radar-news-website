@@ -6,7 +6,8 @@ export type ArticleForDigest = {
   url: string;
   published_at: string;
   cover_image?: string;
-  email_content?: string; // email-optimized HTML body
+  email_content?: string; // email-optimized HTML body (preferred)
+  content_html?: string;  // stored article HTML (fallback when email_content is absent)
 };
 
 function escapeHtml(text: string): string {
@@ -47,6 +48,9 @@ export function buildDigestHtml(params: {
       let articleBody: string;
       if (contentMode === "full_content" && a.email_content) {
         articleBody = a.email_content;
+      } else if (contentMode === "full_content" && (a as any).content_html) {
+        // Fallback: use content_html (stored article HTML) when email_content is not set
+        articleBody = (a as any).content_html as string;
       } else {
         articleBody = `<p style="margin:0;color:#333;font-size:15px;">${escapeHtml(a.excerpt)}</p>`;
       }

@@ -21,6 +21,7 @@ export type ArticleSelect = {
   tags: string[];
   is_featured: boolean;
   email_content?: string;
+  content_html?: string;
 };
 
 export function buildArticleQuery(
@@ -30,7 +31,7 @@ export function buildArticleQuery(
 ) {
   let query = supabase
     .from("articles")
-    .select("id, slug, title, excerpt, cover_image, published_at, category, tags, is_featured, email_content")
+    .select("id, slug, title, excerpt, cover_image, published_at, category, tags, is_featured, email_content, content_html")
     .eq("is_published", true);
 
   if (criteria.category) {
@@ -83,7 +84,7 @@ export async function resolveArticlesFromPreset(
     if (!articleIds || articleIds.length === 0) return [];
     const { data } = await supabase
       .from("articles")
-      .select("id, slug, title, excerpt, cover_image, published_at, category, tags, is_featured, email_content")
+      .select("id, slug, title, excerpt, cover_image, published_at, category, tags, is_featured, email_content, content_html")
       .in("id", articleIds)
       .eq("is_published", true);
     return (data ?? []) as ArticleSelect[];
