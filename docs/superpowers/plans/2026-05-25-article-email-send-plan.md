@@ -4,7 +4,7 @@
 
 **Goal:** Enable admins to send single articles and multi-article summaries as emails, with an option to include full article HTML instead of just excerpts.
 
-**Architecture:** Two new DB columns (`email_content` on articles, `content_mode` on digest_presets). A new API route for single article sends. `buildDigestHtml` extended to support full article body rendering. Admin UI gets three new sections: single article send, multi-article weekly summary, and preset content mode toggle.
+**Architecture:** Two new DB columns (`email_content` on articles, `content_mode` on digest_presets). A new API route for single article sends. `buildDigestHtml` extended to support full article body rendering. Article API enhanced with search and `email_content` storage. Admin UI gets three new sections: single article send, multi-article weekly summary, and preset content mode toggle.
 
 **Tech Stack:** Next.js App Router, Supabase (Postgres), nodemailer/mail.ts, existing admin UI with tabs.
 
@@ -15,24 +15,32 @@
 ```
 src/
   lib/
-    digest-html.ts          # Modified: add email_content to articles param
+    digest-html.ts          # Modified: add email_content + contentMode to articles param
     mail.ts                # No changes needed
     email-templates.ts     # No changes needed — shell is reusable
   app/
     api/
       admin/
         mail/
-          send-article/    # New directory
+          send-article/     # New directory
             route.ts       # New: POST single article send
           presets/
             route.ts       # Modified: POST inserts content_mode
             [id]/
               route.ts     # Modified: PATCH updates content_mode
+        articles/
+          route.ts          # Modified: GET supports search + returns email_content
+          [id]/
+            route.ts       # Modified: PATCH accepts + stores email_content
+      admin/
+        mail/
+          send-digest/
+            route.ts       # Modified: reads content_mode from preset
       send-digest/
-        route.ts           # Modified: reads content_mode from preset
+        route.ts           # Modified: CRON endpoint reads content_mode
     admin/(dashboard)/
       mail/
-        page.tsx           # Modified: add "Send Article" + "Send Summary" sections
+        page.tsx           # Modified: add "Send Article" + "Weekly Summary" tabs
   supabase/
     migrations/
       2026-05-25-article-email-send.sql  # New: DB migration
@@ -229,10 +237,11 @@ git commit -m "feat(mail): support full_content mode in buildDigestHtml"
 
 ---
 
-## Task 3: Update send-digest API to pass content_mode
+## Task 3: Update send-digest APIs to pass content_mode
 
 **Files:**
 - Modify: `src/app/api/admin/mail/send-digest/route.ts`
+- Modify: `src/app/api/send-digest/route.ts` (CRON endpoint)
 
 - [ ] **Step 1: Read current file to find exact line numbers**
 
@@ -269,11 +278,142 @@ In the `buildDigestHtml` call (around line 102-109), add `contentMode`:
   });
 ```
 
+- [ ] **Step 1: Read current file to find exact line numbers**
+
+Read `src/app/api/admin/mail/send-digest/route.ts` and note the lines around where the preset is fetched and where `buildDigestHtml` is called.
+
+- [ ] **Step 2: Update admin send-digest preset fetch to include content_mode**
+
+Find the preset fetch block and add `content_mode` to the select:
+
+```typescript
+  // Find this line:
+  .select("*")
+  // Change to:
+  .select("*, content_mode")
+```
+
+- [ ] **Step 3: Update admin send-digest buildDigestHtml call to pass contentMode**
+
+In the `buildDigestHtml` call, add `contentMode`:
+
+```typescript
+  const contentMode = preset?.content_mode ?? "excerpt";
+
+  const html = buildDigestHtml({
+    headerHtml: settings.email_header_html || "",
+    footerHtml: settings.email_footer_html || "",
+    articles: articlesWithUrl,
+    emailBodyTemplate: settings.email_body_template || undefined,
+    dateStr,
+    unsubscribeUrl: `${SITE_URL}/unsubscribe`,
+    contentMode: contentMode, // NEW: pass content_mode
+  });
+```
+
+- [ ] **Step 4: Update CRON send-digest (GET /api/send-digest)**
+
+Read `src/app/api/send-digest/route.ts`. Find the default preset fetch and add `content_mode` to the select, then pass `contentMode` to `buildDigestHtml` the same way.
+
+```typescript
+  // Default preset fetch — add content_mode:
+  .select("*, content_mode")
+
+  // buildDigestHtml call — add contentMode:
+  const contentMode = defaultPreset?.content_mode ?? "excerpt";
+  const html = buildDigestHtml({
+    headerHtml: settings.email_header_html || "",
+    footerHtml: settings.email_footer_html || "",
+    articles: articlesWithUrl,
+    emailBodyTemplate: settings.email_body_template || undefined,
+    dateStr,
+    unsubscribeUrl: `${SITE_URL}/unsubscribe`,
+    contentMode: contentMode,
+  });
+```
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add src/app/api/admin/mail/send-digest/route.ts src/app/api/send-digest/route.ts
+git commit -m "feat(mail): pass content_mode from preset to buildDigestHtml"
+```
+
+---
+
+## Task 3b: Article API — include email_content and support search
+
+---
+
+## Task 3b: Article API — include email_content and support search
+
+**Files:**
+- Modify: `src/app/api/admin/articles/route.ts` (GET handler)
+- Modify: `src/app/api/admin/articles/[id]/route.ts` (PATCH handler)
+
+The admin mail UI's article search/picker calls `GET /api/admin/articles?search=...`. This task ensures the GET endpoint (a) supports text search and (b) returns `email_content` so the send-article endpoint can use it.
+
+- [ ] **Step 1: Update GET to support search query param and return email_content**
+
+In `src/app/api/admin/articles/route.ts`, find the GET handler. Replace the select with `id, slug, title, email_content` and add a `.ilike` filter when a `search` query param is present:
+
+```typescript
+export async function GET(req: Request) {
+  try {
+    const auth = await requireAdminApi();
+    if (!auth.ok) return auth.response;
+    const supabase = auth.adminDb;
+
+    const url = new URL(req.url);
+    const search = url.searchParams.get("search");
+    const limit = parseInt(url.searchParams.get("limit") || "20");
+
+    let query = supabase
+      .from("articles")
+      .select("id, slug, title, excerpt, email_content, published_at, is_published")
+      .order("created_at", { ascending: false })
+      .limit(limit);
+
+    if (search && search.length >= 2) {
+      query = query.ilike("title", `%${search}%`);
+    }
+
+    const { data, error } = await query;
+    // ...
+  }
+}
+```
+
+- [ ] **Step 2: Update PATCH normalizeArticlePayload to pass email_content**
+
+In `src/app/api/admin/articles/[id]/route.ts`, add `email_content` to `normalizeArticlePayload`:
+
+```typescript
+function normalizeArticlePayload(body: Record<string, unknown>) {
+  // ... existing fields ...
+  return {
+    // ... existing fields ...
+    email_content: body.email_content ? String(body.email_content) : null, // NEW
+  };
+}
+```
+
+- [ ] **Step 3: Update POST to insert email_content**
+
+In `src/app/api/admin/articles/route.ts` POST handler, add `email_content` to the insert:
+
+```typescript
+.insert({
+  // ... existing fields ...
+  email_content: body.email_content ? String(body.email_content) : null, // NEW
+})
+```
+
 - [ ] **Step 4: Commit**
 
 ```bash
-git add src/app/api/admin/mail/send-digest/route.ts
-git commit -m "feat(mail): pass content_mode from preset to buildDigestHtml"
+git add src/app/api/admin/articles/route.ts src/app/api/admin/articles/[id]/route.ts
+git commit -m "feat(mail): support search and email_content in admin articles API"
 ```
 
 ---
@@ -789,7 +929,9 @@ git commit -m "feat(admin): add content_mode toggle to preset form"
 | `email_content` column on articles | Task 1 |
 | `content_mode` column on digest_presets | Task 1 |
 | `buildDigestHtml` full content rendering | Task 2 |
-| `send-digest` respects content_mode | Task 3 |
+| `send-digest` (admin) respects content_mode | Task 3 |
+| `send-digest` (CRON) respects content_mode | Task 3 |
+| Article API: search + email_content in GET/PATCH/POST | Task 3b |
 | `POST /api/admin/mail/send-article` | Task 4 |
 | Preset CRUD with content_mode | Task 5 |
 | Admin UI: single article send | Task 6 |
