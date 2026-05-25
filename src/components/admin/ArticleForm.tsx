@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import dynamic from "next/dynamic";
-import { Upload, X, ImageIcon } from "lucide-react";
+import { Upload, X, ImageIcon, ChevronDown, ChevronRight } from "lucide-react";
 import Image from "next/image";
 
 // Dynamically import markdown editor to avoid SSR issues
@@ -89,6 +89,44 @@ export default function ArticleForm({
   const [tagInput, setTagInput] = useState("");
   const [uploading, setUploading] = useState(false);
   const [slugEdited, setSlugEdited] = useState(!!initialData?.slug);
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    english: false,
+    chinese: false,
+  });
+
+  const toggleSection = (key: string) => {
+    setExpandedSections((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  // Collapsible section sub-component
+  const CollapsibleSection = ({
+    title,
+    sectionKey,
+    children,
+  }: {
+    title: string;
+    sectionKey: string;
+    children: React.ReactNode;
+  }) => {
+    const isExpanded = expandedSections[sectionKey];
+    return (
+      <div className="border-t border-ink-200 dark:border-ink-700 pt-4">
+        <button
+          type="button"
+          onClick={() => toggleSection(sectionKey)}
+          className="flex w-full items-center justify-between text-left"
+        >
+          <h3 className="text-lg font-medium text-ink-900 dark:text-ink-50">{title}</h3>
+          {isExpanded ? (
+            <ChevronDown className="h-5 w-5 text-ink-500" />
+          ) : (
+            <ChevronRight className="h-5 w-5 text-ink-500" />
+          )}
+        </button>
+        {isExpanded && <div className="mt-4 space-y-4">{children}</div>}
+      </div>
+    );
+  };
 
   const handleTitleChange = (title: string) => {
     setFormData((prev) => ({
@@ -160,7 +198,7 @@ export default function ArticleForm({
       {/* Title */}
       <div>
         <label className="block text-sm font-medium text-ink-700 dark:text-ink-300">
-          標題
+          英文標題 (English Title)
         </label>
         <input
           type="text"
@@ -182,6 +220,7 @@ export default function ArticleForm({
           onChange={(e) => handleDateChange(e.target.value)}
           className="mt-1 block w-full rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm text-ink-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-ink-700 dark:bg-ink-800 dark:text-ink-50"
         />
+        <p className="mt-1 text-xs text-ink-400 dark:text-ink-500">格式：YYYY-MM-DD</p>
       </div>
 
       {/* Slug */}
@@ -197,13 +236,13 @@ export default function ArticleForm({
           pattern="[a-z0-9-]+"
           placeholder="auto-generated-blog-post-slug"
         />
-        <p className="mt-1 text-xs text-ink-500">只允許小寫英文字母、數字和連字符；中文標題會自動 fallback 成 blog-post。</p>
+        <p className="mt-1 text-xs text-ink-400 dark:text-ink-500">只允許小寫英文字母、數字和連字符；中文標題會自動 fallback 成 blog-post。</p>
       </div>
 
       {/* Excerpt */}
       <div>
         <label className="block text-sm font-medium text-ink-700 dark:text-ink-300">
-          摘要
+          英文摘要 (English Excerpt)
         </label>
         <textarea
           value={formData.excerpt}
@@ -216,12 +255,10 @@ export default function ArticleForm({
         />
       </div>
 
-      {/* 中文內容 */}
-      <div className="border-t border-ink-200 dark:border-ink-700 pt-6">
-        <h3 className="text-lg font-medium text-ink-900 dark:text-ink-50 mb-4">中文內容</h3>
-
+      {/* Collapsible: 中文內容 */}
+      <CollapsibleSection title="中文內容" sectionKey="chinese">
         {/* Title Zh */}
-        <div className="mb-4">
+        <div>
           <label className="block text-sm font-medium text-ink-700 dark:text-ink-300">
             中文標題
           </label>
@@ -236,7 +273,7 @@ export default function ArticleForm({
         </div>
 
         {/* Excerpt Zh */}
-        <div className="mb-4">
+        <div>
           <label className="block text-sm font-medium text-ink-700 dark:text-ink-300">
             中文摘要
           </label>
@@ -267,7 +304,7 @@ export default function ArticleForm({
             />
           </div>
         </div>
-      </div>
+      </CollapsibleSection>
 
       {/* Cover Image */}
       <div>
@@ -381,56 +418,59 @@ export default function ArticleForm({
         )}
       </div>
 
-      {/* Content - Markdown Editor */}
-      <div>
-        <label className="block text-sm font-medium text-ink-700 dark:text-ink-300">
-          內容
-        </label>
-        <div className="mt-1" data-color-mode="auto">
-          <MDEditor
-            value={formData.content}
-            onChange={(value) =>
-              setFormData((prev) => ({ ...prev, content: value || "" }))
-            }
-            height={400}
-            preview="edit"
-          />
+      {/* Collapsible: English Content */}
+      <CollapsibleSection title="English Content" sectionKey="english">
+        {/* Content - Markdown Editor */}
+        <div>
+          <label className="block text-sm font-medium text-ink-700 dark:text-ink-300">
+            內容
+          </label>
+          <div className="mt-1" data-color-mode="auto">
+            <MDEditor
+              value={formData.content}
+              onChange={(value) =>
+                setFormData((prev) => ({ ...prev, content: value || "" }))
+              }
+              height={400}
+              preview="edit"
+            />
+          </div>
         </div>
-      </div>
 
-      {/* Summary Content - Markdown Editor */}
-      <div>
-        <label className="block text-sm font-medium text-ink-700 dark:text-ink-300">
-          英文摘要內容
-        </label>
-        <div className="mt-1" data-color-mode="auto">
-          <MDEditor
-            value={formData.summary_content}
-            onChange={(value) =>
-              setFormData((prev) => ({ ...prev, summary_content: value || "" }))
-            }
-            height={400}
-            preview="edit"
-          />
+        {/* Summary Content - Markdown Editor */}
+        <div>
+          <label className="block text-sm font-medium text-ink-700 dark:text-ink-300">
+            英文摘要內容
+          </label>
+          <div className="mt-1" data-color-mode="auto">
+            <MDEditor
+              value={formData.summary_content}
+              onChange={(value) =>
+                setFormData((prev) => ({ ...prev, summary_content: value || "" }))
+              }
+              height={400}
+              preview="edit"
+            />
+          </div>
         </div>
-      </div>
 
-      {/* Summary Content Zh - Markdown Editor */}
-      <div>
-        <label className="block text-sm font-medium text-ink-700 dark:text-ink-300">
-          中文摘要內容
-        </label>
-        <div className="mt-1" data-color-mode="auto">
-          <MDEditor
-            value={formData.summary_content_zh}
-            onChange={(value) =>
-              setFormData((prev) => ({ ...prev, summary_content_zh: value || "" }))
-            }
-            height={400}
-            preview="edit"
-          />
+        {/* Summary Content Zh - Markdown Editor */}
+        <div>
+          <label className="block text-sm font-medium text-ink-700 dark:text-ink-300">
+            中文摘要內容
+          </label>
+          <div className="mt-1" data-color-mode="auto">
+            <MDEditor
+              value={formData.summary_content_zh}
+              onChange={(value) =>
+                setFormData((prev) => ({ ...prev, summary_content_zh: value || "" }))
+              }
+              height={400}
+              preview="edit"
+            />
+          </div>
         </div>
-      </div>
+      </CollapsibleSection>
 
       {/* Email Content - HTML for email sends */}
       <div>
@@ -444,7 +484,7 @@ export default function ArticleForm({
           }
           rows={4}
           className="mt-1 block w-full rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm text-ink-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-ink-700 dark:bg-ink-800 dark:text-ink-50 font-mono text-xs"
-          placeholder="<p>為電子郵件優化的 HTML 內容...</p>"
+          placeholder="為電子郵件優化的 HTML 內容（留空則使用摘要）..."
         />
         <p className="mt-1 text-xs text-ink-500">
           用於「完整文章內容」模式。如留空，則使用摘要。
