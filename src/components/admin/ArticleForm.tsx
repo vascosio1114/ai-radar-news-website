@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import dynamic from "next/dynamic";
 import { Upload, X, ImageIcon } from "lucide-react";
 import Image from "next/image";
@@ -134,20 +133,19 @@ export default function ArticleForm({
     if (!file) return;
 
     setUploading(true);
-    const supabase = createSupabaseBrowserClient();
-    const safeName = file.name.replace(/[^a-zA-Z0-9.]+/g, "_").replace(/^_+|_+$/g, "");
-    const [name, ext] = safeName.split(".");
-    const filename = `${Date.now()}-${name.slice(0, 50)}.${ext}`;
+    const formData = new FormData();
+    formData.append("file", file);
 
-    const { data, error } = await supabase.storage
-      .from("covers")
-      .upload(filename, file, { upsert: true });
+    const res = await fetch("/api/admin/articles/upload-image", {
+      method: "POST",
+      body: formData,
+    });
+    const data = await res.json();
 
-    if (!error && data) {
-      const { data: urlData } = supabase.storage
-        .from("covers")
-        .getPublicUrl(filename);
-      setFormData((prev) => ({ ...prev, cover_image: urlData.publicUrl }));
+    if (res.ok && data.url) {
+      setFormData((prev) => ({ ...prev, cover_image: data.url }));
+    } else {
+      alert(data.error || "上傳失敗");
     }
     setUploading(false);
   };
