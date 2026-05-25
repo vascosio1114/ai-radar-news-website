@@ -45,7 +45,7 @@ export default async function RelatedArticles({ currentSlug, tags = [], lang = "
   });
 
   // Take top 3-4 articles with highest overlap (prefer articles with at least 1 matching tag)
-  const related = scoredArticles.filter((a) => a.tagOverlap > 0).slice(0, 4);
+  const related = scoredArticles.filter((a) => a.tagOverlap > 0).slice(0, 3);
   if (related.length === 0) {
     // Fallback: if no tag overlap, just take most recent articles
     related.push(...scoredArticles.slice(0, 3));
