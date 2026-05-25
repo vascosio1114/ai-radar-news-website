@@ -39,7 +39,7 @@ export async function POST(request: Request) {
   // Fetch article by ID or slug
   const { data: article } = await admin
     .from("articles")
-    .select("id, slug, title, excerpt, email_content, cover_image, published_at, category")
+    .select("id, slug, title, excerpt, email_content, content_html, cover_image, published_at, category")
     .or(`id.eq.${article_id},slug.eq.${article_id}`)
     .single();
 
@@ -60,6 +60,7 @@ export async function POST(request: Request) {
       published_at: article.published_at,
       cover_image: article.cover_image || undefined,
       email_content: article.email_content || undefined,
+      content_html: article.content_html || undefined,
     }],
     emailBodyTemplate: settings.email_body_template || undefined,
     dateStr: new Date().toLocaleDateString("zh-HK", { year: "numeric", month: "long", day: "numeric" }),
