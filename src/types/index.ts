@@ -25,6 +25,8 @@ export type Article = {
   content_html?: string | null;
   summary_content?: string | null;
   summary_content_zh?: string | null;
+  /** Email-optimized HTML body for newsletter sends */
+  email_content?: string | null;
 };
 
 export type Tool = {
