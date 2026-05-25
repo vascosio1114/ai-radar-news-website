@@ -3,6 +3,7 @@
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypePrettyCode from "rehype-pretty-code";
+import rehypeSlug from "rehype-slug";
 import { Clipboard, Check } from "lucide-react";
 import { useState } from "react";
 import type { Components } from "react-markdown";
@@ -111,6 +112,7 @@ export default function ArticleContent({ content }: ArticleContentProps) {
       <Markdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[
+          rehypeSlug,
           [
             rehypePrettyCode,
             {
