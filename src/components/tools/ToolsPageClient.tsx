@@ -1,15 +1,25 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { ToolCard } from "@/components/cards/ToolCard";
 import { TOOL_CATEGORIES, type ToolCategorySlug } from "@/lib/site";
 import type { Tool } from "@/types";
 import { cn } from "@/lib/utils";
 import { type Lang } from "@/lib/i18n";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
-type Props = { tools: Tool[]; lang?: Lang };
+type Props = {
+  tools: Tool[];
+  lang?: Lang;
+  page: number;
+  totalPages: number;
+  total: number;
+  start: number;
+  end: number;
+};
 
-export function ToolsPageClient({ tools, lang = "zh" }: Props) {
+export function ToolsPageClient({ tools, lang = "zh", page, totalPages, total, start, end }: Props) {
   const [active, setActive] = React.useState<ToolCategorySlug>("all");
 
   const filtered =
@@ -34,6 +44,43 @@ export function ToolsPageClient({ tools, lang = "zh" }: Props) {
             {lang === "en" && cat.slug === "all" ? "All" : cat.label}
           </button>
         ))}
+      </div>
+
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <p className="text-sm text-ink-500 dark:text-ink-400">
+          {lang === "zh"
+            ? `顯示 ${start}-${end}，共 ${total} 個工具`
+            : `Showing ${start}-${end} of ${total} tools`}
+        </p>
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/${lang}/tools?page=${page - 1}`}
+            className={cn(
+              "flex h-9 w-9 items-center justify-center rounded-xl border border-ink-200 bg-white/80 backdrop-blur-sm transition dark:border-ink-800 dark:bg-ink-900/80",
+              page <= 1
+                ? "pointer-events-none opacity-30"
+                : "hover:border-accent-400 hover:text-accent-600"
+            )}
+            aria-disabled={page <= 1}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Link>
+          <span className="flex h-9 min-w-[3rem] items-center justify-center rounded-xl border border-ink-200 bg-white/80 px-3 text-sm backdrop-blur-sm dark:border-ink-800 dark:bg-ink-900/80">
+            {page}
+          </span>
+          <Link
+            href={`/${lang}/tools?page=${page + 1}`}
+            className={cn(
+              "flex h-9 w-9 items-center justify-center rounded-xl border border-ink-200 bg-white/80 backdrop-blur-sm transition dark:border-ink-800 dark:bg-ink-900/80",
+              page >= totalPages
+                ? "pointer-events-none opacity-30"
+                : "hover:border-accent-400 hover:text-accent-600"
+            )}
+            aria-disabled={page >= totalPages}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Link>
+        </div>
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

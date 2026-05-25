@@ -11,6 +11,7 @@ import { formatDate } from "@/lib/utils";
 import { MOCK_ARTICLES } from "@/data/mock";
 import MarkdownRenderer from "@/components/markdown/MarkdownRenderer";
 import HtmlRenderer from "@/components/markdown/HtmlRenderer";
+import ArticleContent from "@/components/shared/ArticleContent";
 import { parseMarkdownHeadings } from "@/lib/markdown";
 import TableOfContents from "@/components/markdown/TableOfContents";
 import AuthorCard from "@/components/markdown/AuthorCard";
@@ -175,7 +176,7 @@ export default async function ArticlePage({ params }: Props) {
             {englishUnavailable ? null : localized.content_html ? (
               <HtmlRenderer content={localized.content_html} />
             ) : articleContent ? (
-              <MarkdownRenderer content={articleContent} />
+              <ArticleContent content={articleContent} />
             ) : (
               <div className="prose prose-ink dark:prose-invert mx-auto max-w-3xl">
                 <p className="text-ink-500 dark:text-ink-400">

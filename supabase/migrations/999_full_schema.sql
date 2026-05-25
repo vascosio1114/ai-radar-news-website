@@ -138,7 +138,8 @@ do $$ begin
     content_zh          text,
     content_html        text,
     created_at          timestamptz default now(),
-    updated_at          timestamptz default now()
+    updated_at          timestamptz default now(),
+    search_vector       tsvector
   );
 exception when duplicate_table then null;
 end $$;
@@ -154,6 +155,30 @@ do $$ begin
   create index articles_premium_idx on public.articles (is_premium) where is_premium;
 exception when duplicate_index then null;
 end $$;
+
+-- Full-text search vector
+do $$ begin
+  alter table public.articles add column if not exists search_vector tsvector;
+exception when duplicate_object then null;
+end $$;
+
+-- GIN index for fast full-text search
+do $$ begin
+  create index if not exists articles_search_vector_idx on public.articles using gin(search_vector);
+exception when duplicate_index then null;
+end $$;
+
+-- Trigger to auto-update search_vector
+create or replace function public.articles_search_trigger() returns trigger as $$
+begin
+  new.search_vector := setweight(to_tsvector('english', coalesce(new.title, '')), 'A') ||
+                       setweight(to_tsvector('english', coalesce(new.excerpt, '')), 'B');
+  return new;
+end;
+$$ language plpgsql;
+
+drop trigger if exists articles_search_update on public.articles;
+create trigger articles_search_update before insert or update on public.articles for each row execute function public.articles_search_trigger();
 
 -- tools
 do $$ begin
@@ -709,3 +734,9 @@ create or replace function public.decrement_comment_like_count(cid uuid, decreme
 returns void as $$
   update public.thread_comments set like_count = greatest(like_count - decrement, 0) where id = cid;
 $$ language sql security definer;
+
+-- View count RPC function
+CREATE OR REPLACE FUNCTION increment_view_count(p_article_slug TEXT)
+RETURNS VOID AS $$
+  UPDATE articles SET views = views + 1 WHERE slug = p_article_slug;
+$$ LANGUAGE plpgsql SECURITY DEFINER;

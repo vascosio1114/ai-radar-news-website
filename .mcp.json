@@ -3,6 +3,10 @@
     "supabase": {
       "type": "http",
       "url": "http://localhost:54321/mcp?features=docs%2Cdatabase%2Cdevelopment%2Cdebugging"
+    },
+    "framer": {
+      "type": "http",
+      "url": "https://mcp.unframer.co/mcp?id=6c5ee829d71c036f8cc2147a4f10d9d551ac2faa52cb97d401425cfae0615997&secret=qvzXLCqBC4DDzpU4ypXCfH7r6cCngWGb"
     }
   }
 }

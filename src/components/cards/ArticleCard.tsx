@@ -55,10 +55,12 @@ export function ArticleCard({
               <Clock className="h-3.5 w-3.5" />
               {article.reading_time} {strings.minutes}
             </span>
-            <span className="inline-flex items-center gap-1">
-              <Eye className="h-3.5 w-3.5" />
-              {article.views.toLocaleString()}
-            </span>
+            {article.views ? (
+              <span className="inline-flex items-center gap-1">
+                <Eye className="h-3.5 w-3.5" />
+                {article.views.toLocaleString()}
+              </span>
+            ) : null}
           </div>
         </div>
       </Link>
@@ -133,10 +135,12 @@ export function ArticleCard({
             <Clock className="h-3.5 w-3.5" />
             {article.reading_time} {strings.readTime}
           </span>
-          <span className="inline-flex items-center gap-1">
-            <Eye className="h-3.5 w-3.5" />
-            {(article.views ?? 0).toLocaleString()}
-          </span>
+          {article.views ? (
+            <span className="inline-flex items-center gap-1">
+              <Eye className="h-3.5 w-3.5" />
+              {article.views.toLocaleString()}
+            </span>
+          ) : null}
         </div>
       </div>
     </Link>

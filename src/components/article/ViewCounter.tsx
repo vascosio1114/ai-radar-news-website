@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Eye } from "lucide-react";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 interface ViewCounterProps {
   slug: string;
@@ -20,11 +21,9 @@ export default function ViewCounter({ slug, initialViews }: ViewCounterProps) {
 
     async function incrementViews() {
       try {
-        const res = await fetch(`/api/articles/${slug}/view`, { method: "POST" });
-        if (res.ok) {
-          const data = await res.json();
-          setViews(data.views ?? initialViews + 1);
-        }
+        const supabase = createSupabaseBrowserClient();
+        await supabase.rpc('increment_view_count', { p_article_slug: slug });
+        setViews(initialViews + 1);
       } catch {
         // Silently fail — view count is non-critical
       } finally {

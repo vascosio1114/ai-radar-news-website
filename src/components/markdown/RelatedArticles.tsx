@@ -1,72 +1,62 @@
 import Link from "next/link";
-import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import type { Lang } from "@/lib/site";
-import { formatDate } from "@/lib/utils";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { ArticleCard } from "@/components/cards/ArticleCard";
+import type { Article } from "@/types";
 
 interface RelatedArticlesProps {
   currentSlug: string;
+  tags?: string[];
   lang?: Lang;
   category?: string;
 }
 
 /**
- * Shows related articles based on matching category, fetched from DB.
+ * Shows related articles based on tag overlap, using ArticleCard component.
+ * Orders by number of matching tags (descending), then by recency.
  */
-export default async function RelatedArticles({ currentSlug, lang = "zh", category }: RelatedArticlesProps) {
+export default async function RelatedArticles({ currentSlug, tags = [], lang = "zh", category }: RelatedArticlesProps) {
   const supabase = createSupabaseServerClient();
-  const { data: articles } = category
-    ? await supabase
-        .from("articles_public")
-        .select("id, slug, title, cover_image, category, published_at, is_published")
-        .eq("is_published", true)
-        .neq("slug", currentSlug)
-        .limit(6)
-    : await supabase
-        .from("articles_public")
-        .select("id, slug, title, cover_image, category, published_at, is_published")
-        .eq("is_published", true)
-        .neq("slug", currentSlug)
-        .limit(3);
 
-  const filtered = (articles ?? []).filter((a) => a.slug !== currentSlug).slice(0, 3);
+  // Fetch published articles excluding current one
+  const { data: rawArticles } = await supabase
+    .from("articles")
+    .select("id, slug, title, title_zh, excerpt, excerpt_zh, cover_image, category, tags, published_at, reading_time, views, is_published, author, is_featured, is_premium")
+    .eq("is_published", true)
+    .neq("slug", currentSlug)
+    .order("published_at", { ascending: false })
+    .limit(20);
 
-  if (filtered.length === 0) return null;
+  if (!rawArticles || rawArticles.length === 0) return null;
+
+  // Calculate tag overlap score for each article
+  type ScoredArticle = Article & { tagOverlap: number };
+  const scoredArticles: ScoredArticle[] = rawArticles.map((article) => {
+    const articleTags = article.tags ?? [];
+    const overlap = tags.filter((t) => articleTags.includes(t)).length;
+    return { ...article, tagOverlap: overlap };
+  });
+
+  // Sort by tag overlap (descending), then by published_at (descending)
+  scoredArticles.sort((a, b) => {
+    if (b.tagOverlap !== a.tagOverlap) return b.tagOverlap - a.tagOverlap;
+    return new Date(b.published_at).getTime() - new Date(a.published_at).getTime();
+  });
+
+  // Take top 3-4 articles with highest overlap (prefer articles with at least 1 matching tag)
+  const related = scoredArticles.filter((a) => a.tagOverlap > 0).slice(0, 4);
+  if (related.length === 0) {
+    // Fallback: if no tag overlap, just take most recent articles
+    related.push(...scoredArticles.slice(0, 3));
+  }
 
   return (
     <section className="mt-12">
       <h2 className="mb-6 font-display text-xl font-semibold">{lang === "zh" ? "相關文章" : "Related articles"}</h2>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {filtered.map((article) => (
-          <Link
-            key={article.id}
-            href={`/${lang}/news/${article.slug}`}
-            className="group block rounded-xl border border-ink-200 bg-white transition-shadow hover:shadow-soft dark:border-ink-800 dark:bg-ink-900"
-          >
-            <div className="relative aspect-[16/9] overflow-hidden rounded-t-xl">
-              {article.cover_image && (
-                <Image
-                  src={article.cover_image}
-                  alt={article.title}
-                  fill
-                  sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                  className="object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-              )}
-            </div>
-            <div className="p-4">
-              <span className="text-xs font-medium text-accent-600 dark:text-accent-400">
-                {article.category}
-              </span>
-              <h3 className="mt-1 line-clamp-2 font-display text-base font-semibold group-hover:text-accent-600 dark:group-hover:text-accent-400">
-                {article.title}
-              </h3>
-              <p className="mt-1 text-xs text-ink-500 dark:text-ink-400">
-                {formatDate(article.published_at)}
-              </p>
-            </div>
-          </Link>
+        {related.map((article) => (
+          <ArticleCard key={article.id} article={article} lang={lang} />
         ))}
       </div>
       <div className="mt-6 text-center">

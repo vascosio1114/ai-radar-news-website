@@ -4,18 +4,35 @@ import { ToolsPageClient } from "@/components/tools/ToolsPageClient";
 import { getUIStrings, hasEnglishDisplayContent, type Lang } from "@/lib/i18n";
 import { DEFAULT_LANG } from "@/lib/site";
 
-type Props = { params: { lang: string } };
+const PAGE_SIZE = 12;
 
-export default async function ToolsPage({ params }: Props) {
+type Props = { params: { lang: string }; searchParams: { page?: string } };
+
+export default async function ToolsPage({ params, searchParams }: Props) {
   const lang = (params.lang as Lang) ?? DEFAULT_LANG;
   const s = getUIStrings(lang);
 
+  const page = Math.max(1, parseInt(searchParams.page ?? "1", 10));
+  const offset = (page - 1) * PAGE_SIZE;
+
   const supabase = createSupabaseServerClient();
-  const { data: tools } = await supabase
+  const { count, data: tools } = await supabase
     .from("tools")
-    .select("*")
+    .select("*", { count: "exact" })
+    .range(offset, offset + PAGE_SIZE - 1)
     .order("is_trending", { ascending: false })
     .order("rating", { ascending: false });
+
+  const total = count ?? 0;
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+
+  const allTools = tools ?? [];
+  const filteredTools = lang === "en"
+    ? allTools.filter((tool) => hasEnglishDisplayContent(tool, ["name", "tagline", "description"]))
+    : allTools;
+
+  const start = total > 0 ? offset + 1 : 0;
+  const end = Math.min(offset + PAGE_SIZE, total);
 
   return (
     <div className="container-page section-pad">
@@ -32,8 +49,13 @@ export default async function ToolsPage({ params }: Props) {
       </header>
 
       <ToolsPageClient
-        tools={lang === "en" ? (tools ?? []).filter((tool) => hasEnglishDisplayContent(tool, ["name", "tagline", "description"])) : tools ?? []}
+        tools={filteredTools}
         lang={lang}
+        page={page}
+        totalPages={totalPages}
+        total={total}
+        start={start}
+        end={end}
       />
     </div>
   );
