@@ -99,7 +99,7 @@ export async function POST(request: Request) {
 
   const articlesWithUrl = articles.map((a) => ({
     ...a,
-    url: `${SITE_URL}/zh/news/${a.slug}`,
+    url: `${SITE_URL}/en/news/${a.slug}`,
   }));
 
   const html = buildDigestHtml({

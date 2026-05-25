@@ -84,7 +84,7 @@ export async function GET(request: Request) {
 
   const articlesWithUrl = articles.map((a) => ({
     ...a,
-    url: `${SITE_URL}/zh/news/${a.slug}`,
+    url: `${SITE_URL}/en/news/${a.slug}`,
   }));
 
   const contentMode = defaultPreset?.content_mode ?? "excerpt";
