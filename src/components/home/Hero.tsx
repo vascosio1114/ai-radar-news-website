@@ -123,7 +123,7 @@ export function Hero({
   if (prefersReducedMotion) {
     return (
       <section className="relative min-h-[100dvh] overflow-hidden bg-white text-ink-950 dark:bg-black dark:text-white">
-        <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden">
+        <div className="sticky top-0 flex min-h-screen items-center justify-center overflow-hidden">
           <div
             aria-hidden="true"
             className="absolute inset-0 bg-[url('/images/radar-ai-studio-light.jpeg')] bg-cover bg-center bg-no-repeat opacity-95 dark:hidden"
@@ -189,7 +189,7 @@ export function Hero({
       onMouseMove={handleMouseMove}
       className="relative min-h-[100dvh] overflow-hidden bg-white text-ink-950 dark:bg-black dark:text-white"
     >
-      <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden">
+      <div className="sticky top-0 flex min-h-screen items-center justify-center overflow-hidden">
         {/* Parallax Background */}
         <MotionDiv
           aria-hidden="true"
