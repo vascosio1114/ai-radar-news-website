@@ -51,6 +51,15 @@ export async function POST(request: Request) {
     email_body_template: body.email_body_template,
     skip_empty_digest: body.skip_empty_digest,
     updated_at: new Date().toISOString(),
+    onboarding_enabled: body.onboarding_enabled,
+    onboarding_subject: body.onboarding_subject,
+    onboarding_intro_text: body.onboarding_intro_text,
+    onboarding_cta_text: body.onboarding_cta_text,
+    onboarding_cta_url: body.onboarding_cta_url,
+    onboarding_featured_article_id: body.onboarding_featured_article_id,
+    weekly_enabled: body.weekly_enabled,
+    weekly_hour: body.weekly_hour,
+    weekly_timezone: body.weekly_timezone,
   };
 
   const { data: existing } = await supabase

@@ -1,8 +1,7 @@
-import { NextResponse } from "next/server";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, Clock } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { containsCJK, getLocalizedContent, getUIStrings } from "@/lib/i18n";
@@ -64,7 +63,7 @@ export default async function ArticlePage({ params }: Props) {
 
   // If unauthenticated, redirect to summary version
   if (!user) {
-    return NextResponse.redirect(`/${lang}/summarize/${params.slug}`);
+    redirect(`/${lang}/summarize/${params.slug}`);
   }
 
   // Use articles_public for auth-gated content - only get gated fields here

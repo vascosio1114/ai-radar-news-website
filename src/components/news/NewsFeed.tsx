@@ -1,10 +1,14 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArticleCard } from "@/components/cards/ArticleCard";
 import { Search, X, ChevronLeft, ChevronRight } from "lucide-react";
 import type { Article } from "@/types";
 import type { Lang } from "@/lib/i18n";
+
+const CATEGORY_TABS = ["All", "AI News", "Tools", "Tutorials", "Trends"] as const;
+const PREDEFINED_TAGS = ["GPT-4", "Claude", "Midjourney", "Stable Diffusion", "AI Agent", "RAG", "Embeddings", "LangChain", "Video AI", "Image AI"] as const;
 
 type Props = {
   articles: Article[];
@@ -48,7 +52,7 @@ function SearchResultCard({ article, lang, query }: { article: Article; lang: La
       <div className="flex items-center justify-between">
         <span className="text-xs text-ink-400">{article.author}</span>
         <a
-          href={`/blog/${article.slug}`}
+          href={`/${lang}/news/${article.slug}`}
           className="text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400"
         >
           {lang === "zh" ? "閱讀全文" : "Read more"} →
@@ -59,10 +63,30 @@ function SearchResultCard({ article, lang, query }: { article: Article; lang: La
 }
 
 export function NewsFeed({ articles, lang, categories, s, page, totalPages, total, start, end }: Props) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [search, setSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState(searchParams.get("category") ?? "");
+  const [selectedTag, setSelectedTag] = useState(searchParams.get("tag") ?? "");
   const [searchResults, setSearchResults] = useState<Article[] | null>(null);
   const [searchLoading, setSearchLoading] = useState(false);
+
+  const buildFilterUrl = (cat: string, tag: string) => {
+    const params = new URLSearchParams();
+    if (search) params.set("q", search);
+    if (cat) params.set("category", cat);
+    if (tag) params.set("tag", tag);
+    const qs = params.toString();
+    return `/${lang}/news${qs ? `?${qs}` : ""}`;
+  };
+
+  const clearFilters = () => {
+    setSearch("");
+    setSelectedCategory("");
+    setSelectedTag("");
+    setSearchResults(null);
+    router.push(`/${lang}/news${search ? `?q=${encodeURIComponent(search)}` : ""}`);
+  };
 
   const performSearch = useCallback(async (q: string) => {
     if (q.trim().length < 2) {
@@ -90,15 +114,10 @@ export function NewsFeed({ articles, lang, categories, s, page, totalPages, tota
   const filtered = useMemo(() => {
     return articles.filter((a) => {
       const matchCat = selectedCategory === "" || a.category === selectedCategory;
-      return matchCat;
+      const matchTag = selectedTag === "" || (a.tags && a.tags.includes(selectedTag));
+      return matchCat && matchTag;
     });
-  }, [articles, selectedCategory]);
-
-  const clearFilters = () => {
-    setSearch("");
-    setSelectedCategory("");
-    setSearchResults(null);
-  };
+  }, [articles, selectedCategory, selectedTag]);
 
   return (
     <div className="container-page section-pad">
@@ -114,8 +133,9 @@ export function NewsFeed({ articles, lang, categories, s, page, totalPages, tota
         </p>
       </header>
 
-      {/* Filters */}
+      {/* Search + Filters */}
       <div className="mb-8 flex flex-wrap items-center gap-3">
+        {/* Search bar */}
         <div className="relative flex-1 min-w-[200px] max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-400" />
           <input
@@ -126,17 +146,41 @@ export function NewsFeed({ articles, lang, categories, s, page, totalPages, tota
             className="w-full rounded-lg border border-ink-200 bg-white pl-9 pr-4 py-2 text-sm dark:border-ink-700 dark:bg-ink-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
         </div>
+
+        {/* Category pill tabs */}
+        <div className="flex flex-wrap items-center gap-2">
+          {CATEGORY_TABS.map((cat) => (
+            <a
+              key={cat}
+              href={buildFilterUrl(cat === "All" ? "" : cat, selectedTag)}
+              onClick={(e) => { e.preventDefault(); router.push(buildFilterUrl(cat === "All" ? "" : cat, selectedTag)); }}
+              className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors cursor-pointer ${
+                (cat === "All" ? selectedCategory === "" : selectedCategory === cat)
+                  ? "bg-accent-600 text-white"
+                  : "bg-white/80 dark:bg-ink-900/80 text-ink-600 dark:text-ink-300 border border-ink-200 dark:border-ink-700 hover:bg-ink-100 dark:hover:bg-ink-800"
+              }`}
+            >
+              {cat === "All" ? (lang === "zh" ? "全部" : "All") : cat}
+            </a>
+          ))}
+        </div>
+
+        {/* Tag dropdown */}
         <select
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
+          value={selectedTag}
+          onChange={(e) => {
+            const newTag = e.target.value;
+            router.push(buildFilterUrl(selectedCategory, newTag));
+          }}
           className="rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm dark:border-ink-700 dark:bg-ink-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
         >
-          <option value="">{lang === "zh" ? "全部分類" : "All Categories"}</option>
-          {categories.map((cat) => (
-            <option key={cat} value={cat}>{cat}</option>
+          <option value="">{lang === "zh" ? "全部標籤" : "All Tags"}</option>
+          {PREDEFINED_TAGS.map((tag) => (
+            <option key={tag} value={tag}>{tag}</option>
           ))}
         </select>
-        {(search || selectedCategory) && (
+
+        {(search || selectedCategory || selectedTag) && (
           <button
             onClick={clearFilters}
             className="flex items-center gap-1 rounded-lg px-3 py-2 text-sm text-ink-500 hover:bg-ink-100 dark:hover:bg-ink-800"

@@ -33,7 +33,7 @@ export function Footer() {
           </Link>
           <p className="mt-4 max-w-md text-sm leading-relaxed text-ink-500 dark:text-ink-400">
             {lang === "zh"
-              ? "最新 AI 文章、AI 工具評測、AI 教學與趨勢分析。繁體中文內容每日更新，協助您掌握 AI 浪潮。"
+              ? "最新AI資訊、AI 工具評測、AI 教學與趨勢分析。繁體中文內容每日更新，協助您掌握 AI 浪潮。"
               : "AI articles, tool reviews, tutorials and trend analysis — updated regularly to help you follow the AI wave."}
           </p>
           <div className="mt-6 flex items-center gap-2">

@@ -4,6 +4,8 @@ import { logger } from "@/lib/logger";
 
 const log = logger.child({ component: "search" });
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);

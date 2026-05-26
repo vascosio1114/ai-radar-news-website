@@ -30,12 +30,13 @@ export async function POST(request: Request) {
   // --- Resolve articles ---
   let articles: ArticleSelect[] = [];
   let presetName = "default";
+  let contentMode: "excerpt" | "full_content" = "excerpt";
 
   if (body.article_ids && Array.isArray(body.article_ids) && body.article_ids.length > 0) {
     // Ad-hoc override
     const { data } = await admin
       .from("articles")
-      .select("id, slug, title, excerpt, cover_image, published_at, category, tags, is_featured")
+      .select("id, slug, title, excerpt, cover_image, published_at, category, tags, is_featured, email_content, content_html")
       .in("id", body.article_ids)
       .eq("is_published", true);
     articles = (data ?? []) as ArticleSelect[];
@@ -44,11 +45,12 @@ export async function POST(request: Request) {
     // Specific preset
     const { data: preset } = await admin
       .from("digest_presets")
-      .select("*")
+      .select("*, content_mode")
       .eq("id", body.preset_id)
       .single();
     if (!preset) return NextResponse.json({ error: "Preset not found" }, { status: 404 });
     presetName = preset.name;
+    contentMode = preset.content_mode ?? "excerpt";
     articles = await resolveArticlesFromPreset(
       admin,
       preset.mode,
@@ -60,11 +62,12 @@ export async function POST(request: Request) {
     // Default preset
     const { data: defaultPreset } = await admin
       .from("digest_presets")
-      .select("*")
+      .select("*, content_mode")
       .eq("is_default", true)
       .single();
     if (defaultPreset) {
       presetName = defaultPreset.name;
+      contentMode = defaultPreset.content_mode ?? "excerpt";
       articles = await resolveArticlesFromPreset(
         admin,
         defaultPreset.mode,
@@ -96,7 +99,7 @@ export async function POST(request: Request) {
 
   const articlesWithUrl = articles.map((a) => ({
     ...a,
-    url: `${SITE_URL}/news/${a.slug}`,
+    url: `${SITE_URL}/en/news/${a.slug}`,
   }));
 
   const html = buildDigestHtml({
@@ -106,6 +109,7 @@ export async function POST(request: Request) {
     emailBodyTemplate: settings.email_body_template || undefined,
     dateStr,
     unsubscribeUrl: `${SITE_URL}/unsubscribe`,
+    contentMode,
   });
 
   // Preview mode — return HTML without sending

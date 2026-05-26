@@ -19,7 +19,7 @@ function normalizeSlug(value: string) {
 
 function estimateReadingTime(content: string) {
   const words = content.trim().split(/\s+/).filter(Boolean).length;
-  const cjkChars = (content.match(/[\u4e00-\u9fff]/g) ?? []).length;
+  const cjkChars = (content.match(/[一-鿿]/g) ?? []).length;
   return Math.max(1, Math.ceil(Math.max(words / 220, cjkChars / 450)));
 }
 
@@ -45,6 +45,7 @@ function normalizeArticlePayload(body: Record<string, unknown>) {
     is_featured: Boolean(body.is_featured),
     is_published: Boolean(body.is_published),
     updated_at: new Date().toISOString(),
+    email_content: body.email_content ? String(body.email_content) : null,
   };
 }
 

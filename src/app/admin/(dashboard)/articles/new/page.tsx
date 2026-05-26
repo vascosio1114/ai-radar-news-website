@@ -110,7 +110,7 @@ export default function NewArticlePage() {
           寫新 Blog 文章
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-ink-500 dark:text-ink-400">
-          使用 Markdown 撰寫文章。勾選「已發佈」後，文章將顯示於主頁「最新 AI 文章」與 Blog 列表。
+          使用 Markdown 撰寫文章。勾選「已發佈」後，文章將顯示於主頁「最新AI資訊」與 Blog 列表。
         </p>
       </div>
 
@@ -121,7 +121,6 @@ export default function NewArticlePage() {
           isSubmitting={isSubmitting}
           initialData={{
             category: "AI 文章",
-            author: "RADAR AI Studio",
             published_at: new Date().toISOString().split("T")[0],
             is_published: true,
           } as Partial<ArticleFormData>}

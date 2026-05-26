@@ -51,6 +51,7 @@ export async function POST(request: Request) {
       article_ids: body.article_ids ?? [],
       criteria: body.criteria ?? {},
       is_default: body.is_default ?? false,
+      content_mode: body.content_mode ?? "excerpt",
     })
     .select()
     .single();

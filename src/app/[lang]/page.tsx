@@ -32,19 +32,11 @@ export default async function HomePage({ params }: Props) {
   return (
     <>
       <Hero lang={lang} stats={publicStats} />
-      <div className="relative -mt-32 space-y-0 bg-white pb-8 dark:bg-gradient-to-b dark:from-black dark:via-black/80 dark:to-transparent md:-mt-44">
-        <ScrollReveal>
-          <LatestNews articles={latest} lang={lang} featuredOnly />
-        </ScrollReveal>
-        <ScrollReveal delay={0.03}>
-          <JobImpactTicker trend={jobImpact} lang={lang} />
-        </ScrollReveal>
-        <ScrollReveal delay={0.04}>
-          <ProtocolExperience lang={lang} sources={activeSources} />
-        </ScrollReveal>
-        <ScrollReveal delay={0.06}>
-          <Newsletter lang={lang} />
-        </ScrollReveal>
+      <div className="relative -mt-32 space-y-0 pb-8 md:-mt-44">
+        <LatestNews articles={latest} lang={lang} featuredOnly />
+        <JobImpactTicker trend={jobImpact} lang={lang} />
+        <ProtocolExperience lang={lang} sources={activeSources} />
+        <Newsletter lang={lang} />
       </div>
     </>
   );

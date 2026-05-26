@@ -34,7 +34,7 @@ function FloatingOrb({ delay = 0, size = 200, color = "#6366f1", style = {} }: {
   );
 }
 
-function MagneticButton({ children, className = "" }) {
+function MagneticButton({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
@@ -63,7 +63,7 @@ function MagneticButton({ children, className = "" }) {
   );
 }
 
-function TextReveal({ children, delay = 0 }: { children: string; delay?: number }) {
+function TextReveal({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   return (
     <span style={{ overflow: "hidden", display: "inline-block" }}>
       <motion.span
@@ -156,6 +156,7 @@ export default function FramerMotionDemo() {
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll();
   const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
+  const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
 
   return (
     <div style={{ background: "#0a0a0f", minHeight: "100vh", color: "white", overflowX: "hidden" }}>

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { validateUnsubscribeToken } from "@/lib/unsubscribe-token";
+import { SITE_URL } from "@/lib/site";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -20,8 +21,6 @@ export async function GET(request: Request) {
     .from("mail_subscribers")
     .update({ opted_in: false })
     .eq("email", payload.email);
-
-  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://ai-radar.com";
 
   return new Response(
     `<!DOCTYPE html>

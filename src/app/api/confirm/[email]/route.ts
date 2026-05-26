@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { buildWelcomeHtml } from "@/lib/email-templates";
+import { buildWelcomeHtml, buildOnboardingHtml } from "@/lib/email-templates";
 import { generateUnsubscribeToken } from "@/lib/unsubscribe-token";
 import { sendHtmlEmail, MailSettings } from "@/lib/mail";
+import { SITE_URL } from "@/lib/site";
 
 /**
  * Confirmation route — called when a user clicks the link in their email.
@@ -12,8 +13,6 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ email: string }> }
 ) {
-  // Note: the folder is [email], so the param is named 'email', 
-  // but we are passing a secure token here now.
   const { email: token } = await params;
 
   if (!token) {
@@ -38,18 +37,23 @@ export async function GET(
   // Update subscriber to confirmed and clear the token
   const { error } = await supabase
     .from("mail_subscribers")
-    .update({ opted_in: true, is_confirmed: true, confirmation_token: null })
+    .update({
+      opted_in: true,
+      is_confirmed: true,
+      confirmation_token: null,
+      confirmed_at: new Date().toISOString(),
+    })
     .eq("email", email);
 
   if (error) {
     return new Response("Confirmation failed. Please contact support.", { status: 500 });
   }
 
-  // Send welcome email with unsubscribe link
+  // Generate unsubscribe token
   const unsubToken = generateUnsubscribeToken(email);
-  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://ai-radar.com";
   const unsubUrl = `${SITE_URL}/api/unsubscribe?token=${unsubToken}`;
 
+  // Fetch mail settings for SMTPG
   const { data: settings } = await supabase
     .from("mail_settings")
     .select("smtp_host, smtp_port, smtp_user, smtp_pass_encrypted, smtp_from_address, smtp_from_name")
@@ -57,13 +61,54 @@ export async function GET(
     .single();
 
   if (settings) {
+    const mailSettings = settings as MailSettings;
+
+    // Send welcome email
     const welcomeHtml = buildWelcomeHtml({ unsubscribeUrl: unsubUrl, siteUrl: SITE_URL, lang: "zh" });
-    await sendHtmlEmail(
-      settings as MailSettings,
-      email,
-      "歡迎訂閱 AI Radar ✅",
-      welcomeHtml
-    );
+    await sendHtmlEmail(mailSettings, email, "歡迎訂閱 AI Radar ✅", welcomeHtml);
+
+    // Send onboarding email if enabled
+    const onboardingSettings = await supabase
+      .from("mail_settings")
+      .select(
+        "onboarding_enabled, onboarding_subject, onboarding_intro_text, onboarding_cta_text, onboarding_cta_url, onboarding_featured_article_id"
+      )
+      .limit(1)
+      .single();
+
+    const ob = onboardingSettings.data;
+    if (ob?.onboarding_enabled) {
+      let featuredArticle = null;
+      if (ob.onboarding_featured_article_id) {
+        const { data: article } = await supabase
+          .from("articles")
+          .select("title, excerpt, cover_image, slug, published_at")
+          .eq("id", ob.onboarding_featured_article_id)
+          .single();
+        if (article) {
+          featuredArticle = {
+            ...article,
+            url: `${SITE_URL}/zh/news/${article.slug}`,
+          };
+        }
+      }
+
+      const onboardingHtml = buildOnboardingHtml({
+        ctaText: ob.onboarding_cta_text || undefined,
+        ctaUrl: ob.onboarding_cta_url || undefined,
+        featuredArticle: featuredArticle || undefined,
+        unsubscribeUrl: unsubUrl,
+        siteUrl: SITE_URL,
+        lang: "zh",
+      });
+
+      await sendHtmlEmail(
+        mailSettings,
+        email,
+        ob.onboarding_subject || "歡迎加入 AI Radar — 這裡是你會收到的內容",
+        onboardingHtml
+      );
+    }
   }
 
   return new Response(
