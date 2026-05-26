@@ -4,6 +4,7 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 import { Upload, X, ChevronDown, ChevronRight } from "lucide-react";
 import Image from "next/image";
+import { uploadCoverImage } from "@/lib/supabase/storage";
 
 // Dynamically import markdown editor to avoid SSR issues
 const MDEditor = dynamic(
@@ -171,19 +172,13 @@ export default function ArticleForm({
     if (!file) return;
 
     setUploading(true);
-    const formData = new FormData();
-    formData.append("file", file);
 
-    const res = await fetch("/api/admin/articles/upload-image", {
-      method: "POST",
-      body: formData,
-    });
-    const data = await res.json();
+    const url = await uploadCoverImage(file, "article-covers");
 
-    if (res.ok && data.url) {
-      setFormData((prev) => ({ ...prev, cover_image: data.url }));
+    if (url) {
+      setFormData((prev) => ({ ...prev, cover_image: url }));
     } else {
-      alert(data.error || "上傳失敗");
+      alert("上傳失敗");
     }
     setUploading(false);
   };
