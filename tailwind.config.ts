@@ -71,12 +71,34 @@ const config: Config = {
           "0%, 100%": { opacity: "0.6" },
           "50%": { opacity: "1" },
         },
+        "spring-bounce": {
+          "0%": { transform: "scale(0.9)", opacity: "0" },
+          "60%": { transform: "scale(1.05)" },
+          "100%": { transform: "scale(1)", opacity: "1" },
+        },
+        "spring-overshoot": {
+          "0%": { transform: "scale(0.8)" },
+          "60%": { transform: "scale(1.1)" },
+          "100%": { transform: "scale(1)" },
+        },
+        "float": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-8px)" },
+        },
+        "shimmer-line": {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(100%)" },
+        },
       },
       animation: {
         "fade-in": "fade-in 0.6s ease-out forwards",
         shimmer: "shimmer 2.2s linear infinite",
         "spin-slow": "spin-slow 12s linear infinite",
         "pulse-glow": "pulse-glow 3s ease-in-out infinite",
+        "spring-bounce": "spring-bounce 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+        "spring-overshoot": "spring-overshoot 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards",
+        float: "float 3s ease-in-out infinite",
+        "shimmer-line": "shimmer-line 1.5s ease-in-out infinite",
       },
       boxShadow: {
         glow: "0 0 60px -15px rgba(59,130,246,0.55)",

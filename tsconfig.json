@@ -36,6 +36,7 @@
   ],
   "exclude": [
     "node_modules",
-    "my-video"
+    "my-video",
+    "supabase-csv-exporter"
   ]
 }

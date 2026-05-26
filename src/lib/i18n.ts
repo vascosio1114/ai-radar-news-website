@@ -24,7 +24,7 @@ export function getLocalizedContent<T extends Record<string, any>>(
 export const UI_STRINGS = {
   zh: {
     latestNews: "最新更新",
-    latestNewsTitle: "最新 AI 文章",
+    latestNewsTitle: "最新AI資訊",
     latestNewsDesc: "持續更新，精選值得深入閱讀的 AI 分析文章。",
 
     trendingNews: "今日熱門",

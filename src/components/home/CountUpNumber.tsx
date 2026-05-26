@@ -22,7 +22,6 @@ function CountUpNumberComponent({
 
   const motionValue = useMotionValue(0);
   const springValue = useSpring(motionValue, {
-    type: "spring",
     stiffness: 80,
     damping: 15,
   });

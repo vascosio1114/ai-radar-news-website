@@ -32,14 +32,14 @@ export function AISnowSection({ lang = "zh" }: { lang?: "zh" | "en" }) {
       };
   return (
     <section className="container-page section-pad pt-0">
-      <div className="relative overflow-hidden rounded-3xl border border-ink-200/70 bg-ink-950 px-6 py-12 text-white shadow-soft dark:border-ink-800/80 md:px-10 md:py-16">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_20%,rgba(59,130,246,.24),transparent_28%),radial-gradient(circle_at_78%_10%,rgba(34,197,94,.18),transparent_26%),linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,0))]" />
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.045)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.045)_1px,transparent_1px)] bg-[size:34px_34px] opacity-45" />
+      <div className="relative overflow-hidden rounded-3xl border border-ink-200/70 bg-white px-6 py-12 text-ink-950 shadow-soft dark:border-ink-800/80 dark:bg-ink-950 dark:text-white md:px-10 md:py-16">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_20%,rgba(59,130,246,.24),transparent_28%),radial-gradient(circle_at_78%_10%,rgba(34,197,94,.18),transparent_26%),linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,0))] dark:bg-[radial-gradient(circle_at_18%_20%,rgba(59,130,246,.24),transparent_28%),radial-gradient(circle_at_78%_10%,rgba(34,197,94,.18),transparent_26%),linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,0))]" />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,.045)_1px,transparent_1px),linear-gradient(90deg,rgba(59,130,246,.045)_1px,transparent_1px)] bg-[size:34px_34px] opacity-45 dark:opacity-30 dark:bg-[linear-gradient(rgba(255,255,255,.045)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.045)_1px,transparent_1px)]" />
 
         {particles.map((p) => (
           <span
             key={p.id}
-            className="absolute rounded-full bg-cyan-200 shadow-[0_0_16px_rgba(125,211,252,.85)]"
+            className="absolute rounded-full bg-blue-600 shadow-[0_0_16px_rgba(37,99,235,.5)]"
             style={{
               left: p.left,
               top: p.top,
@@ -52,14 +52,14 @@ export function AISnowSection({ lang = "zh" }: { lang?: "zh" | "en" }) {
 
         <div className="relative z-10 grid gap-8 lg:grid-cols-[1.1fr_.9fr] lg:items-center">
           <div>
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-cyan-100 backdrop-blur">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-ink-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-widest text-blue-700 backdrop-blur dark:border-white/10 dark:bg-white/10 dark:text-cyan-100">
               <Sparkles className="h-3.5 w-3.5" />
               Live AI signal stream
             </div>
-            <h2 className="font-display text-3xl font-bold tracking-tight md:text-5xl">
+            <h2 className="font-display text-3xl font-bold tracking-tight md:text-5xl text-ink-950 dark:text-white">
               {copy.title}
             </h2>
-            <p className="mt-4 max-w-2xl text-sm leading-7 text-white/68 md:text-base">
+            <p className="mt-4 max-w-2xl text-sm leading-7 text-ink-600 md:text-base dark:text-white/68">
               {copy.desc}
             </p>
           </div>
@@ -87,13 +87,13 @@ function SignalCard({
   desc: string;
 }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.07] p-4 backdrop-blur transition hover:bg-white/[0.1]">
-      <div className="flex items-center justify-between text-cyan-100/80">
+    <div className="rounded-2xl border border-ink-200 bg-white/70 p-4 backdrop-blur transition hover:bg-white/90 dark:border-white/10 dark:bg-white/[0.07] dark:hover:bg-white/[0.1]">
+      <div className="flex items-center justify-between text-blue-600 dark:text-cyan-100/80">
         <span className="text-[11px] font-semibold uppercase tracking-widest">{label}</span>
         {icon}
       </div>
-      <div className="mt-2 font-display text-3xl font-bold">{value}</div>
-      <div className="mt-1 text-xs text-white/50">{desc}</div>
+      <div className="mt-2 font-display text-3xl font-bold text-ink-950 dark:text-white">{value}</div>
+      <div className="mt-1 text-xs text-ink-500 dark:text-white/50">{desc}</div>
     </div>
   );
 }

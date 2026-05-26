@@ -11,6 +11,7 @@
     "pipeline:ingest": "tsx scripts/ingest.ts"
   },
   "dependencies": {
+    "@phosphor-icons/react": "^2.1.10",
     "@react-three/drei": "^9.122.0",
     "@react-three/fiber": "^8.18.0",
     "@react-three/postprocessing": "^2.16.2",
