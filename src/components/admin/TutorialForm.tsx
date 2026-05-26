@@ -90,7 +90,7 @@ export default function TutorialForm({
       const url = await uploadCoverImage(file, "tutorial-covers");
       setFormData((prev) => ({ ...prev, cover_image: url }));
     } catch (err) {
-      console.error("Image upload failed:", err);
+      alert("上傳失敗");
     } finally {
       setUploading(false);
     }
