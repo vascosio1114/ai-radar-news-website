@@ -861,6 +861,11 @@ export default function RedesignedDemoPage() {
         </div>
       </motion.section>
 
+      {/* ============================================================ */}
+      {/* NEWSLETTER CTA — Magnetic Button + Mouse-Tracking Light + Glow Pulse */}
+      {/* ============================================================ */}
+      <NewsletterCTA />
+
       {/* Bento Grid Section — Motion Engine Bento */}
       <motion.section style={{ opacity: sectionOpacity }} className="relative z-20 px-6 md:px-10 pb-24">
         <div className="max-w-7xl mx-auto space-y-8">
@@ -1534,5 +1539,201 @@ const MetricCard: React.FC<MetricCardProps> = ({ icon: Icon, value, label, sub, 
         </div>
       </div>
     </motion.div>
+  );
+};
+
+// ============================================================
+// NEWSLETTER CTA — Magnetic Button + Mouse-Tracking Light + Glow Pulse
+// ============================================================
+const NewsletterCTA = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [email, setEmail] = useState("");
+  const [ripples, setRipples] = useState<{ x: number; y: number; key: number }[]>([]);
+
+  // Mouse tracking for light source
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  // Spring for light source following cursor
+  const lightX = useSpring(mouseX, { stiffness: 150, damping: 20 });
+  const lightY = useSpring(mouseY, { stiffness: 150, damping: 20 });
+
+  // Magnetic button position
+  const buttonX = useMotionValue(0);
+  const buttonY = useMotionValue(0);
+  const buttonXSpring = useSpring(buttonX, { stiffness: 300, damping: 30 });
+  const buttonYSpring = useSpring(buttonY, { stiffness: 300, damping: 30 });
+
+  // Scale for proximity effect
+  const buttonScale = useMotionValue(1);
+  const buttonScaleSpring = useSpring(buttonScale, { stiffness: 300, damping: 30 });
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    // Update mouse position for light source
+    mouseX.set(e.clientX);
+    mouseY.set(e.clientY);
+
+    // Magnetic button effect
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      const buttonCenterX = rect.left + rect.width / 2;
+      const buttonCenterY = rect.top + rect.height / 2;
+      const distance = Math.sqrt(
+        Math.pow(e.clientX - buttonCenterX, 2) + Math.pow(e.clientY - buttonCenterY, 2)
+      );
+
+      const triggerRadius = 80;
+      if (distance < triggerRadius) {
+        const strength = 6;
+        const displacement = strength * (1 - distance / triggerRadius);
+        const angle = Math.atan2(e.clientY - buttonCenterY, e.clientX - buttonCenterX);
+        buttonX.set(Math.cos(angle) * displacement);
+        buttonY.set(Math.sin(angle) * displacement);
+        buttonScale.set(1.04);
+      } else {
+        buttonX.set(0);
+        buttonY.set(0);
+        buttonScale.set(1);
+      }
+    }
+  };
+
+  const handleButtonClick = (e: React.MouseEvent) => {
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const newRipple = { x, y, key: Date.now() };
+      setRipples((prev) => [...prev, newRipple]);
+      setTimeout(() => {
+        setRipples((prev) => prev.filter((r) => r.key !== newRipple.key));
+      }, 500);
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (email) {
+      console.log("Subscribing:", email);
+      setEmail("");
+    }
+  };
+
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+      className="relative z-20 px-8 py-[100px]"
+      onMouseMove={handleMouseMove}
+    >
+      {/* Background glow with pulse animation */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
+        <motion.div
+          animate={{
+            scale: [1, 1.05, 1],
+            opacity: [0.08, 0.14, 0.08],
+          }}
+          transition={{
+            duration: 4,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+          className="absolute w-[600px] h-[600px] rounded-full"
+          style={{
+            background: "radial-gradient(circle, rgba(77,171,247,0.12) 0%, transparent 70%)",
+            filter: "blur(120px)",
+          }}
+        />
+      </div>
+
+      {/* Mouse-tracking light source */}
+      <motion.div
+        className="fixed w-[160px] h-[160px] rounded-full pointer-events-none z-0"
+        style={{
+          x: lightX,
+          y: lightY,
+          background: "radial-gradient(circle, rgba(77,171,247,0.5) 0%, transparent 70%)",
+          filter: "blur(40px)",
+          opacity: 0.06,
+          mixBlendMode: "screen",
+          translateX: "-50%",
+          translateY: "-50%",
+        }}
+      />
+
+      {/* Content */}
+      <div className="relative max-w-[680px] mx-auto text-center">
+        {/* Headline */}
+        <h2
+          className="text-[48px] font-bold tracking-tight text-white mb-4"
+          style={{ fontFamily: "Inter, sans-serif", lineHeight: 1.1 }}
+        >
+          Stay ahead of the signal
+        </h2>
+
+        {/* Subheadline */}
+        <p
+          className="text-base text-white/58 mb-10"
+          style={{ fontFamily: "Inter, sans-serif" }}
+        >
+          Join 12,400+ subscribers receiving weekly AI intelligence briefings.
+        </p>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6">
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="your@email.com"
+            className="w-full sm:w-72 px-6 py-3.5 rounded-full bg-[#030409] border border-[rgba(77,171,247,0.30)] text-white placeholder:text-white/35 focus:outline-none focus:border-signal-blue/60 focus:bg-[#030409]/80 transition-colors"
+            style={{ fontFamily: "Inter, sans-serif" }}
+          />
+          <motion.button
+            ref={buttonRef}
+            type="submit"
+            onClick={handleButtonClick}
+            className="relative w-full sm:w-auto px-8 py-3.5 rounded-full bg-signal-blue text-white font-medium text-sm overflow-hidden whitespace-nowrap"
+            style={{
+              fontFamily: "Inter, sans-serif",
+              x: buttonXSpring,
+              y: buttonYSpring,
+              scale: buttonScaleSpring,
+            }}
+          >
+            Subscribe
+            {/* Click ripples */}
+            {ripples.map((ripple) => (
+              <motion.span
+                key={ripple.key}
+                initial={{ scale: 0, opacity: 0.7 }}
+                animate={{ scale: 2.5, opacity: 0 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                className="absolute rounded-full border-2 border-white pointer-events-none"
+                style={{
+                  left: ripple.x,
+                  top: ripple.y,
+                  width: 60,
+                  height: 60,
+                  marginLeft: -30,
+                  marginTop: -30,
+                }}
+              />
+            ))}
+          </motion.button>
+        </form>
+
+        {/* Privacy note */}
+        <p
+          className="text-[12px] text-white/40"
+          style={{ fontFamily: "Inter, sans-serif" }}
+        >
+          No spam. Unsubscribe anytime.
+        </p>
+      </div>
+    </motion.section>
   );
 };
