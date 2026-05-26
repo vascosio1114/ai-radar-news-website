@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import dynamic from "next/dynamic";
-import { Upload, X, ImageIcon, ChevronDown, ChevronRight } from "lucide-react";
+import { Upload, X, ChevronDown, ChevronRight } from "lucide-react";
 import Image from "next/image";
 
 // Dynamically import markdown editor to avoid SSR issues
@@ -23,7 +23,6 @@ export interface ArticleFormData {
   content: string;
   content_zh: string;
   summary_content: string;
-  summary_content_zh: string;
   published_at: string;
   is_featured: boolean;
   is_published: boolean;
@@ -79,7 +78,6 @@ export default function ArticleForm({
     content: initialData?.content || "",
     content_zh: initialData?.content_zh || "",
     summary_content: initialData?.summary_content || "",
-    summary_content_zh: initialData?.summary_content_zh || "",
     published_at: initialData?.published_at || new Date().toISOString().split("T")[0],
     is_featured: initialData?.is_featured || false,
     is_published: initialData?.is_published ?? true,
