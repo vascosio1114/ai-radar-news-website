@@ -50,14 +50,19 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Admin routes — require admin authentication (except /admin/setup for initial bootstrap)
-  if (pathname.startsWith("/admin") && !pathname.startsWith("/admin/setup")) {
+  // Admin login/setup are public and should not be locale-prefixed.
+  if (pathname.startsWith("/admin/login") || pathname.startsWith("/admin/setup")) {
+    return NextResponse.next();
+  }
+
+  // Admin routes — require admin authentication.
+  if (pathname.startsWith("/admin")) {
     const supabase = createAdminAuthClient(request);
     const { data: { user }, error } = await supabase.auth.getUser();
 
     if (error || !user) {
       log.warn({ pathname, reason: "no_session" }, "Admin access denied - no session");
-      return NextResponse.redirect(new URL("/zh/login", request.url));
+      return NextResponse.redirect(new URL("/admin/login", request.url));
     }
 
     // Note: is_admin is checked in the admin layout server-side via profiles.is_admin.
