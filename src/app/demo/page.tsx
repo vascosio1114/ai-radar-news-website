@@ -495,6 +495,66 @@ export default function RedesignedDemoPage() {
         </div>
       </motion.section>
 
+      {/* ============================================================ */}
+      {/* PROTOCOL TICKER — Infinite Scroll Strip */}
+      {/* ============================================================ */}
+      {(() => {
+        const signals = [
+          "OPENAI BLOG",
+          "ANTHROPIC",
+          "GOOGLE AI",
+          "HUGGING FACE",
+          "ARXIV",
+          "GITHUB TRENDING",
+          "REDDIT ML",
+          "HACKER NEWS",
+          "TECHCRUNCH",
+          "LOCAL LLAMA",
+        ];
+        return (
+          <motion.section
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            className="relative z-20 h-20 flex items-center overflow-hidden"
+            style={{
+              background: "rgba(7,8,15,0.6)",
+              borderTop: "1px solid rgba(77,171,247,0.10)",
+              borderBottom: "1px solid rgba(77,171,247,0.10)",
+            }}
+          >
+            <motion.div
+              className="flex items-center"
+              animate={{ x: ["0%", "-50%"] }}
+              transition={{ duration: 34, ease: "linear", repeat: Infinity }}
+              style={{ width: "max-content" }}
+            >
+              {/* 2x repeat for seamless loop */}
+              {[...signals, ...signals].map((signal, i) => (
+                <div
+                  key={i}
+                  className="flex items-center px-6"
+                >
+                  <span
+                    className="w-1.5 h-1.5 rounded-full mr-3"
+                    style={{
+                      backgroundColor: "rgba(77,171,247,1)",
+                      boxShadow: "0 0 14px rgba(77,171,247,0.9)",
+                    }}
+                  />
+                  <span
+                    className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap"
+                    style={{ fontFamily: "Inter, sans-serif", color: "rgba(255,255,255,0.55)" }}
+                  >
+                    {signal}
+                  </span>
+                </div>
+              ))}
+            </motion.div>
+          </motion.section>
+        );
+      })()}
+
       {/* Bento Grid Section — Motion Engine Bento */}
       <motion.section style={{ opacity: sectionOpacity }} className="relative z-20 px-6 md:px-10 pb-24">
         <div className="max-w-7xl mx-auto space-y-8">
