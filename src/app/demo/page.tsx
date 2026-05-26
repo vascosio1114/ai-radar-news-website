@@ -734,6 +734,133 @@ export default function RedesignedDemoPage() {
         </div>
       </section>
 
+      {/* ============================================================ */}
+      {/* SIGNAL SOURCES — 2x5 Grid with Fog Layers + Pulsing Dots */}
+      {/* ============================================================ */}
+      <motion.section
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-80px" }}
+        transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+        className="relative z-20 px-6 md:px-10 py-[60px]"
+      >
+        {/* Atmospheric fog layers (behind the grid) */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
+          {/* Layer 1: blur 80px, opacity 0.12, signal-blue */}
+          <motion.div
+            animate={{ x: [0, 12, 0, -12, 0], y: [0, 6, 0, -6, 0] }}
+            transition={{ duration: 8, ease: "easeInOut", repeat: Infinity }}
+            className="absolute w-[500px] h-[300px] rounded-full"
+            style={{
+              background: "radial-gradient(ellipse, rgba(77,171,247,0.12) 0%, transparent 70%)",
+              filter: "blur(80px)",
+            }}
+          />
+          {/* Layer 2: blur 60px, opacity 0.08, signal-cyan */}
+          <motion.div
+            animate={{ x: [0, -12, 0, 12, 0], y: [0, -6, 0, 6, 0] }}
+            transition={{ duration: 8, ease: "easeInOut", repeat: Infinity, delay: 1 }}
+            className="absolute w-[400px] h-[250px] rounded-full"
+            style={{
+              background: "radial-gradient(ellipse, rgba(21,170,191,0.08) 0%, transparent 70%)",
+              filter: "blur(60px)",
+            }}
+          />
+          {/* Layer 3: blur 40px, opacity 0.05, white */}
+          <motion.div
+            animate={{ x: [0, 8, 0, -8, 0], y: [0, 4, 0, -4, 0] }}
+            transition={{ duration: 8, ease: "easeInOut", repeat: Infinity, delay: 2 }}
+            className="absolute w-[300px] h-[200px] rounded-full"
+            style={{
+              background: "radial-gradient(ellipse, rgba(255,255,255,0.05) 0%, transparent 70%)",
+              filter: "blur(40px)",
+            }}
+          />
+        </div>
+
+        {/* Section content */}
+        <div className="max-w-7xl mx-auto relative">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <p
+              className="text-[10px] font-semibold uppercase tracking-[0.28em] mb-3"
+              style={{ color: "#15e5e0", fontFamily: "Inter, sans-serif" }}
+            >
+              Signal Sources
+            </p>
+            <p className="text-[13px] text-white/50" style={{ fontFamily: "Inter, sans-serif" }}>
+              AI Radar monitors these 10 sources 24/7
+            </p>
+          </div>
+
+          {/* Sources Grid — 2 rows x 5 columns */}
+          <motion.div
+            variants={stagger}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-60px" }}
+            className="flex flex-wrap justify-center gap-4 max-w-4xl mx-auto"
+            style={{ maxWidth: "36rem" }}
+          >
+            {[
+              "OpenAI Blog",
+              "Anthropic",
+              "Google AI",
+              "Hugging Face",
+              "arXiv",
+              "GitHub Trending",
+              "Reddit ML",
+              "Hacker News",
+              "TechCrunch",
+              "Local Llama",
+            ].map((source, i) => (
+              <motion.div
+                key={source}
+                variants={{
+                  hidden: { opacity: 0 },
+                  visible: (i: number) => ({
+                    opacity: 1,
+                    transition: { duration: 0.4, delay: i * 0.06, ease: [0.16, 1, 0.3, 1] },
+                  }),
+                }}
+                custom={i}
+                className="flex items-center gap-2 rounded-full px-5 py-2.5"
+                style={{
+                  background: "rgba(77,171,247,0.08)",
+                  border: "1px solid rgba(77,171,247,0.15)",
+                }}
+              >
+                {/* Pulsing glow dot */}
+                <motion.span
+                  animate={{ opacity: [0.6, 1, 0.6] }}
+                  transition={{
+                    duration: 4,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: i * 0.3,
+                  }}
+                  className="w-[5px] h-[5px] rounded-full shrink-0"
+                  style={{
+                    backgroundColor: "#15e5e0",
+                    boxShadow: "0 0 10px rgba(21,170,191,0.8)",
+                  }}
+                />
+                <span
+                  className="text-[11px] font-semibold uppercase whitespace-nowrap"
+                  style={{
+                    color: "#4dabf7",
+                    fontFamily: "Inter, sans-serif",
+                    letterSpacing: "0.12em",
+                  }}
+                >
+                  {source}
+                </span>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </motion.section>
+
       {/* Bento Grid Section — Motion Engine Bento */}
       <motion.section style={{ opacity: sectionOpacity }} className="relative z-20 px-6 md:px-10 pb-24">
         <div className="max-w-7xl mx-auto space-y-8">
