@@ -1217,49 +1217,85 @@ export default function RedesignedDemoPage() {
         </div>
       </motion.section>
 
-      {/* Footer */}
-      <footer className="relative z-20 border-t border-white/[0.06] px-6 md:px-10 py-12">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
-            <div className="col-span-2 md:col-span-1">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center">
-                  <Globe className="w-4 h-4 text-white" />
-                </div>
-                <span className="font-bold">AI RADAR</span>
-              </div>
-              <p className="text-sm text-white/30">Stay ahead or get replaced.</p>
+      {/* ============================================================ */}
+      {/* FOOTER — Premium with Link Hover Animations + Border Glow Pulse */}
+      {/* ============================================================ */}
+      <footer className="relative z-20 px-[80px] py-[60px] bg-[#030409] border-t border-white/[0.06] overflow-hidden">
+        {/* Border glow pulse animation */}
+        <motion.div
+          className="absolute top-0 left-0 right-0 h-px pointer-events-none"
+          animate={{
+            opacity: [0, 0.4, 0],
+          }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            repeatDelay: 6,
+            ease: "easeInOut",
+          }}
+          style={{
+            background: "linear-gradient(90deg, transparent 0%, #4dabf7 50%, transparent 100%)",
+            boxShadow: "0 0 20px rgba(77,171,247,0.5)",
+          }}
+        />
+
+        {/* Row 1: Logo section (left) + Nav links (right) */}
+        <div className="flex items-center justify-between mb-8">
+          {/* Logo section */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            className="flex items-center gap-4"
+          >
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center">
+              <Globe className="w-5 h-5 text-white" />
             </div>
-            {[
-              { title: "Platform", links: ["Features", "Pricing", "API"] },
-              { title: "Resources", links: ["Blog", "Newsletter", "Guides"] },
-              { title: "Legal", links: ["Privacy", "Terms", "Cookies"] },
-              { title: "Follow", links: ["Twitter", "LinkedIn", "Discord"] },
-            ].map((col, i) => (
-              <div key={i}>
-                <h4 className="font-semibold mb-4 text-sm">{col.title}</h4>
-                <ul className="space-y-2">
-                  {col.links.map((link) => (
-                    <li key={link}>
-                      <a href="#" className="text-sm text-white/35 hover:text-white transition-colors">
-                        {link}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+            <div>
+              <h2
+                className="text-[18px] font-bold tracking-tight text-white"
+                style={{ fontFamily: "Inter, sans-serif", fontWeight: 700 }}
+              >
+                RADAR
+              </h2>
+              <p
+                className="text-[12px] text-white/40"
+                style={{ fontFamily: "Inter, sans-serif" }}
+              >
+                AI Intelligence Protocol
+              </p>
+            </div>
+          </motion.div>
+
+          {/* Nav links */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="flex items-center gap-6"
+          >
+            {["Privacy", "Terms", "GitHub", "Twitter/X"].map((link) => (
+              <motion.a
+                key={link}
+                href="#"
+                whileHover={{ color: "#4dabf7", y: -2, transition: { type: "spring", stiffness: 300, damping: 30 } }}
+                className="text-[12px] text-white/50"
+                style={{ fontFamily: "Inter, sans-serif" }}
+              >
+                {link}
+              </motion.a>
             ))}
-          </div>
-          <div className="pt-8 border-t border-white/[0.06] flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-white/25">2024 AI Radar. All rights reserved.</p>
-            <div className="flex items-center gap-4">
-              {["Twitter", "LinkedIn", "Discord"].map((social) => (
-                <a key={social} href="#" className="text-sm text-white/25 hover:text-white transition-colors">
-                  {social}
-                </a>
-              ))}
-            </div>
-          </div>
+          </motion.div>
+        </div>
+
+        {/* Row 2: Copyright centered */}
+        <div className="flex items-center justify-center pt-6 border-t border-white/[0.04]">
+          <p
+            className="text-[11px]"
+            style={{ color: "rgba(255,255,255,0.25)", fontFamily: "Inter, sans-serif" }}
+          >
+            2024 AI Radar. All rights reserved.
+          </p>
         </div>
       </footer>
     </div>
