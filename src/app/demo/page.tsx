@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
 import {
   ArrowRight,
   Bot,
@@ -151,6 +151,27 @@ const mockJobImpact = {
   ],
 };
 
+// ============================================================
+// Hero Section Motion Variants & Values
+// ============================================================
+
+// Orb pulse animation variants
+const orbPulseVariants = {
+  pulse: {
+    scale: [1, 1.08, 1],
+    opacity: [0.7, 1, 0.7],
+    transition: { duration: 4, repeat: Infinity, ease: "easeInOut" },
+  },
+};
+
+// Cinematic bracket pulse variants
+const bracketPulseVariants = {
+  pulse: {
+    opacity: [0.4, 1, 0.4],
+    transition: { duration: 4, repeat: Infinity, ease: "easeInOut" },
+  },
+};
+
 export default function RedesignedDemoPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
@@ -160,8 +181,37 @@ export default function RedesignedDemoPage() {
 
   const heroScale = useTransform(scrollYProgress, [0, 0.2], [1, 0.94]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.25], [1, 0]);
-  const globeY = useTransform(scrollYProgress, [0, 0.3], [0, -60]);
+  const globeY = useTransform(scrollYProgress, [0, 1], [0, -120]);
   const sectionOpacity = useTransform(scrollYProgress, [0.1, 0.3], [0, 1]);
+
+  // Scroll-driven veil opacity
+  const veilOpacity = useTransform(scrollYProgress, [0, 0.2, 0.48], [0.1, 0.42, 0.82]);
+
+  // Mouse tracking for ambient orbs using useSpring + useMotionValue
+  const orb1X = useMotionValue(0);
+  const orb1Y = useMotionValue(0);
+  const orb1XSpring = useSpring(orb1X, { stiffness: 50, damping: 20 });
+  const orb1YSpring = useSpring(orb1Y, { stiffness: 50, damping: 20 });
+
+  const orb2X = useMotionValue(0);
+  const orb2Y = useMotionValue(0);
+  const orb2XSpring = useSpring(orb2X, { stiffness: 50, damping: 20 });
+  const orb2YSpring = useSpring(orb2Y, { stiffness: 50, damping: 20 });
+
+  const orb3X = useMotionValue(0);
+  const orb3Y = useMotionValue(0);
+  const orb3XSpring = useSpring(orb3X, { stiffness: 50, damping: 20 });
+  const orb3YSpring = useSpring(orb3Y, { stiffness: 50, damping: 20 });
+
+  // Handle mouse move for orb tracking
+  const handleMouseMove = (e: React.MouseEvent) => {
+    orb1X.set((e.clientX / window.innerWidth - 0.5) * 30);
+    orb1Y.set((e.clientY / window.innerHeight - 0.5) * 30);
+    orb2X.set((e.clientX / window.innerWidth - 0.5) * -20);
+    orb2Y.set((e.clientY / window.innerHeight - 0.5) * -20);
+    orb3X.set((e.clientX / window.innerWidth - 0.5) * 15);
+    orb3Y.set((e.clientY / window.innerHeight - 0.5) * 15);
+  };
 
   return (
     <div ref={containerRef} className="min-h-screen bg-black text-white overflow-x-hidden">
@@ -229,168 +279,219 @@ export default function RedesignedDemoPage() {
         </motion.div>
       </nav>
 
-      {/* Hero Section — Asymmetric Split Screen */}
+      {/* ============================================================ */}
+      {/* HERO SECTION — Cinematic Parallax + Orbs + Corner Brackets */}
+      {/* ============================================================ */}
       <motion.section
         style={{ opacity: heroOpacity, scale: heroScale }}
-        className="relative z-10 px-6 md:px-10 pt-8 pb-20"
+        className="relative z-10 min-h-[100dvh] flex flex-col items-center justify-center overflow-hidden"
+        onMouseMove={handleMouseMove}
       >
-        <div className="max-w-7xl mx-auto w-full">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+        {/* Layer 1: Solid void-950 background */}
+        <div className="absolute inset-0 bg-[#030409] z-0" />
 
-            {/* Left: Hero Text — asymmetric left-aligned */}
-            <div className="space-y-8">
-              <motion.div
-                custom={0}
-                variants={fadeUp}
-                initial="hidden"
-                animate="visible"
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.08] backdrop-blur-xl"
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-xs text-white/50">{s.live}</span>
-              </motion.div>
+        {/* Layer 2: Smoke Radial Gradient */}
+        <div className="absolute inset-0 z-[1]" style={{ background: "radial-gradient(circle at 50% 42%, rgba(77,171,247,0.18) 0%, rgba(0,0,0,0.6) 65%, rgba(0,0,0,0.95) 100%)" }} />
 
-              <motion.h1
-                custom={1}
-                variants={fadeUp}
-                initial="hidden"
-                animate="visible"
-                className="text-4xl md:text-5xl lg:text-[4.5rem] font-bold leading-[1.05] tracking-tight"
-              >
-                {s.heroTitle}
-                <br />
-                <span className="bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-400 text-transparent bg-clip-text">
-                  {s.heroTitleAccent}
-                </span>
-              </motion.h1>
-
-              <motion.p
-                custom={2}
-                variants={fadeUp}
-                initial="hidden"
-                animate="visible"
-                className="text-base text-white/45 max-w-md leading-relaxed"
-              >
-                {s.heroSub}
-              </motion.p>
-
-              {/* Stats Row — asymmetric Bento tiles */}
-              <motion.div
-                custom={3}
-                variants={fadeUp}
-                initial="hidden"
-                animate="visible"
-                className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-2"
-              >
-                {[
-                  { icon: Briefcase, value: formatLargeNumber(mockJobImpact.latest.estimated_affected_roles), label: "Workers exposed", delta: `+${formatLargeNumber(mockJobImpact.latest.estimated_affected_roles - mockJobImpact.points[0].estimated_affected_roles)}`, deltaColor: "text-rose-400", bg: "bg-amber-500/20", ic: "text-amber-400" },
-                  { icon: Zap, value: "247", label: "AI stories", delta: "2m ago", deltaColor: "text-emerald-400", bg: "bg-cyan-500/20", ic: "text-cyan-400" },
-                  { icon: TrendingUp, value: "89", label: "Cos moving", delta: "+12 this week", deltaColor: "text-violet-400", bg: "bg-violet-500/20", ic: "text-violet-400" },
-                  { icon: Users, value: "2.4M", label: "Subscribers", delta: "+18K today", deltaColor: "text-rose-400", bg: "bg-rose-500/20", ic: "text-rose-400" },
-                ].map((stat, i) => (
-                  <motion.div
-                    key={i}
-                    whileHover={{ scale: 1.03 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    className="group relative overflow-hidden rounded-2xl p-4 backdrop-blur-xl border border-white/[0.06] bg-gradient-to-br from-white/[0.04] to-white/[0.01] hover:border-white/10 transition-colors cursor-pointer"
-                  >
-                    <div className={`w-9 h-9 rounded-xl ${stat.bg} flex items-center justify-center mb-3`}>
-                      <stat.icon className={`w-4.5 h-4.5 ${stat.ic}`} />
-                    </div>
-                    <p className="text-xl md:text-2xl font-bold tracking-tight">{stat.value}</p>
-                    <p className="text-xs text-white/35 mt-0.5">{stat.label}</p>
-                    <p className={`text-xs mt-1.5 ${stat.deltaColor}`}>{stat.delta}</p>
-                  </motion.div>
-                ))}
-              </motion.div>
-
-              {/* CTA Buttons */}
-              <motion.div
-                custom={4}
-                variants={fadeUp}
-                initial="hidden"
-                animate="visible"
-                className="flex flex-wrap items-center gap-4"
-              >
-                <Link
-                  href="/en/news"
-                  className="group relative px-6 py-3 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 font-medium text-sm overflow-hidden inline-flex items-center gap-2"
-                >
-                  <span className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <span className="relative flex items-center gap-2">
-                    {s.cta}
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                  </span>
-                </Link>
-                <button className="group relative px-6 py-3 rounded-full border border-white/20 font-medium text-sm text-white/70 hover:text-white hover:border-white/30 transition-colors overflow-hidden inline-flex items-center gap-2">
-                  <span className="absolute inset-0 bg-white/[0.05] opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <span className="relative flex items-center gap-2">
-                    <Play className="w-4 h-4" />
-                    {s.ctaSecondary}
-                  </span>
-                </button>
-              </motion.div>
-            </div>
-
-            {/* Right: Abstract Visual — orb with orbiting rings */}
+        {/* Layer 3: Hero Image — parallax y offset */}
+        <motion.div
+          style={{ y: globeY }}
+          className="absolute inset-0 z-[2] flex items-center justify-center pointer-events-none"
+        >
+          {/* Placeholder hero visual - radar sweep effect */}
+          <div className="relative w-[600px] h-[600px] opacity-20">
+            <div className="absolute inset-0 rounded-full border border-signal-blue/30" />
+            <div className="absolute inset-12 rounded-full border border-signal-blue/20" />
+            <div className="absolute inset-24 rounded-full border border-signal-blue/15" />
+            <div className="absolute inset-36 rounded-full border border-signal-blue/10" />
             <motion.div
-              style={{ y: globeY }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 1, delay: 0.3 }}
-              className="relative hidden lg:flex h-[540px] items-center justify-center"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+              className="absolute inset-0"
             >
-              {/* Central orb glow */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <motion.div
-                  animate={{ scale: [1, 1.08, 1], rotate: [0, 180, 360] }}
-                  transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                  className="w-72 h-72 rounded-full bg-gradient-to-br from-emerald-500/20 via-cyan-500/15 to-transparent blur-3xl"
-                />
-              </div>
-
-              {/* Orbiting rings */}
-              {[...Array(3)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 20 + i * 8, repeat: Infinity, ease: "linear", delay: i * 2 }}
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/[0.08]"
-                  style={{ width: 180 + i * 80, height: 180 + i * 80 }}
-                />
-              ))}
-
-              {/* Floating data points */}
-              {[...Array(8)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  animate={{ y: [-20, 20, -20], opacity: [0.3, 0.7, 0.3] }}
-                  transition={{ duration: 3 + i * 0.4, repeat: Infinity, ease: "easeInOut", delay: i * 0.4 }}
-                  className="absolute w-2 h-2 rounded-full"
-                  style={{
-                    left: `${15 + (i % 4) * 22}%`,
-                    top: `${12 + Math.floor(i / 4) * 62}%`,
-                    backgroundColor: i % 2 === 0 ? "#10b981" : "#06b6d4",
-                    boxShadow: i % 2 === 0 ? "0 0 14px #10b981" : "0 0 14px #06b6d4",
-                  }}
-                />
-              ))}
-
-              {/* Central core */}
-              <div className="relative w-40 h-40">
-                <div className="absolute inset-0 rounded-full border border-emerald-400/20" />
-                <div className="absolute inset-3 rounded-full border border-cyan-400/20" />
-                <div className="absolute inset-6 rounded-full bg-gradient-to-br from-emerald-500/30 to-cyan-500/30 backdrop-blur-xl border border-white/10">
-                  <div className="absolute top-4 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-white/70" />
-                  <div className="absolute bottom-8 right-5 w-1.5 h-1.5 rounded-full bg-white/50" />
-                  <div className="absolute bottom-10 left-6 w-1 h-1 rounded-full bg-white/40" />
-                </div>
-              </div>
-
-              {/* Glow effect */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 rounded-full blur-3xl" />
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-0.5 h-1/2 bg-gradient-to-b from-signal-blue/50 to-transparent origin-bottom" />
             </motion.div>
           </div>
+        </motion.div>
+
+        {/* Layer 4: 3 Ambient Glow Orbs with mouse tracking */}
+        {/* Orb 1 - large, top-left */}
+        <motion.div
+          animate="pulse"
+          variants={orbPulseVariants}
+          className="absolute z-[3] w-[280px] h-[280px] rounded-full pointer-events-none"
+          style={{
+            top: "20%",
+            left: "10%",
+            background: "radial-gradient(circle, rgba(77,171,247,0.12) 0%, transparent 70%)",
+            filter: "blur(80px)",
+            x: orb1XSpring,
+            y: orb1YSpring,
+          }}
+        />
+        {/* Orb 2 - medium, top-right */}
+        <motion.div
+          animate="pulse"
+          variants={orbPulseVariants}
+          className="absolute z-[3] w-[200px] h-[200px] rounded-full pointer-events-none"
+          style={{
+            top: "16%",
+            right: "15%",
+            background: "radial-gradient(circle, rgba(77,247,228,0.08) 0%, transparent 70%)",
+            filter: "blur(60px)",
+            x: orb2XSpring,
+            y: orb2YSpring,
+          }}
+        />
+        {/* Orb 3 - small, bottom-right */}
+        <motion.div
+          animate="pulse"
+          variants={orbPulseVariants}
+          className="absolute z-[3] w-[160px] h-[160px] rounded-full pointer-events-none"
+          style={{
+            bottom: "18%",
+            right: "20%",
+            background: "radial-gradient(circle, rgba(26,26,40,0.08) 0%, transparent 70%)",
+            filter: "blur(60px)",
+            x: orb3XSpring,
+            y: orb3YSpring,
+          }}
+        />
+
+        {/* Layer 5: Grain Overlay - SVG feTurbulence */}
+        <div className="absolute inset-0 z-[4] pointer-events-none opacity-[0.045]">
+          <svg className="w-full h-full opacity-[0.045]" xmlns="http://www.w3.org/2000/svg">
+            <filter id="grain">
+              <feTurbulence type="fractalNoise" baseFrequency="0.80" numOctaves="4" stitchTiles="stitch" />
+              <feColorMatrix type="saturate" values="0" />
+            </filter>
+            <rect width="100%" height="100%" filter="url(#grain)" />
+          </svg>
+        </div>
+
+        {/* Layer 6: 4 Cinematic Corner Brackets */}
+        {["top-left", "top-right", "bottom-left", "bottom-right"].map((position) => (
+          <motion.div
+            key={position}
+            animate="pulse"
+            variants={bracketPulseVariants}
+            className="absolute z-[5] w-16 h-16 pointer-events-none"
+            style={{
+              ...(position === "top-left" && { top: "5%", left: "3%" }),
+              ...(position === "top-right" && { top: "5%", right: "3%" }),
+              ...(position === "bottom-left" && { bottom: "5%", left: "3%" }),
+              ...(position === "bottom-right" && { bottom: "5%", right: "3%" }),
+            }}
+          >
+            <div
+              className="absolute w-full h-full"
+              style={{
+                borderColor: "rgba(77,171,247,0.20)",
+                ...(position.includes("top") && { borderTopWidth: "2px" }),
+                ...(position.includes("bottom") && { borderBottomWidth: "2px" }),
+                ...(position.includes("left") && { borderLeftWidth: "2px" }),
+                ...(position.includes("right") && { borderRightWidth: "2px" }),
+              }}
+            />
+          </motion.div>
+        ))}
+
+        {/* Layer 7: Scroll Veil Gradient - opacity tied to scroll */}
+        <motion.div
+          style={{ opacity: veilOpacity, background: "linear-gradient(to bottom, rgba(3,4,9,0.1) 0%, rgba(3,4,9,0.42) 50%, rgba(3,4,9,0.82) 100%)" }}
+          className="absolute inset-0 z-[6] pointer-events-none"
+        />
+
+        {/* Layer 8: Hero Logo Image - centered, max-w-[760px] */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          className="relative z-[7] max-w-[760px] w-full px-6 mt-16"
+        >
+          <div className="relative drop-shadow-[0_0_60px_rgba(77,171,247,0.3)]">
+            {/* Placeholder radar display */}
+            <div className="w-full aspect-[2.4/1] rounded-3xl bg-gradient-to-br from-void-800/80 to-void-900/80 border border-signal-blue/20 backdrop-blur-xl flex items-center justify-center overflow-hidden">
+              <div className="relative w-3/4 h-3/4">
+                <div className="absolute inset-0 rounded-full border-2 border-signal-blue/30" />
+                <div className="absolute inset-4 rounded-full border border-signal-cyan/20" />
+                <div className="absolute inset-8 rounded-full border border-signal-blue/15" />
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+                  className="absolute inset-0"
+                >
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1 h-1/2 bg-gradient-to-b from-signal-blue to-transparent origin-bottom rounded-full" />
+                </motion.div>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-signal-blue/40" />
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Layer 9: Tagline Badge — "SIGNAL DETECTION ONLINE" */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="relative z-[7] mt-8"
+        >
+          <div className="px-5 py-2 rounded-full border border-signal-blue/30 bg-void-800/50 backdrop-blur-xl">
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-signal-blue">
+              Signal Detection Online
+            </span>
+          </div>
+        </motion.div>
+
+        {/* Hero text content below */}
+        <div className="relative z-[7] text-center mt-12 px-6 max-w-3xl">
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6"
+          >
+            {s.heroTitle}
+            <br />
+            <span className="bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-400 text-transparent bg-clip-text">
+              {s.heroTitleAccent}
+            </span>
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="text-base md:text-lg text-white/50 max-w-xl mx-auto leading-relaxed"
+          >
+            {s.heroSub}
+          </motion.p>
+
+          {/* CTA Buttons */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            className="flex flex-wrap items-center justify-center gap-4 mt-10"
+          >
+            <Link
+              href="/en/news"
+              className="group relative px-6 py-3 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 font-medium text-sm overflow-hidden inline-flex items-center gap-2 hover:shadow-lg hover:shadow-emerald-500/25 transition-shadow"
+            >
+              <span className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <span className="relative flex items-center gap-2">
+                {s.cta}
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              </span>
+            </Link>
+            <button className="group relative px-6 py-3 rounded-full border border-white/20 font-medium text-sm text-white/70 hover:text-white hover:border-white/30 transition-colors overflow-hidden inline-flex items-center gap-2">
+              <span className="absolute inset-0 bg-white/[0.05] opacity-0 group-hover:opacity-100 transition-opacity" />
+              <span className="relative flex items-center gap-2">
+                <Play className="w-4 h-4" />
+                {s.ctaSecondary}
+              </span>
+            </button>
+          </motion.div>
         </div>
       </motion.section>
 
