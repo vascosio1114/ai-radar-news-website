@@ -173,14 +173,14 @@ export default function ArticleForm({
 
     setUploading(true);
 
-    const url = await uploadCoverImage(file, "article-covers");
-
-    if (url) {
+    try {
+      const url = await uploadCoverImage(file, "article-covers");
       setFormData((prev) => ({ ...prev, cover_image: url }));
-    } else {
+    } catch (err) {
       alert("上傳失敗");
+    } finally {
+      setUploading(false);
     }
-    setUploading(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
