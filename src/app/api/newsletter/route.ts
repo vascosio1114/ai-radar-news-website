@@ -75,16 +75,6 @@ export async function POST(request: Request) {
       });
     }
 
-    // Always insert into newsletter_subscribers (legacy)
-    try {
-      await supabase.from("newsletter_subscribers").insert({ email });
-    } catch (err: any) {
-      // Only ignore duplicate key errors
-      if (err?.code !== "23505") {
-        throw err; // Re-throw other errors
-      }
-    }
-
     // If daily_opt_in, insert into mail_subscribers with is_confirmed=false
     if (dailyOptIn) {
       const token = crypto.randomUUID();
@@ -100,6 +90,7 @@ export async function POST(request: Request) {
             is_confirmed: false,
             confirmation_token: token,
             subscribed_at: new Date().toISOString(),
+            frequency: "daily",
           },
           { onConflict: "email" }
         );

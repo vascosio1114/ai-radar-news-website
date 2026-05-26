@@ -5,6 +5,20 @@ interface TemplateParams {
   lang?: "zh" | "en";
 }
 
+interface FeaturedArticle {
+  title: string;
+  excerpt: string;
+  cover_image?: string;
+  url: string;
+  published_at?: string;
+}
+
+interface OnboardingParams extends TemplateParams {
+  ctaText?: string;
+  ctaUrl?: string;
+  featuredArticle?: FeaturedArticle;
+}
+
 const BRAND = {
   name: "AI Radar",
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "https://ai-radar-wheat.vercel.app",
@@ -164,6 +178,90 @@ export function buildWelcomeHtml(params: TemplateParams): string {
     footerNote: isEn
       ? "Thanks for reading AI Radar."
       : "感謝您訂閱 AI Radar。我們會盡量只發送真正值得閱讀的內容。",
+  });
+}
+
+export function buildOnboardingHtml(params: OnboardingParams): string {
+  const unsubscribeUrl = params.unsubscribeUrl || "";
+  const siteUrl = params.siteUrl || BRAND.siteUrl;
+  const ctaText = params.ctaText || (params.lang === "en" ? "Explore AI Radar" : "立即探索 AI Radar");
+  const ctaUrl = params.ctaUrl || siteUrl;
+  const isEn = params.lang === "en";
+  const article = params.featuredArticle;
+
+  const articleBlock = article
+    ? `
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:22px 0 26px;">
+      <tr>
+        <td style="border:1px solid rgba(148,163,184,.18);border-radius:18px;overflow:hidden;background:rgba(15,23,42,.64);">
+          ${article.cover_image
+            ? `<img src="${article.cover_image}" alt="${article.title}" style="display:block;width:100%;max-height:220px;object-fit:cover;" />`
+            : ""}
+          <div style="padding:18px 20px;">
+            <div style="display:inline-block;margin-bottom:8px;padding:4px 10px;border-radius:999px;background:rgba(56,189,248,.15);color:#7dd3fc;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;">
+              ${isEn ? "Editor's pick" : "編輯精選"}
+            </div>
+            <h3 style="margin:0 0 8px;color:#ffffff;font-size:18px;font-weight:800;line-height:1.3;letter-spacing:-.02em;">
+              <a href="${article.url}" style="color:#ffffff;text-decoration:none;">${article.title}</a>
+            </h3>
+            ${article.excerpt
+              ? `<p style="margin:0 0 12px;color:#94a3b8;font-size:14px;line-height:1.6;">${article.excerpt}</p>`
+              : ""}
+            <a href="${article.url}" style="display:inline-block;font-size:13px;font-weight:600;color:#38bdf8;text-decoration:none;">
+              ${isEn ? "Read article →" : "閱讀文章 →"}
+            </a>
+          </div>
+        </td>
+      </tr>
+    </table>`
+    : "";
+
+  return shell({
+    preheader: isEn
+      ? "Here's what to expect from AI Radar."
+      : "歡迎加入 AI Radar — 這裡是你會收到的內容。",
+    title: isEn ? "You're in — here's what to expect" : "歡迎加入 AI Radar",
+    intro: isEn
+      ? "You just joined thousands of AI builders and researchers who get curated signals delivered to their inbox. Here's how it works:"
+      : "你已成功訂閱 AI Radar。以下是你會收到的內容：",
+    children: `
+      <div style="margin:0 0 20px;">
+        <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:14px;">
+          <div style="flex-shrink:0;width:36px;height:36px;border-radius:10px;background:rgba(56,189,248,.15);display:flex;align-items:center;justify-content:center;font-size:16px;">📬</div>
+          <div>
+            <div style="font-weight:700;color:#ffffff;font-size:15px;margin-bottom:2px;">${isEn ? "Daily digest" : "每日精選"}</div>
+            <div style="color:#94a3b8;font-size:14px;">${isEn ? "Every day, top AI articles curated by our editors." : "每天收到我們編輯精選的 AI 文章重點。"}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:14px;">
+          <div style="flex-shrink:0;width:36px;height:36px;border-radius:10px;background:rgba(59,130,246,.15);display:flex;align-items:center;justify-content:center;font-size:16px;">🛠️</div>
+          <div>
+            <div style="font-weight:700;color:#ffffff;font-size:15px;margin-bottom:2px;">${isEn ? "Tools & trends" : "工具與趨勢"}</div>
+            <div style="color:#94a3b8;font-size:14px;">${isEn ? "New tools, GitHub trends, and arXiv signals — fast." : "新 AI 工具、GitHub 熱門與 arXiv 論文精華。"}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:14px;">
+          <div style="flex-shrink:0;width:36px;height:36px;border-radius:10px;background:rgba(168,85,247,.15);display:flex;align-items:center;justify-content:center;font-size:16px;">🎯</div>
+          <div>
+            <div style="font-weight:700;color:#ffffff;font-size:15px;margin-bottom:2px;">${isEn ? "Signal, not noise" : "有效資訊，而非噪音"}</div>
+            <div style="color:#94a3b8;font-size:14px;">${isEn ? "We read so you don't have to. No clickbait." : "我們幫你閱讀，你只需專注最重要的資訊。"}</div>
+          </div>
+        </div>
+      </div>
+
+      ${articleBlock}
+
+      <div style="text-align:center;margin:10px 0 18px;">
+        ${button(ctaText, ctaUrl)}
+      </div>
+
+      <p style="margin:0;color:#64748b;font-size:12px;line-height:1.7;text-align:center;">
+        ${isEn ? "Manage your preferences or unsubscribe anytime:" : "管理訂閱設定或隨時取消："}
+        <a href="${unsubscribeUrl}" style="color:#7dd3fc;text-decoration:none;">${isEn ? "Unsubscribe" : "取消訂閱"}</a>
+      </p>`,
+    footerNote: isEn
+      ? "Thanks for reading AI Radar. We'll respect your inbox."
+      : "感謝訂閱 AI Radar。我們只會發送真正有價值的內容。",
   });
 }
 

@@ -4,9 +4,11 @@ import { useEffect, useState } from "react";
 import {
   Mail, Send, Settings2, Users, Clock, FileText,
   CheckCircle, XCircle, AlertCircle, Loader2,
-  ChevronRight, Globe, Timer, UserCheck
+  ChevronRight, Globe, Timer, UserCheck, Sparkles, Heart
 } from "lucide-react";
 import { buildDigestHtml } from "@/lib/digest-html";
+import { buildOnboardingHtml } from "@/lib/email-templates";
+import { SITE_URL } from "@/lib/site";
 import { MailSubscribers } from "@/components/admin/MailSubscribers";
 
 interface MailSettings {
@@ -22,6 +24,17 @@ interface MailSettings {
   email_subject_template: string;
   email_header_html: string;
   email_footer_html: string;
+  // Onboarding
+  onboarding_enabled: boolean;
+  onboarding_subject: string;
+  onboarding_intro_text: string;
+  onboarding_cta_text: string;
+  onboarding_cta_url: string;
+  onboarding_featured_article_id: string | null;
+  // Weekly
+  weekly_enabled: boolean;
+  weekly_hour: number;
+  weekly_timezone: string;
 }
 
 const TIMEZONES = [
@@ -34,9 +47,12 @@ const DEFAULT_SETTINGS: MailSettings = {
   smtp_from_address: "", smtp_from_name: "",
   daily_enabled: false, daily_hour: 9, daily_timezone: "Asia/Hong_Kong",
   email_subject_template: "", email_header_html: "", email_footer_html: "",
+  onboarding_enabled: true, onboarding_subject: "", onboarding_intro_text: "",
+  onboarding_cta_text: "", onboarding_cta_url: "", onboarding_featured_article_id: null,
+  weekly_enabled: false, weekly_hour: 9, weekly_timezone: "Asia/Hong_Kong",
 };
 
-type Tab = "smtp" | "schedule" | "template" | "subscribers" | "send-article" | "weekly-summary";
+type Tab = "smtp" | "schedule" | "template" | "subscribers" | "send-article" | "weekly-summary" | "onboarding";
 
 interface ArticleSearchResult {
   id: string;
@@ -67,10 +83,15 @@ export default function AdminMailPage() {
   const [weeklySearchResults, setWeeklySearchResults] = useState<ArticleSearchResult[]>([]);
   const [sendingWeekly, setSendingWeekly] = useState(false);
 
+  // Onboarding featured article state
+  const [featuredArticle, setFeaturedArticle] = useState<ArticleSearchResult | null>(null);
+  const [featuredSearch, setFeaturedSearch] = useState("");
+  const [featuredSearchResults, setFeaturedSearchResults] = useState<ArticleSearchResult[]>([]);
+
   useEffect(() => {
     fetch("/api/admin/mail/settings")
       .then((r) => r.ok ? r.json() : null)
-      .then((data) => {
+      .then(async (data) => {
         if (data?.settings) {
           const s = data.settings;
           setSettings({
@@ -86,7 +107,24 @@ export default function AdminMailPage() {
             email_subject_template: s.email_subject_template ?? "",
             email_header_html: s.email_header_html ?? "",
             email_footer_html: s.email_footer_html ?? "",
+            onboarding_enabled: s.onboarding_enabled ?? true,
+            onboarding_subject: s.onboarding_subject ?? "",
+            onboarding_intro_text: s.onboarding_intro_text ?? "",
+            onboarding_cta_text: s.onboarding_cta_text ?? "",
+            onboarding_cta_url: s.onboarding_cta_url ?? "",
+            onboarding_featured_article_id: s.onboarding_featured_article_id ?? null,
+            weekly_enabled: s.weekly_enabled ?? false,
+            weekly_hour: s.weekly_hour ?? 9,
+            weekly_timezone: s.weekly_timezone ?? "Asia/Hong_Kong",
           });
+
+          // Load featured article for onboarding preview
+          if (s.onboarding_featured_article_id) {
+            const res = await fetch(`/api/admin/articles?search=${encodeURIComponent(s.onboarding_featured_article_id)}&limit=1`);
+            const artData = await res.json();
+            const found = artData.articles?.find((a: ArticleSearchResult) => a.id === s.onboarding_featured_article_id);
+            if (found) setFeaturedArticle(found);
+          }
         }
       });
 
@@ -169,6 +207,26 @@ export default function AdminMailPage() {
     setSearchResults(data.articles ?? []);
   };
 
+  const handleFeaturedSearch = async (query: string) => {
+    setFeaturedSearch(query);
+    if (query.length < 2) { setFeaturedSearchResults([]); return; }
+    const res = await fetch(`/api/admin/articles?search=${encodeURIComponent(query)}&limit=5`);
+    const data = await res.json();
+    setFeaturedSearchResults(data.articles ?? []);
+  };
+
+  const selectFeaturedArticle = (article: ArticleSearchResult) => {
+    setFeaturedArticle(article);
+    setSettings((p) => ({ ...p, onboarding_featured_article_id: article.id }));
+    setFeaturedSearchResults([]);
+    setFeaturedSearch("");
+  };
+
+  const clearFeaturedArticle = () => {
+    setFeaturedArticle(null);
+    setSettings((p) => ({ ...p, onboarding_featured_article_id: null }));
+  };
+
   const handleSendArticle = async () => {
     if (!selectedArticle) return;
     if (!confirm(`確定發送「${selectedArticle.title}」給所有訂閱者？`)) return;
@@ -231,6 +289,7 @@ export default function AdminMailPage() {
     { id: "subscribers", label: "訂閱者", icon: Users },
     { id: "send-article", label: "發送文章", icon: Mail },
     { id: "weekly-summary", label: "每週總結", icon: Send },
+    { id: "onboarding", label: "入職 Welcome", icon: Sparkles },
   ];
 
   return (
@@ -629,6 +688,147 @@ export default function AdminMailPage() {
             </div>
           </div>
         </SectionCard>
+      )}
+
+      {/* Onboarding Tab */}
+      {activeTab === "onboarding" && (
+        <form onSubmit={handleSave} className="space-y-5">
+          <SectionCard
+            title="入職 Welcome 郵件"
+            description="新訂閱者確認後會收到這封郵件"
+            icon={<Sparkles className="h-4 w-4" />}
+          >
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <label className="relative inline-flex cursor-pointer items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={settings.onboarding_enabled}
+                    onChange={(e) => setSettings((p) => ({ ...p, onboarding_enabled: e.target.checked }))}
+                    className="peer sr-only"
+                  />
+                  <div className="peer h-6 w-11 rounded-full bg-ink-700 transition peer-checked:bg-blue-500 peer-focus:ring-2 peer-focus:ring-blue-500/50" />
+                  <div className="peer-checked:translate-x-5 absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition peer-checked:translate-x-5" />
+                  <span className="text-sm font-medium text-ink-300">
+                    {settings.onboarding_enabled ? "已啟用" : "已停用"}
+                  </span>
+                </label>
+              </div>
+              <Field label="郵件主旨" htmlFor="onboarding_subject">
+                <input
+                  id="onboarding_subject"
+                  type="text"
+                  value={settings.onboarding_subject}
+                  onChange={(e) => setSettings((p) => ({ ...p, onboarding_subject: e.target.value }))}
+                  placeholder="歡迎加入 AI Radar — 這裡是你會收到的內容"
+                  className="input-field"
+                />
+              </Field>
+              <Field label="主要介紹文字" htmlFor="onboarding_intro_text">
+                <textarea
+                  id="onboarding_intro_text"
+                  value={settings.onboarding_intro_text}
+                  onChange={(e) => setSettings((p) => ({ ...p, onboarding_intro_text: e.target.value }))}
+                  rows={3}
+                  placeholder="自訂主要介紹段落（可留空使用預設值）"
+                  className="input-field font-mono text-xs"
+                />
+              </Field>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="按鈕文字" htmlFor="onboarding_cta_text">
+                  <input
+                    id="onboarding_cta_text"
+                    type="text"
+                    value={settings.onboarding_cta_text}
+                    onChange={(e) => setSettings((p) => ({ ...p, onboarding_cta_text: e.target.value }))}
+                    placeholder="立即探索 AI Radar"
+                    className="input-field"
+                  />
+                </Field>
+                <Field label="按鈕連結" htmlFor="onboarding_cta_url">
+                  <input
+                    id="onboarding_cta_url"
+                    type="url"
+                    value={settings.onboarding_cta_url}
+                    onChange={(e) => setSettings((p) => ({ ...p, onboarding_cta_url: e.target.value }))}
+                    placeholder="https://ai-radar.com"
+                    className="input-field"
+                  />
+                </Field>
+              </div>
+            </div>
+          </SectionCard>
+
+          <SectionCard
+            title="精選文章"
+            description="在 Welcome 郵件中顯示一篇精選文章（可選）"
+            icon={<Heart className="h-4 w-4" />}
+          >
+            <div className="space-y-4">
+              <Field label="搜尋精選文章" htmlFor="featured-search">
+                <input
+                  id="featured-search"
+                  type="text"
+                  value={featuredSearch}
+                  onChange={(e) => handleFeaturedSearch(e.target.value)}
+                  placeholder="輸入文章標題搜尋..."
+                  className="input-field"
+                />
+              </Field>
+              {featuredSearchResults.length > 0 && (
+                <ul className="rounded-xl border border-ink-700 divide-y divide-ink-700 overflow-hidden">
+                  {featuredSearchResults.map((a) => (
+                    <li key={a.id}>
+                      <button
+                        type="button"
+                        onClick={() => selectFeaturedArticle(a)}
+                        className="w-full text-left px-4 py-3 text-sm text-ink-200 hover:bg-ink-800 transition"
+                      >
+                        + {a.title}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {featuredArticle && (
+                <div className="flex items-center justify-between rounded-xl bg-ink-800 px-4 py-3">
+                  <span className="text-sm font-medium text-ink-100">{featuredArticle.title}</span>
+                  <button
+                    type="button"
+                    onClick={clearFeaturedArticle}
+                    className="text-xs text-ink-400 hover:text-red-400"
+                  >
+                    移除
+                  </button>
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  const articleForPreview = featuredArticle
+                    ? { title: featuredArticle.title, excerpt: "", url: `${SITE_URL}/zh/news/${featuredArticle.slug}` }
+                    : undefined;
+                  const html = buildOnboardingHtml({
+                    ctaText: settings.onboarding_cta_text || undefined,
+                    ctaUrl: settings.onboarding_cta_url || undefined,
+                    unsubscribeUrl: `${SITE_URL}/api/unsubscribe`,
+                    siteUrl: SITE_URL,
+                    lang: "zh",
+                    featuredArticle: articleForPreview,
+                  });
+                  setPreviewHtml(html);
+                  setShowPreview(true);
+                }}
+                className="flex items-center gap-2 rounded-xl border border-ink-700 px-4 py-2 text-sm text-ink-300 hover:bg-ink-800 transition"
+              >
+                <FileText className="h-4 w-4" />
+                預覽 Welcome 郵件
+              </button>
+            </div>
+          </SectionCard>
+
+          <SaveBar statusMsg={statusMsg} saving={saving} onSave={handleSave} />
+        </form>
       )}
 
       {/* Action Footer */}
