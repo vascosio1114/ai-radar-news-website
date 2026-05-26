@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { uploadCoverImage } from "@/lib/supabase/storage";
 import dynamic from "next/dynamic";
 import { Upload, X } from "lucide-react";
 import Image from "next/image";
@@ -85,22 +86,14 @@ export default function TutorialForm({
     if (!file) return;
 
     setUploading(true);
-    const supabase = createSupabaseBrowserClient();
-    const safeName = file.name.replace(/[^a-zA-Z0-9.]+/g, "_").replace(/^_+|_+$/g, "");
-    const [name, ext] = safeName.split(".");
-    const fileName = `${Date.now()}-${name.slice(0, 50)}.${ext}`;
-
-    const { data, error } = await supabase.storage
-      .from("covers")
-      .upload(fileName, file, { upsert: true });
-
-    if (!error && data) {
-      const { data: urlData } = supabase.storage
-        .from("covers")
-        .getPublicUrl(fileName);
-      setFormData((prev) => ({ ...prev, cover_image: urlData.publicUrl }));
+    try {
+      const url = await uploadCoverImage(file, "tutorial-covers");
+      setFormData((prev) => ({ ...prev, cover_image: url }));
+    } catch (err) {
+      console.error("Image upload failed:", err);
+    } finally {
+      setUploading(false);
     }
-    setUploading(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
