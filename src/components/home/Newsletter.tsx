@@ -14,7 +14,6 @@ interface NewsletterProps {
 export function Newsletter({ lang = "zh" }: NewsletterProps) {
   const s = getUIStrings(lang);
   const [email, setEmail] = React.useState("");
-  const [dailyOptIn, setDailyOptIn] = React.useState(false);
   const [status, setStatus] = React.useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = React.useState("");
 
@@ -30,13 +29,18 @@ export function Newsletter({ lang = "zh" }: NewsletterProps) {
       const res = await fetch("/api/newsletter", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, daily_opt_in: dailyOptIn }),
+        body: JSON.stringify({ email }),
       });
       if (!res.ok) throw new Error("subscribe failed");
-      setStatus("success");
-      setMessage(s.newsletterSuccessMsg);
+      const data = await res.json();
+      if (data.alreadyConfirmed) {
+        setStatus("success");
+        setMessage("此電郵已訂閱");
+      } else {
+        setStatus("success");
+        setMessage(s.newsletterSuccessMsg);
+      }
       setEmail("");
-      setDailyOptIn(false);
     } catch {
       setStatus("error");
       setMessage(s.newsletterErrorMsg);
@@ -119,26 +123,6 @@ export function Newsletter({ lang = "zh" }: NewsletterProps) {
                         <span>{s.newsletterButton}</span>
                       )}
                     </motion.button>
-                  </motion.div>
-
-                  {/* Daily digest opt-in */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.33, ease: [0.22, 1, 0.36, 1] }}
-                    className="flex items-start gap-2 px-1"
-                  >
-                    <input
-                      type="checkbox"
-                      id="daily_opt_in"
-                      checked={dailyOptIn}
-                      onChange={(e) => setDailyOptIn(e.target.checked)}
-                      disabled={status === "loading"}
-                      className="mt-1 h-4 w-4 rounded border-ink-300"
-                    />
-                    <label htmlFor="daily_opt_in" className="text-sm text-ink-600 dark:text-ink-300">
-                      {s.newsletterDailyDigestOptIn}
-                    </label>
                   </motion.div>
 
                   {/* Error message */}

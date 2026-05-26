@@ -16,7 +16,6 @@ function maskEmail(email: string): string {
 
 export async function POST(request: Request) {
   let email = "";
-  let dailyOptIn = false;
   try {
     const contentType = request.headers.get("content-type");
     if (!contentType?.includes("application/json")) {
@@ -25,7 +24,6 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     email = body.email || "";
-    dailyOptIn = body.daily_opt_in === true;
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email || typeof email !== "string" || !emailRegex.test(email)) {
@@ -69,52 +67,48 @@ export async function POST(request: Request) {
     if (existingConfirm || legacyConfirm) {
       return NextResponse.json({
         ok: true,
-        needConfirm: false,
         alreadyConfirmed: true,
         remaining,
       });
     }
 
-    // If daily_opt_in, insert into mail_subscribers with is_confirmed=false
-    if (dailyOptIn) {
-      const token = crypto.randomUUID();
-      const confirmUrl = `${SITE_URL}/api/confirm/${token}`;
-      const confirmHtml = buildConfirmationHtml({ confirmUrl, lang: "zh" });
+    // New subscriber — insert and send welcome email
+    const token = crypto.randomUUID();
+    const confirmUrl = `${SITE_URL}/api/confirm/${token}`;
+    const confirmHtml = buildConfirmationHtml({ confirmUrl, lang: "zh" });
 
-      await supabase
-        .from("mail_subscribers")
-        .upsert(
-          {
-            email,
-            opted_in: false,
-            is_confirmed: false,
-            confirmation_token: token,
-            subscribed_at: new Date().toISOString(),
-            frequency: "daily",
-          },
-          { onConflict: "email" }
-        );
-
-      // Send confirmation email
-      const { data: settings } = await supabase
-        .from("mail_settings")
-        .select("smtp_host, smtp_port, smtp_user, smtp_pass_encrypted, smtp_from_address, smtp_from_name")
-        .limit(1)
-        .single();
-
-      if (settings) {
-        await sendHtmlEmail(
-          settings as MailSettings,
+    await supabase
+      .from("mail_subscribers")
+      .upsert(
+        {
           email,
-          "確認訂閱 AI Radar 每日速報",
-          confirmHtml
-        );
-      }
+          opted_in: true,
+          is_confirmed: true,
+          confirmation_token: token,
+          subscribed_at: new Date().toISOString(),
+          frequency: "daily",
+        },
+        { onConflict: "email" }
+      );
+
+    // Send welcome email
+    const { data: settings } = await supabase
+      .from("mail_settings")
+      .select("smtp_host, smtp_port, smtp_user, smtp_pass_encrypted, smtp_from_address, smtp_from_name")
+      .limit(1)
+      .single();
+
+    if (settings) {
+      await sendHtmlEmail(
+        settings as MailSettings,
+        email,
+        "歡迎訂閱 AI Radar 每日速報",
+        confirmHtml
+      );
     }
 
     return NextResponse.json({
       ok: true,
-      needConfirm: dailyOptIn,
       remaining,
     });
   } catch (e) {
