@@ -32,7 +32,7 @@ export default async function HomePage({ params }: Props) {
   return (
     <>
       <Hero lang={lang} stats={publicStats} />
-      <div className="relative -mt-32 space-y-0 pb-8 md:-mt-44">
+      <div className="relative space-y-0 bg-white pb-8 dark:bg-black">
         <LatestNews articles={latest} lang={lang} featuredOnly />
         <JobImpactTicker trend={jobImpact} lang={lang} />
         <ProtocolExperience lang={lang} sources={activeSources} />

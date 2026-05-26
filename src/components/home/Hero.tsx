@@ -122,7 +122,7 @@ export function Hero({
 
   if (prefersReducedMotion) {
     return (
-      <section className="relative min-h-[100dvh] overflow-hidden bg-white text-ink-950 dark:bg-black dark:text-white">
+      <section className="relative h-[145vh] min-h-[100dvh] overflow-hidden bg-white text-ink-950 dark:bg-black dark:text-white">
         <div className="sticky top-0 flex min-h-screen items-center justify-center overflow-hidden">
           <div
             aria-hidden="true"
@@ -187,7 +187,7 @@ export function Hero({
   return (
     <MotionSection
       onMouseMove={handleMouseMove}
-      className="relative min-h-[100dvh] overflow-hidden bg-white text-ink-950 dark:bg-black dark:text-white"
+      className="relative h-[145vh] min-h-[100dvh] overflow-hidden bg-white text-ink-950 dark:bg-black dark:text-white"
     >
       <div className="sticky top-0 flex min-h-screen items-center justify-center overflow-hidden">
         {/* Parallax Background */}

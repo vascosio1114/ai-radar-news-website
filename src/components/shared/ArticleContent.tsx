@@ -2,7 +2,6 @@
 
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import rehypePrettyCode from "rehype-pretty-code";
 import rehypeSlug from "rehype-slug";
 import { Clipboard, Check } from "lucide-react";
 import { useState } from "react";
@@ -111,16 +110,7 @@ export default function ArticleContent({ content }: ArticleContentProps) {
     <div className="prose prose-ink dark:prose-invert max-w-none">
       <Markdown
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[
-          rehypeSlug,
-          [
-            rehypePrettyCode,
-            {
-              theme: "github-dark",
-              keepBackground: true,
-            },
-          ],
-        ]}
+        rehypePlugins={[rehypeSlug]}
         components={components}
       >
         {content}

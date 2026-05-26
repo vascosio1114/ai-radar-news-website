@@ -66,41 +66,45 @@ export function LatestNews({
     <section className="container-page section-pad">
       {/* Animated Section Header */}
       <motion.div
-        className="mb-10 flex flex-col items-start justify-between gap-4 md:flex-row md:items-end"
+        className="mb-10 grid gap-5 md:grid-cols-[minmax(0,1fr)_minmax(260px,420px)] md:items-end"
         variants={headerVariants}
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-80px" }}
       >
-        <motion.div variants={slideInRight} className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-accent-600 dark:text-accent-400">
-          <span className="h-px w-6 bg-accent-500" />
-          {s.latestNews}
-        </motion.div>
-        <motion.h2
-          variants={slideInLeft}
-          className="font-display text-3xl font-bold tracking-tight md:text-4xl"
-        >
-          {s.latestNewsTitle}
-        </motion.h2>
-        {s.latestNewsDesc && (
-          <motion.p
-            variants={slideInLeft}
-            className="mt-2 max-w-xl text-sm text-ink-500 dark:text-ink-400 md:text-base"
-          >
-            {s.latestNewsDesc}
-          </motion.p>
-        )}
-        {featuredOnly && rest.length > 0 && (
-          <motion.div variants={slideInRight}>
-            <Link
-              href={`/${lang}/news`}
-              className="group inline-flex items-center gap-1 text-sm font-medium text-ink-700 transition hover:text-accent-600 dark:text-ink-200 dark:hover:text-accent-400"
-            >
-              {lang === "zh" ? "查看全部" : "View all"}
-              <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
-            </Link>
+        <div className="min-w-0">
+          <motion.div variants={slideInRight} className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-accent-600 dark:text-accent-400">
+            <span className="h-px w-6 bg-accent-500" />
+            {s.latestNews}
           </motion.div>
-        )}
+          <motion.h2
+            variants={slideInLeft}
+            className="mt-3 font-display text-3xl font-bold leading-tight tracking-tight md:text-5xl"
+          >
+            {s.latestNewsTitle}
+          </motion.h2>
+        </div>
+        <div className="flex flex-col gap-3 md:items-end md:text-right">
+          {s.latestNewsDesc && (
+            <motion.p
+              variants={slideInLeft}
+              className="max-w-xl text-sm leading-7 text-ink-500 dark:text-ink-400 md:text-base"
+            >
+              {s.latestNewsDesc}
+            </motion.p>
+          )}
+          {featuredOnly && rest.length > 0 && (
+            <motion.div variants={slideInRight}>
+              <Link
+                href={`/${lang}/news`}
+                className="group inline-flex items-center gap-1 text-sm font-medium text-ink-700 transition hover:text-accent-600 dark:text-ink-200 dark:hover:text-accent-400"
+              >
+                {lang === "zh" ? "查看全部" : "View all"}
+                <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+              </Link>
+            </motion.div>
+          )}
+        </div>
       </motion.div>
 
       {featuredOnly ? (
