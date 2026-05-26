@@ -12,11 +12,10 @@ export async function uploadCoverImage(
   const supabase = createSupabaseBrowserClient();
 
   const timestamp = Date.now();
-  const ext = file.name.split(".").pop() ?? "";
+  const ext = file.name.split(".").pop() ?? "jpg";
   const filename = `${timestamp}-${Math.random().toString(36).slice(2)}.${ext}`;
-  const path = `${bucket}/${filename}`;
 
-  const { error } = await supabase.storage.from(bucket).upload(path, file, {
+  const { error } = await supabase.storage.from(bucket).upload(filename, file, {
     cacheControl: "31536000",
     upsert: false,
   });
@@ -27,7 +26,7 @@ export async function uploadCoverImage(
 
   const {
     data: { publicUrl },
-  } = supabase.storage.from(bucket).getPublicUrl(path);
+  } = supabase.storage.from(bucket).getPublicUrl(filename);
 
   return publicUrl;
 }
