@@ -79,6 +79,19 @@ const fadeUp = {
   }),
 };
 
+// ============================================================
+// SCROLL ORCHESTRATION — Progress Bar + Section Variants
+// ============================================================
+
+// easeOutExpo for whileInView transitions
+const easeOutExpo = [0.16, 1, 0.3, 1];
+
+// Section variants for whileInView
+const sectionVariants = {
+  hidden: { opacity: 0, y: 40 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.65, ease: easeOutExpo } },
+};
+
 const stagger = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.08 } },
@@ -219,6 +232,12 @@ export default function RedesignedDemoPage() {
     <div ref={containerRef} className="min-h-screen bg-black text-white overflow-x-hidden">
       <Navbar />
 
+      {/* Scroll Progress Bar — fixed top, signal-blue, 2px height */}
+      <motion.div
+        className="fixed top-0 left-0 right-0 z-[100] h-[2px] bg-[#4dabf7] origin-left"
+        style={{ scaleX: scrollYProgress }}
+      />
+
       {/* Ambient background */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(16,185,129,0.12),transparent_50%),radial-gradient(circle_at_85%_60%,rgba(59,130,246,0.08),transparent_40%),radial-gradient(circle_at_15%_80%,rgba(16,185,129,0.06),transparent_35%)]"/>
@@ -285,6 +304,9 @@ export default function RedesignedDemoPage() {
       {/* HERO SECTION — Cinematic Parallax + Orbs + Corner Brackets */}
       {/* ============================================================ */}
       <motion.section
+        variants={sectionVariants}
+        initial="hidden"
+        animate="visible"
         style={{ opacity: heroOpacity, scale: heroScale }}
         className="relative z-10 min-h-[100dvh] flex flex-col items-center justify-center overflow-hidden"
         onMouseMove={handleMouseMove}
@@ -313,6 +335,16 @@ export default function RedesignedDemoPage() {
             >
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-0.5 h-1/2 bg-gradient-to-b from-signal-blue/50 to-transparent origin-bottom" />
             </motion.div>
+            {/* Radar sweep on initial load */}
+            <motion.div
+              initial={{ opacity: 0, rotate: 0 }}
+              animate={{ opacity: 1, rotate: 360 }}
+              transition={{ duration: 1.2, ease: "easeOut" }}
+              className="absolute inset-0"
+              style={{
+                background: "conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(77,171,247,0.4) 30deg, transparent 90deg)",
+              }}
+            />
           </div>
         </motion.div>
 
@@ -515,9 +547,10 @@ export default function RedesignedDemoPage() {
         ];
         return (
           <motion.section
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            variants={sectionVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-80px" }}
             className="relative z-20 h-20 flex items-center overflow-hidden"
             style={{
               background: "rgba(7,8,15,0.6)",
@@ -561,10 +594,10 @@ export default function RedesignedDemoPage() {
       {/* LIVE METRICS SECTION — Constellation Particles + Holographic Shimmer */}
       {/* ============================================================ */}
       <motion.section
-        initial={{ opacity: 0, y: 60 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        variants={sectionVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-80px" }}
         className="relative z-20 px-6 md:px-10 py-20 md:py-28"
       >
         {/* Container */}
@@ -676,7 +709,13 @@ export default function RedesignedDemoPage() {
       {/* ============================================================ */}
       {/* FEATURE CARDS — Spring Physics + Perspective Tilt + Radar Sweep */}
       {/* ============================================================ */}
-      <section className="relative z-20 px-6 md:px-10 py-20 md:py-28">
+      <motion.section
+        variants={sectionVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-80px" }}
+        className="relative z-20 px-6 md:px-10 py-20 md:py-28"
+      >
         <div className="max-w-7xl mx-auto">
           {/* Section header */}
           <motion.div
@@ -732,16 +771,16 @@ export default function RedesignedDemoPage() {
             ))}
           </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* ============================================================ */}
       {/* SIGNAL SOURCES — 2x5 Grid with Fog Layers + Pulsing Dots */}
       {/* ============================================================ */}
       <motion.section
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
+        variants={sectionVariants}
+        initial="hidden"
+        whileInView="visible"
         viewport={{ once: true, margin: "-80px" }}
-        transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
         className="relative z-20 px-6 md:px-10 py-[60px]"
       >
         {/* Atmospheric fog layers (behind the grid) */}
@@ -867,7 +906,14 @@ export default function RedesignedDemoPage() {
       <NewsletterCTA />
 
       {/* Bento Grid Section — Motion Engine Bento */}
-      <motion.section style={{ opacity: sectionOpacity }} className="relative z-20 px-6 md:px-10 pb-24">
+      <motion.section
+        variants={sectionVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-80px" }}
+        style={{ opacity: sectionOpacity }}
+        className="relative z-20 px-6 md:px-10 pb-24"
+      >
         <div className="max-w-7xl mx-auto space-y-8">
 
           {/* Bento Row 1: 2-column split (65/35) */}
