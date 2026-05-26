@@ -73,7 +73,7 @@ body {
   }
 
   .section-pad {
-    @apply py-16 md:py-24;
+    @apply py-8 md:py-12;
   }
 }
 
@@ -96,6 +96,11 @@ body {
 /* Selection */
 ::selection {
   background: rgb(var(--accent) / 0.25);
+}
+
+/* Font display with Chinese fallback */
+.font-display {
+  font-family: var(--font-display), "Noto Serif SC", "Source Serif 4", ui-serif;
 }
 
 /* Cinematic landing ambience */

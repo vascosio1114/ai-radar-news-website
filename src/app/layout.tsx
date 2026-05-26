@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
+import { Inter, Source_Serif_4, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
@@ -10,10 +10,11 @@ const fontSans = Inter({
   display: "swap",
 });
 
-const fontDisplay = Space_Grotesk({
-  subsets: ["latin"],
+const fontDisplay = Source_Serif_4({
+  subsets: ["latin", "vietnamese"],
   variable: "--font-display",
   display: "swap",
+  weight: ["400", "600", "700"],
 });
 
 const fontMono = JetBrains_Mono({
