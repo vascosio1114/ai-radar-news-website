@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
 import {
@@ -26,6 +26,8 @@ import {
   Play,
   ArrowUpRight,
   CpuIcon,
+  Sun,
+  Moon,
 } from "lucide-react";
 
 // ============================================================
@@ -33,6 +35,38 @@ import {
 // Design: Asymmetric Split Hero + Motion-Engine Bento Grid
 // Baseline: DESIGN_VARIANCE=8, MOTION_INTENSITY=6, VISUAL_DENSITY=4
 // ============================================================
+
+const Navbar = () => {
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+
+  return (
+    <nav className="fixed top-0 left-0 right-0 z-50 h-[72px] flex items-center justify-between px-6 md:px-10
+      bg-[rgba(7,8,15,0.82)] backdrop-blur-[24px] border-b border-white/[0.06]">
+      <div className="text-lg font-bold tracking-tight text-[#4dabf7]">RADAR</div>
+
+      <div className="hidden md:flex items-center gap-8">
+        {["Blog", "Tools", "Trends", "Community"].map((item) => (
+          <motion.a
+            key={item}
+            href="#"
+            whileHover={{ color: "#4dabf7", scale: 1.05 }}
+            transition={{ type: "spring", stiffness: 500, damping: 20 }}
+            className="text-sm text-white/50"
+          >
+            {item}
+          </motion.a>
+        ))}
+      </div>
+
+      <button
+        onClick={() => setTheme(t => t === "dark" ? "light" : "dark")}
+        className="p-2 rounded-xl hover:bg-white/5 transition-colors"
+      >
+        {theme === "dark" ? <Sun className="w-5 h-5 text-white/50" /> : <Moon className="w-5 h-5 text-white/50" />}
+      </button>
+    </nav>
+  );
+};
 
 const fadeUp = {
   hidden: { opacity: 0, y: 28 },
@@ -131,6 +165,7 @@ export default function RedesignedDemoPage() {
 
   return (
     <div ref={containerRef} className="min-h-screen bg-black text-white overflow-x-hidden">
+      <Navbar />
 
       {/* Ambient background */}
       <div className="fixed inset-0 pointer-events-none z-0">
