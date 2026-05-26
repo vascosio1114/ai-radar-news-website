@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useMemo } from "react";
 import Link from "next/link";
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
 import {
@@ -28,6 +28,8 @@ import {
   CpuIcon,
   Sun,
   Moon,
+  Sparkles,
+  Radar,
 } from "lucide-react";
 
 // ============================================================
@@ -555,6 +557,122 @@ export default function RedesignedDemoPage() {
         );
       })()}
 
+      {/* ============================================================ */}
+      {/* LIVE METRICS SECTION — Constellation Particles + Holographic Shimmer */}
+      {/* ============================================================ */}
+      <motion.section
+        initial={{ opacity: 0, y: 60 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="relative z-20 px-6 md:px-10 py-20 md:py-28"
+      >
+        {/* Container */}
+        <div
+          className="relative overflow-hidden rounded-3xl border bg-[#030409] px-10 md:px-16 py-16 md:py-20"
+          style={{
+            borderColor: "rgba(77,171,247,0.08)",
+          }}
+        >
+          {/* Background Layers */}
+          {/* Layer 1: Solid void-950 */}
+          <div className="absolute inset-0 bg-[#030409] z-0" />
+
+          {/* Layer 2: Dual radial gradients - signal-blue + signal-green */}
+          <div
+            className="absolute inset-0 z-[1]"
+            style={{
+              background: "radial-gradient(circle at 70% 30%, rgba(77,171,247,0.24) 0%, transparent 50%), radial-gradient(circle at 30% 70%, rgba(16,185,129,0.18) 0%, transparent 50%)",
+            }}
+          />
+
+          {/* Layer 3: 34px grid overlay at 4.5% opacity, masked radial from center */}
+          <div
+            className="absolute inset-0 z-[2] pointer-events-none"
+            style={{
+              backgroundImage: "linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px)",
+              backgroundSize: "34px 34px",
+              maskImage: "radial-gradient(circle at 50% 50%, black 0%, transparent 60%)",
+              WebkitMaskImage: "radial-gradient(circle at 50% 50%, black 0%, transparent 60%)",
+            }}
+          />
+
+          {/* Layer 4: 42 floating constellation particles */}
+          <ConstellationParticles />
+
+          {/* Content Layout */}
+          <div className="relative z-10 grid lg:grid-cols-[1.1fr_0.9fr] gap-12 lg:gap-16 items-center">
+            {/* Left column: Eyebrow, Title, Description */}
+            <div className="space-y-6">
+              {/* Eyebrow pill */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[rgba(77,171,247,0.30)] bg-[rgba(77,171,247,0.10)]"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                <span className="text-xs font-medium uppercase tracking-widest text-cyan-400">
+                  Live AI Signal Stream
+                </span>
+              </motion.div>
+
+              {/* Title */}
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="text-3xl md:text-5xl font-bold tracking-tight text-white"
+              >
+                持續更新的 AI 訊號流
+              </motion.h2>
+
+              {/* Description */}
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                className="text-sm md:text-base text-white/68 max-w-2xl leading-relaxed"
+              >
+                追蹤全球 AI 發展動態，即時掌握人工智慧對產業的深層影響。持續更新的訊號流，助您保持領先地位。
+              </motion.p>
+            </div>
+
+            {/* Right column: 3 metric cards */}
+            <div className="space-y-4">
+              {[
+                {
+                  icon: Radar,
+                  value: "10",
+                  label: "Sources",
+                  sub: "AI signal feeds",
+                  delay: 0.2,
+                },
+                {
+                  icon: Cpu,
+                  value: "12h",
+                  label: "Refresh",
+                  sub: "auto ingest",
+                  delay: 0.3,
+                },
+                {
+                  icon: Sparkles,
+                  value: "Blog",
+                  label: "Output",
+                  sub: "analysis",
+                  delay: 0.4,
+                },
+              ].map((metric, i) => (
+                <MetricCard key={i} {...metric} index={i} />
+              ))}
+            </div>
+          </div>
+        </div>
+      </motion.section>
+
       {/* Bento Grid Section — Motion Engine Bento */}
       <motion.section style={{ opacity: sectionOpacity }} className="relative z-20 px-6 md:px-10 pb-24">
         <div className="max-w-7xl mx-auto space-y-8">
@@ -953,4 +1071,135 @@ export default function RedesignedDemoPage() {
       </footer>
     </div>
   );
+};
+
+// ============================================================
+// LIVE METRICS — Constellation Particle System
+// ============================================================
+const ConstellationParticles = () => {
+  const particles = useMemo(() => {
+    return Array.from({ length: 42 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: 2 + Math.random() * 5,
+      duration: 3 + Math.random() * 4,
+      delay: Math.random() * 3,
+      color: Math.random() > 0.5 ? "#4dabf7" : "#15e5e0",
+    }));
+  }, []);
+
+  return (
+    <svg className="absolute inset-0 z-[3] w-full h-full pointer-events-none" style={{ overflow: "visible" }}>
+      {/* Constellation connecting lines */}
+      {particles.map((p1, i) =>
+        particles.slice(i + 1).map((p2, j) => {
+          const dx = (p2.x - p1.x) * 3.5;
+          const dy = (p2.y - p1.y) * 2.0;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance < 120) {
+            const opacity = Math.max(0.1, 1 - distance / 120);
+            return (
+              <motion.line
+                key={`line-${i}-${j}`}
+                x1={`${p1.x}%`}
+                y1={`${p1.y}%`}
+                x2={`${p2.x}%`}
+                y2={`${p2.y}%`}
+                stroke={p1.color}
+                strokeWidth="0.5"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: opacity * 0.5 }}
+                transition={{ duration: 1, delay: p1.delay }}
+              />
+            );
+          }
+          return null;
+        })
+      )}
+      {/* Floating particles */}
+      {particles.map((particle) => (
+        <motion.circle
+          key={particle.id}
+          cx={`${particle.x}%`}
+          cy={`${particle.y}%`}
+          r={particle.size / 2}
+          fill={particle.color}
+          initial={{ opacity: 0.3 }}
+          animate={{
+            opacity: [0.3, 0.9, 0.3],
+            y: [`${particle.y}%`, `${particle.y - 8}%`, `${particle.y}%`],
+          }}
+          transition={{
+            duration: particle.duration,
+            delay: particle.delay,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+      ))}
+    </svg>
+  );
+};
+
+// ============================================================
+// LIVE METRICS — Metric Card with Holographic Shimmer
+// ============================================================
+interface MetricCardProps {
+  icon: React.ElementType;
+  value: string;
+  label: string;
+  sub: string;
+  delay: number;
+  index: number;
 }
+
+const MetricCard: React.FC<MetricCardProps> = ({ icon: Icon, value, label, sub, delay, index }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5, delay: 0.1 + index * 0.1 }}
+      whileHover={{ scale: 1.02 }}
+      style={{ transition: "background 0.4s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)" }}
+      className="group relative overflow-hidden rounded-2xl border border-white/10 bg-[rgba(255,255,255,0.07)] backdrop-blur p-5 cursor-pointer"
+    >
+      {/* Holographic shimmer overlay */}
+      <motion.div
+        className="absolute inset-0 pointer-events-none"
+        initial={{ opacity: 0 }}
+        whileHover={{ opacity: 1 }}
+        transition={{ duration: 0.4 }}
+        style={{
+          background: "linear-gradient(125deg, transparent 40%, rgba(77,171,247,0.3) 45%, rgba(21,170,191,0.3) 50%, transparent 55%)",
+          backgroundSize: "200% 200%",
+        }}
+        animate={undefined}
+      />
+      <div
+        className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100"
+        style={{
+          background: "linear-gradient(125deg, transparent 40%, rgba(77,171,247,0.3) 45%, rgba(21,170,191,0.3) 50%, transparent 55%)",
+          backgroundSize: "200% 200%",
+          animation: "holographic-shimmer 1.2s ease-in-out",
+        }}
+      />
+
+      {/* Card content */}
+      <div className="relative flex items-center gap-4">
+        <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover:bg-white/10 transition-colors">
+          <Icon className="w-5 h-5 text-cyan-400" />
+        </div>
+        <div>
+          <p className="text-2xl font-bold text-white">{value}</p>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold uppercase tracking-widest text-white/50">{label}</span>
+            <span className="text-xs text-white/30">·</span>
+            <span className="text-xs text-white/40">{sub}</span>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
