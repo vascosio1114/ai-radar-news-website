@@ -2,7 +2,7 @@
 
 import { useRef, useState, useMemo } from "react";
 import Link from "next/link";
-import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
+import { motion, useScroll, useTransform, useMotionValue, useSpring, AnimatePresence } from "framer-motion";
 import {
   ArrowRight,
   Bot,
@@ -673,6 +673,67 @@ export default function RedesignedDemoPage() {
         </div>
       </motion.section>
 
+      {/* ============================================================ */}
+      {/* FEATURE CARDS — Spring Physics + Perspective Tilt + Radar Sweep */}
+      {/* ============================================================ */}
+      <section className="relative z-20 px-6 md:px-10 py-20 md:py-28">
+        <div className="max-w-7xl mx-auto">
+          {/* Section header */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-16"
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-signal-blue/30 bg-signal-blue/10 mb-6">
+              <Zap className="w-3.5 h-3.5 text-signal-blue" />
+              <span className="text-xs font-medium uppercase tracking-widest text-signal-blue">
+                Core Features
+              </span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-white">
+              How the Signal Works
+            </h2>
+            <p className="text-white/50 text-sm mt-3 max-w-xl mx-auto">
+              Three powerful systems working together to transform AI noise into actionable intelligence.
+            </p>
+          </motion.div>
+
+          {/* 3-column feature cards grid */}
+          <motion.div
+            variants={stagger}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-80px" }}
+            className="grid md:grid-cols-3 gap-6"
+          >
+            {[
+              {
+                icon: Radio,
+                title: "Signal Intake",
+                body: "10 Sources / 12h Cycle",
+                delay: 0,
+              },
+              {
+                icon: DatabaseZap,
+                title: "Knowledge Layer",
+                body: "Raw → Blog Intelligence",
+                delay: 0.12,
+              },
+              {
+                icon: ShieldCheck,
+                title: "Editorial Control",
+                body: "Human Before Scale",
+                delay: 0.24,
+              },
+            ].map((card, i) => (
+              <FeatureCard key={i} {...card} index={i} />
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
       {/* Bento Grid Section — Motion Engine Bento */}
       <motion.section style={{ opacity: sectionOpacity }} className="relative z-20 px-6 md:px-10 pb-24">
         <div className="max-w-7xl mx-auto space-y-8">
@@ -1070,6 +1131,151 @@ export default function RedesignedDemoPage() {
         </div>
       </footer>
     </div>
+  );
+};
+
+// ============================================================
+// FEATURE CARDS — Card with Spring Physics, Perspective Tilt, Click Ripple
+// ============================================================
+interface FeatureCardProps {
+  icon: React.ElementType;
+  title: string;
+  body: string;
+  delay: number;
+  index: number;
+}
+
+const FeatureCard: React.FC<FeatureCardProps> = ({ icon: Icon, title, body, delay, index }) => {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [ripple, setRipple] = useState<{ x: number; y: number; key: number } | null>(null);
+
+  // 3D perspective tilt using useMotionValue + useTransform
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const rotateX = useTransform(mouseX, [-0.5, 0.5], [-8, 8]);
+  const rotateY = useTransform(mouseY, [-0.5, 0.5], [8, -8]);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    mouseX.set(x);
+    mouseY.set(y);
+  };
+
+  const handleMouseLeave = () => {
+    mouseX.set(0);
+    mouseY.set(0);
+  };
+
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    setRipple({ x, y, key: Date.now() });
+  };
+
+  return (
+    <motion.div
+      ref={cardRef}
+      initial={{ opacity: 0, scale: 0.95 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.65, delay, ease: [0.16, 1, 0.3, 1] }}
+      // 3D tilt style
+      style={{
+        rotateX,
+        rotateY,
+        transformStyle: "preserve-3d",
+        perspective: 1000,
+      }}
+      // Spring physics whileHover
+      whileHover={{
+        scale: 1.03,
+        y: -8,
+        boxShadow: "0 24px 60px -12px rgba(77,171,247,0.25)",
+        transition: { type: "spring", stiffness: 400, damping: 28 },
+      }}
+      // Click ripple on the card
+      onClick={handleClick}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="group relative cursor-pointer"
+    >
+      {/* Card background — glassmorphism */}
+      <div
+        className="relative rounded-3xl border border-void-200/60 dark:border-void-800/60 bg-white/70 dark:bg-[rgba(7,8,15,0.7)] backdrop-blur-2xl p-8 overflow-hidden"
+        style={{
+          boxShadow: "0 0 0 1px rgba(255,255,255,0.05)",
+        }}
+      >
+        {/* Radar-sweep gradient overlay on whileInView */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl">
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.65, delay: delay + 0.3 }}
+            className="absolute inset-0"
+            style={{
+              background: "conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(77,171,247,0.12) 60deg, transparent 120deg)",
+            }}
+          />
+        </div>
+
+        {/* Signal glow border on hover */}
+        <motion.div
+          className="absolute inset-0 rounded-3xl border-2 pointer-events-none"
+          style={{ borderColor: "transparent" }}
+          whileHover={{
+            borderColor: "rgba(77,171,247,0.8)",
+            boxShadow: "0 0 24px rgba(77,171,247,0.4)",
+            transition: { type: "spring", stiffness: 300, damping: 25 },
+          }}
+        />
+
+        {/* Icon */}
+        <div className="relative w-14 h-14 rounded-full bg-signal-blue/10 flex items-center justify-center mb-6">
+          <Icon className="w-6 h-6 text-signal-blue" />
+        </div>
+
+        {/* Title */}
+        <h3 className="relative text-lg font-bold text-void-950 dark:text-white mb-2">
+          {title}
+        </h3>
+
+        {/* Body */}
+        <p className="relative text-sm font-normal text-void-500 dark:text-white/58">
+          {body}
+        </p>
+
+        {/* Click ripple effect */}
+        <AnimatePresence>
+          {ripple && (
+            <motion.div
+              key={ripple.key}
+              initial={{ scale: 0, opacity: 1 }}
+              animate={{ scale: 2.5, opacity: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="absolute rounded-full pointer-events-none"
+              style={{
+                left: ripple.x,
+                top: ripple.y,
+                width: 80,
+                height: 80,
+                marginLeft: -40,
+                marginTop: -40,
+                border: "2px solid rgba(77,171,247,0.6)",
+              }}
+            />
+          )}
+        </AnimatePresence>
+      </div>
+    </motion.div>
   );
 };
 
