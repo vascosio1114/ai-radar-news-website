@@ -1,9 +1,10 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, Sparkles } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { UserButton } from "@/components/auth/UserButton";
@@ -54,8 +55,15 @@ export function NavbarClient({ initialUser }: Props) {
     >
       <div className="container-page flex h-16 items-center justify-between gap-4">
         <Link href={`/${lang}`} className="flex items-center gap-2 font-display">
-          <span className="relative grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-accent-500 to-accent-700 text-white shadow-glow">
-            <Sparkles className="h-4 w-4" />
+          <span className="relative h-8 w-8 overflow-hidden rounded-lg border border-white/10 bg-black shadow-glow">
+            <Image
+              src="/images/airadarstudio_logo.jpg"
+              alt={`${SITE_NAME} logo`}
+              fill
+              sizes="32px"
+              className="object-cover"
+              priority
+            />
           </span>
           <span className="text-lg font-semibold tracking-tight">
             {SITE_NAME}
