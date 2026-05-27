@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Sparkles, Github, Twitter, Mail } from "lucide-react";
+import { Github, Twitter, Mail } from "lucide-react";
 import { SITE_NAME, SUPPORTED_LANGS } from "@/lib/site";
 
 export function Footer() {
@@ -15,7 +16,12 @@ export function Footer() {
     { href: `/${lang}/news`, label: lang === "zh" ? "AI 文章" : "AI Blog" },
     { href: `/${lang}/tools`, label: lang === "zh" ? "AI 工具" : "AI Tools" },
     { href: `/${lang}/tutorials`, label: lang === "zh" ? "教學" : "Tutorials" },
-  ] as const;
+    { href: `/${lang}/resources`, label: lang === "zh" ? "資源" : "Resources" },
+    { href: `/${lang}/about`, label: lang === "zh" ? "關於我們" : "About" },
+    { href: `/${lang}/contact`, label: lang === "zh" ? "聯絡" : "Contact" },
+    { href: `/${lang}/privacy`, label: lang === "zh" ? "私隱政策" : "Privacy Policy" },
+    { href: "/rss.xml", label: "RSS" },
+  ];
 
   return (
     <footer className="relative mt-24 border-t border-ink-200/70 dark:border-ink-800/70">
@@ -26,8 +32,14 @@ export function Footer() {
         {/* Brand */}
         <div className="md:col-span-2">
           <Link href={`/${lang}`} className="flex items-center gap-2 font-display">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-accent-500 to-accent-700 text-white shadow-glow">
-              <Sparkles className="h-4 w-4" />
+            <span className="relative h-8 w-8 overflow-hidden rounded-lg border border-white/10 bg-black shadow-glow">
+              <Image
+                src="/images/airadarstudio_logo.jpg"
+                alt={`${SITE_NAME} logo`}
+                fill
+                sizes="32px"
+                className="object-cover"
+              />
             </span>
             <span className="text-lg font-semibold">{SITE_NAME}</span>
           </Link>
@@ -77,31 +89,23 @@ export function Footer() {
         {/* Resources */}
         <div>
           <h4 className="text-xs font-semibold uppercase tracking-widest text-ink-500 dark:text-ink-400">
-            {lang === "zh" ? "資源" : "Resources"}
+            {lang === "zh" ? "訂閱與聯絡" : "Subscribe"}
           </h4>
           <ul className="mt-4 space-y-2 text-sm">
             <li>
               <Link
-                href="/about"
+                href={`/${lang}/resources`}
                 className="text-ink-700 transition hover:text-accent-600 dark:text-ink-200 dark:hover:text-accent-400"
               >
-                {lang === "zh" ? "關於我們" : "About"}
+                {lang === "zh" ? "資源中心" : "Resource Hub"}
               </Link>
             </li>
             <li>
               <Link
-                href="/contact"
+                href={`/${lang}/contact`}
                 className="text-ink-700 transition hover:text-accent-600 dark:text-ink-200 dark:hover:text-accent-400"
               >
-                {lang === "zh" ? "聯絡" : "Contact"}
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/privacy"
-                className="text-ink-700 transition hover:text-accent-600 dark:text-ink-200 dark:hover:text-accent-400"
-              >
-                {lang === "zh" ? "私隱政策" : "Privacy Policy"}
+                {lang === "zh" ? "聯絡團隊" : "Contact Team"}
               </Link>
             </li>
             <li>
@@ -110,6 +114,14 @@ export function Footer() {
                 className="text-ink-700 transition hover:text-accent-600 dark:text-ink-200 dark:hover:text-accent-400"
               >
                 RSS
+              </Link>
+            </li>
+            <li>
+              <Link
+                href={`/${lang}/privacy`}
+                className="text-ink-700 transition hover:text-accent-600 dark:text-ink-200 dark:hover:text-accent-400"
+              >
+                {lang === "zh" ? "私隱政策" : "Privacy Policy"}
               </Link>
             </li>
           </ul>

@@ -12,6 +12,7 @@ export function getLangNavItems(lang: Lang) {
     { href: `/${lang}/news`, label: lang === "zh" ? "AI 文章" : "AI Blog" },
     { href: `/${lang}/tools`, label: lang === "zh" ? "AI 工具" : "AI Tools" },
     { href: `/${lang}/tutorials`, label: lang === "zh" ? "教學" : "Tutorials" },
+    { href: `/${lang}/resources`, label: lang === "zh" ? "資源" : "Resources" },
   ] as const;
 }
 
@@ -20,6 +21,7 @@ export const NAV_ITEMS = [
   { href: "/news", label: "AI 文章" },
   { href: "/tools", label: "AI 工具" },
   { href: "/tutorials", label: "教學" },
+  { href: "/resources", label: "資源" },
   { href: "/trends", label: "趨勢分析" },
 ] as const;
 

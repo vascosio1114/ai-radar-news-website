@@ -5,13 +5,24 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabase = createSupabaseServerClient();
 
-  const staticPaths = ["", "/news", "/tools", "/tutorials", "/trends"].map(
-    (p) => ({
-      url: `${SITE_URL}${p}`,
+  const pagePaths = [
+    "",
+    "/news",
+    "/tools",
+    "/tutorials",
+    "/resources",
+    "/about",
+    "/contact",
+    "/privacy",
+  ];
+
+  const staticPaths = ["zh", "en"].flatMap((lang) =>
+    pagePaths.map((p) => ({
+      url: `${SITE_URL}/${lang}${p}`,
       lastModified: new Date(),
       changeFrequency: "daily" as const,
       priority: p === "" ? 1 : 0.8,
-    })
+    }))
   );
 
   const { data: articles } = await supabase
@@ -19,12 +30,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .select("slug, updated_at")
     .eq("is_published", true);
 
-  const articlePaths = (articles ?? []).map((a) => ({
-    url: `${SITE_URL}/news/${a.slug}`,
+  const articlePaths = (articles ?? []).flatMap((a) => ["zh", "en"].map((lang) => ({
+    url: `${SITE_URL}/${lang}/news/${a.slug}`,
     lastModified: new Date(a.updated_at ?? Date.now()),
     changeFrequency: "weekly" as const,
     priority: 0.7,
-  }));
+  })));
 
   return [...staticPaths, ...articlePaths];
 }
