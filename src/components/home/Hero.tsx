@@ -155,7 +155,7 @@ export function Hero({
               width={1536}
               height={1024}
               priority
-              className="mt-4 w-full max-w-[min(86vw,760px)] select-none object-contain opacity-95 drop-shadow-[0_0_34px_rgba(37,99,235,0.10)] dark:hidden md:mt-6"
+              className="hidden"
               draggable={false}
             />
             <Image
@@ -264,7 +264,7 @@ export function Hero({
               width={1536}
               height={1024}
               priority
-              className="mt-4 w-full max-w-[min(86vw,760px)] select-none object-contain opacity-95 drop-shadow-[0_0_34px_rgba(37,99,235,0.10)] dark:hidden md:mt-6"
+              className="hidden"
               draggable={false}
             />
             <Image
@@ -285,19 +285,6 @@ export function Hero({
               {tagline}
             </p>
           </MotionDiv>
-        </MotionDiv>
-
-        {/* System Boot Text */}
-        <MotionDiv
-          variants={systemBootVariants}
-          initial="hidden"
-          animate="visible"
-          transition={{ delay: 1.8 }}
-        className="pointer-events-none absolute bottom-6 left-1/2 z-20 hidden -translate-x-1/2 text-center sm:block md:bottom-10"
-        >
-          <p className="rounded-full border border-ink-950/10 bg-white/60 px-5 py-2 text-[10px] font-medium uppercase tracking-[0.42em] text-ink-700 backdrop-blur-md dark:border-white/10 dark:bg-black/35 dark:text-white/65">
-            {tagline}
-          </p>
         </MotionDiv>
 
         {/* Scroll Indicator */}
