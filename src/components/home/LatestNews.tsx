@@ -63,7 +63,7 @@ export function LatestNews({
   const [featured, ...rest] = articles;
 
   return (
-    <section className="container-page section-pad">
+    <section className={featuredOnly ? "container-page pb-8 pt-4 md:py-12" : "container-page section-pad"}>
       {/* Animated Section Header */}
       <motion.div
         className="mb-10 grid gap-5 md:grid-cols-[minmax(0,1fr)_minmax(260px,420px)] md:items-end"

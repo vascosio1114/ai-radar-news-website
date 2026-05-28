@@ -122,8 +122,8 @@ export function Hero({
 
   if (prefersReducedMotion) {
     return (
-      <section className="relative h-[145vh] min-h-[100dvh] overflow-hidden bg-white text-ink-950 dark:bg-black dark:text-white">
-        <div className="sticky top-0 flex min-h-screen items-center justify-center overflow-hidden">
+      <section className="relative h-[100svh] min-h-[calc(100svh-4rem)] overflow-hidden bg-white text-ink-950 dark:bg-black dark:text-white md:h-[145vh] md:min-h-[100dvh]">
+        <div className="sticky top-0 flex min-h-[calc(100svh-4rem)] items-center justify-center overflow-hidden md:min-h-screen">
           <div
             aria-hidden="true"
             className="absolute inset-0 bg-[url('/images/radar-ai-studio-light.jpeg')] bg-cover bg-center bg-no-repeat opacity-95 dark:hidden"
@@ -155,7 +155,7 @@ export function Hero({
               width={1536}
               height={1024}
               priority
-              className="mt-6 w-full max-w-[760px] select-none object-contain opacity-95 drop-shadow-[0_0_34px_rgba(37,99,235,0.10)] dark:hidden"
+              className="mt-4 w-full max-w-[min(86vw,760px)] select-none object-contain opacity-95 drop-shadow-[0_0_34px_rgba(37,99,235,0.10)] dark:hidden md:mt-6"
               draggable={false}
             />
             <Image
@@ -164,12 +164,12 @@ export function Hero({
               width={1536}
               height={1024}
               priority
-              className="mt-6 hidden w-full max-w-[760px] select-none object-contain opacity-95 drop-shadow-[0_0_36px_rgba(37,99,235,0.18)] dark:block"
+              className="mt-4 hidden w-full max-w-[min(86vw,760px)] select-none object-contain opacity-95 drop-shadow-[0_0_36px_rgba(37,99,235,0.18)] dark:block md:mt-6"
               draggable={false}
             />
             <div className="mt-3 h-px w-24 bg-gradient-to-r from-transparent via-ink-300 dark:via-white/45 to-transparent" />
           </div>
-          <div className="pointer-events-none absolute bottom-10 left-1/2 z-20 -translate-x-1/2 text-center">
+          <div className="pointer-events-none absolute bottom-6 left-1/2 z-20 hidden -translate-x-1/2 text-center sm:block md:bottom-10">
             <p className="rounded-full border border-ink-950/10 bg-white/60 px-5 py-2 text-[10px] font-medium uppercase tracking-[0.42em] text-ink-700 backdrop-blur-md dark:border-white/10 dark:bg-black/35 dark:text-white/65">
               {tagline}
             </p>
@@ -178,7 +178,7 @@ export function Hero({
             <div>System boot</div>
             <div className="mt-1 text-blue-600/70 dark:text-blue-300/60">Scroll to initialize</div>
           </div>
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-white via-white/75 to-transparent dark:from-black dark:via-black/70" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white via-white/75 to-transparent dark:from-black dark:via-black/70 md:h-56" />
         </div>
       </section>
     );
@@ -187,9 +187,9 @@ export function Hero({
   return (
     <MotionSection
       onMouseMove={handleMouseMove}
-      className="relative h-[145vh] min-h-[100dvh] overflow-hidden bg-white text-ink-950 dark:bg-black dark:text-white"
+      className="relative h-[100svh] min-h-[calc(100svh-4rem)] overflow-hidden bg-white text-ink-950 dark:bg-black dark:text-white md:h-[145vh] md:min-h-[100dvh]"
     >
-      <div className="sticky top-0 flex min-h-screen items-center justify-center overflow-hidden">
+      <div className="sticky top-0 flex min-h-[calc(100svh-4rem)] items-center justify-center overflow-hidden md:min-h-screen">
         {/* Parallax Background */}
         <MotionDiv
           aria-hidden="true"
@@ -264,7 +264,7 @@ export function Hero({
               width={1536}
               height={1024}
               priority
-              className="mt-6 w-full max-w-[760px] select-none object-contain opacity-95 drop-shadow-[0_0_34px_rgba(37,99,235,0.10)] dark:hidden"
+              className="mt-4 w-full max-w-[min(86vw,760px)] select-none object-contain opacity-95 drop-shadow-[0_0_34px_rgba(37,99,235,0.10)] dark:hidden md:mt-6"
               draggable={false}
             />
             <Image
@@ -273,7 +273,7 @@ export function Hero({
               width={1536}
               height={1024}
               priority
-              className="mt-6 hidden w-full max-w-[760px] select-none object-contain opacity-95 drop-shadow-[0_0_36px_rgba(37,99,235,0.18)] dark:block"
+              className="mt-4 hidden w-full max-w-[min(86vw,760px)] select-none object-contain opacity-95 drop-shadow-[0_0_36px_rgba(37,99,235,0.18)] dark:block md:mt-6"
               draggable={false}
             />
             <div className="mt-3 h-px w-24 bg-gradient-to-r from-transparent via-ink-300 dark:via-white/45 to-transparent" />
@@ -293,7 +293,7 @@ export function Hero({
           initial="hidden"
           animate="visible"
           transition={{ delay: 1.8 }}
-          className="pointer-events-none absolute bottom-10 left-1/2 z-20 -translate-x-1/2 text-center"
+        className="pointer-events-none absolute bottom-6 left-1/2 z-20 hidden -translate-x-1/2 text-center sm:block md:bottom-10"
         >
           <p className="rounded-full border border-ink-950/10 bg-white/60 px-5 py-2 text-[10px] font-medium uppercase tracking-[0.42em] text-ink-700 backdrop-blur-md dark:border-white/10 dark:bg-black/35 dark:text-white/65">
             {tagline}
@@ -335,7 +335,7 @@ export function Hero({
         </MotionDiv>
 
         {/* Dark mode gradient bottom */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-white via-white/75 to-transparent dark:from-black dark:via-black/70" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white via-white/75 to-transparent dark:from-black dark:via-black/70 md:h-56" />
       </div>
     </MotionSection>
   );
