@@ -122,8 +122,8 @@ export function Hero({
 
   if (prefersReducedMotion) {
     return (
-      <section className="relative h-[100svh] min-h-[calc(100svh-4rem)] overflow-hidden bg-white text-ink-950 dark:bg-black dark:text-white md:h-[145vh] md:min-h-[100dvh]">
-        <div className="sticky top-0 flex min-h-[calc(100svh-4rem)] items-center justify-center overflow-hidden md:min-h-screen">
+      <section className="relative h-[62svh] min-h-[480px] overflow-hidden bg-white text-ink-950 dark:bg-black dark:text-white md:h-[72vh] md:min-h-[560px]">
+        <div className="sticky top-0 flex min-h-[480px] items-center justify-center overflow-hidden md:min-h-[560px]">
           <div
             aria-hidden="true"
             className="absolute inset-0 bg-[url('/images/radar-ai-studio-light.jpeg')] bg-cover bg-center bg-no-repeat opacity-95 dark:hidden"
@@ -178,7 +178,7 @@ export function Hero({
             <div>System boot</div>
             <div className="mt-1 text-blue-600/70 dark:text-blue-300/60">Scroll to initialize</div>
           </div>
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white via-white/75 to-transparent dark:from-black dark:via-black/70 md:h-56" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white via-white/75 to-transparent dark:from-black dark:via-black/70 md:h-24" />
         </div>
       </section>
     );
@@ -187,9 +187,9 @@ export function Hero({
   return (
     <MotionSection
       onMouseMove={handleMouseMove}
-      className="relative h-[100svh] min-h-[calc(100svh-4rem)] overflow-hidden bg-white text-ink-950 dark:bg-black dark:text-white md:h-[145vh] md:min-h-[100dvh]"
+      className="relative h-[62svh] min-h-[480px] overflow-hidden bg-white text-ink-950 dark:bg-black dark:text-white md:h-[72vh] md:min-h-[560px]"
     >
-      <div className="sticky top-0 flex min-h-[calc(100svh-4rem)] items-center justify-center overflow-hidden md:min-h-screen">
+      <div className="sticky top-0 flex min-h-[480px] items-center justify-center overflow-hidden md:min-h-[560px]">
         {/* Parallax Background */}
         <MotionDiv
           aria-hidden="true"
@@ -335,7 +335,7 @@ export function Hero({
         </MotionDiv>
 
         {/* Dark mode gradient bottom */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white via-white/75 to-transparent dark:from-black dark:via-black/70 md:h-56" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white via-white/75 to-transparent dark:from-black dark:via-black/70 md:h-24" />
       </div>
     </MotionSection>
   );
