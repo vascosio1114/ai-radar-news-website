@@ -1,16 +1,26 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { LayoutDashboard, Newspaper, Wrench, GraduationCap, Bot, Users, Mail } from "lucide-react";
+import {
+  Bot,
+  GraduationCap,
+  LayoutDashboard,
+  Mail,
+  Newspaper,
+  Sparkles,
+  Users,
+  Wrench,
+} from "lucide-react";
 import { getCurrentAdmin } from "@/lib/admin-auth";
 
 const ADMIN_NAV = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/articles", label: "文章管理", icon: Newspaper },
-  { href: "/admin/users", label: "User 管理", icon: Users },
-  { href: "/admin/mail", label: "Email 管理", icon: Mail },
-  { href: "/admin/agent", label: "Agent 動態", icon: Bot },
-  { href: "/admin/tools", label: "工具管理", icon: Wrench },
-  { href: "/admin/tutorials", label: "教學管理", icon: GraduationCap },
+  { href: "/admin/articles", label: "Manual CMS", icon: Newspaper },
+  { href: "/admin/news", label: "AI News Queue", icon: Sparkles },
+  { href: "/admin/users", label: "Users", icon: Users },
+  { href: "/admin/mail", label: "Email", icon: Mail },
+  { href: "/admin/agent", label: "Agent Monitor", icon: Bot },
+  { href: "/admin/tools", label: "Tools", icon: Wrench },
+  { href: "/admin/tutorials", label: "Tutorials", icon: GraduationCap },
 ];
 
 async function checkAuth() {
@@ -35,7 +45,7 @@ export default async function AdminDashboardLayout({
   return (
     <div className="container-page py-12">
       <div className="grid gap-8 lg:grid-cols-[240px_1fr]">
-        <aside className="space-y-1">
+        <aside className="flex flex-col gap-1">
           <div className="mb-4 px-3">
             <span className="text-xs font-semibold uppercase tracking-widest text-ink-500 dark:text-ink-400">
               Admin

@@ -35,11 +35,17 @@ const ADAPTERS: Record<SourceKind, Adapter> = {
   scrape: fetchScrapeGeneric,
 };
 
-export async function listEnabledSources(): Promise<Source[]> {
-  const { data, error } = await pipelineDb()
+export async function listEnabledSources(kind?: SourceKind): Promise<Source[]> {
+  let query = pipelineDb()
     .from("sources")
     .select("*")
     .eq("is_enabled", true);
+
+  if (kind) {
+    query = query.eq("kind", kind);
+  }
+
+  const { data, error } = await query.order("authority", { ascending: false });
   if (error) throw error;
   return (data as Source[]) ?? [];
 }

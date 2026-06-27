@@ -19,6 +19,8 @@ export type Article = {
   is_featured: boolean;
   is_published: boolean;
   is_premium?: boolean;
+  language?: string | null;
+  review_status?: "pending" | "approved" | "rejected" | null;
   /** Markdown 內容 */
   content?: string | null;
   content_zh?: string | null;
@@ -98,4 +100,5 @@ export type RawItem = {
   language: string;
   raw_metadata: Record<string, unknown>;
   status: "new" | "scored" | "drafted" | "skipped";
+  processed_at?: string | null;
 };

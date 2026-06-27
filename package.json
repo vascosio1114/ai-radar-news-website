@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
-    "pipeline:ingest": "tsx scripts/ingest.ts"
+    "pipeline:ingest": "tsx scripts/ingest.ts",
+    "pipeline:draft": "tsx scripts/draft.ts",
+    "pipeline:run": "tsx scripts/run-pipeline.ts"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
