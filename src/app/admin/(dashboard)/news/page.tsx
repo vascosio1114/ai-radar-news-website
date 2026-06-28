@@ -57,6 +57,14 @@ function tagsToText(tags: string[] | null) {
   return (tags ?? []).join(", ");
 }
 
+function zhTitle(article: AdminNewsArticle) {
+  return article.title_zh || article.title || "Untitled";
+}
+
+function enTitle(article: AdminNewsArticle) {
+  return article.title_en || "English draft missing";
+}
+
 function IdInput({ id }: { id: string }) {
   return <input type="hidden" name="id" value={id} />;
 }
@@ -111,13 +119,13 @@ function PreviewPanel({ article }: { article: AdminNewsArticle }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{article.title}</CardTitle>
-        <CardDescription>{article.excerpt || "No excerpt"}</CardDescription>
+        <CardTitle>{zhTitle(article)}</CardTitle>
+        <CardDescription>{article.source_url || "No source URL"}</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <div className="flex flex-wrap gap-2">
           <Badge variant="secondary">{article.category}</Badge>
-          <Badge variant="outline">{article.language || "zh-Hant"}</Badge>
+          <Badge variant="outline">{article.language || "zh-Hant,en"}</Badge>
           {article.review_status === "approved" ? (
             <Badge>
               <Check data-icon="inline-start" />
@@ -137,9 +145,22 @@ function PreviewPanel({ article }: { article: AdminNewsArticle }) {
           </a>
         ) : null}
         <Separator />
-        <article className="prose prose-sm max-w-none whitespace-pre-wrap dark:prose-invert">
-          {article.content || "No content"}
-        </article>
+        <div className="grid gap-6 lg:grid-cols-2">
+          <section className="min-w-0">
+            <h3 className="mb-2 text-sm font-semibold">中文</h3>
+            <p className="mb-4 text-sm text-muted-foreground">{article.excerpt_zh || article.excerpt || "No excerpt"}</p>
+            <article className="prose prose-sm max-w-none whitespace-pre-wrap dark:prose-invert">
+              {article.content_zh || article.content || "No Chinese content"}
+            </article>
+          </section>
+          <section className="min-w-0">
+            <h3 className="mb-2 text-sm font-semibold">English</h3>
+            <p className="mb-4 text-sm text-muted-foreground">{article.excerpt_en || "No excerpt"}</p>
+            <article className="prose prose-sm max-w-none whitespace-pre-wrap dark:prose-invert">
+              {article.content_en || "No English content"}
+            </article>
+          </section>
+        </div>
       </CardContent>
     </Card>
   );
@@ -155,23 +176,49 @@ function EditPanel({ article }: { article: AdminNewsArticle }) {
       <form action={saveArticle}>
         <CardContent className="flex flex-col gap-4">
           <IdInput id={article.id} />
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="title">Title</Label>
-            <Input id="title" name="title" defaultValue={article.title} required />
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="excerpt">Excerpt</Label>
-            <Textarea id="excerpt" name="excerpt" defaultValue={article.excerpt || ""} required />
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="content">Content</Label>
-            <Textarea
-              id="content"
-              name="content"
-              defaultValue={article.content || ""}
-              className="min-h-80 font-mono"
-              required
-            />
+          <div className="grid gap-6 lg:grid-cols-2">
+            <section className="flex flex-col gap-4">
+              <h3 className="text-sm font-semibold">中文稿</h3>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="title_zh">中文標題</Label>
+                <Input id="title_zh" name="title_zh" defaultValue={article.title_zh || article.title} required />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="excerpt_zh">中文摘要</Label>
+                <Textarea id="excerpt_zh" name="excerpt_zh" defaultValue={article.excerpt_zh || article.excerpt || ""} required />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="content_zh">中文內容</Label>
+                <Textarea
+                  id="content_zh"
+                  name="content_zh"
+                  defaultValue={article.content_zh || article.content || ""}
+                  className="min-h-80 font-mono"
+                  required
+                />
+              </div>
+            </section>
+            <section className="flex flex-col gap-4">
+              <h3 className="text-sm font-semibold">English Draft</h3>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="title_en">English title</Label>
+                <Input id="title_en" name="title_en" defaultValue={article.title_en || ""} required />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="excerpt_en">English excerpt</Label>
+                <Textarea id="excerpt_en" name="excerpt_en" defaultValue={article.excerpt_en || ""} required />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="content_en">English content</Label>
+                <Textarea
+                  id="content_en"
+                  name="content_en"
+                  defaultValue={article.content_en || ""}
+                  className="min-h-80 font-mono"
+                  required
+                />
+              </div>
+            </section>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="flex flex-col gap-2">
@@ -273,15 +320,21 @@ export default async function AdminNewsPage({ searchParams }: PageProps) {
                       <TableHead>Category</TableHead>
                       <TableHead>Tags</TableHead>
                       <TableHead>Created</TableHead>
-                      <TableHead>Language</TableHead>
+                      <TableHead>Languages</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {articles.map((article) => (
                       <TableRow key={article.id}>
-                        <TableCell className="max-w-56 font-medium">{article.title}</TableCell>
-                        <TableCell className="max-w-72 text-muted-foreground">{article.excerpt}</TableCell>
+                        <TableCell className="max-w-56 font-medium">
+                          <div>{zhTitle(article)}</div>
+                          <div className="mt-1 text-xs text-muted-foreground">{enTitle(article)}</div>
+                        </TableCell>
+                        <TableCell className="max-w-72 text-muted-foreground">
+                          <div className="line-clamp-2">{article.excerpt_zh || article.excerpt}</div>
+                          <div className="mt-1 line-clamp-2 text-xs">{article.excerpt_en}</div>
+                        </TableCell>
                         <TableCell className="max-w-56">
                           {article.source_url ? (
                             <a
@@ -305,7 +358,12 @@ export default async function AdminNewsPage({ searchParams }: PageProps) {
                           </div>
                         </TableCell>
                         <TableCell>{formatDateTime(article.created_at)}</TableCell>
-                        <TableCell>{article.language || "zh-Hant"}</TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1">
+                            {(article.title_zh || article.title) ? <Badge variant="outline">zh</Badge> : null}
+                            {article.title_en ? <Badge variant="outline">en</Badge> : null}
+                          </div>
+                        </TableCell>
                         <TableCell>
                           <ArticleActions article={article} />
                         </TableCell>
@@ -319,13 +377,14 @@ export default async function AdminNewsPage({ searchParams }: PageProps) {
                 {articles.map((article) => (
                   <Card key={article.id}>
                     <CardHeader>
-                      <CardTitle>{article.title}</CardTitle>
-                      <CardDescription>{article.excerpt}</CardDescription>
+                      <CardTitle>{zhTitle(article)}</CardTitle>
+                      <CardDescription>{article.excerpt_zh || article.excerpt}</CardDescription>
                     </CardHeader>
                     <CardContent className="flex flex-col gap-3 text-sm">
                       <div className="flex flex-wrap gap-2">
                         <Badge variant="secondary">{article.category}</Badge>
-                        <Badge variant="outline">{article.language || "zh-Hant"}</Badge>
+                        {(article.title_zh || article.title) ? <Badge variant="outline">zh</Badge> : null}
+                        {article.title_en ? <Badge variant="outline">en</Badge> : null}
                         {(article.tags ?? []).map((tag) => (
                           <Badge key={tag} variant="outline">{tag}</Badge>
                         ))}

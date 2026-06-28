@@ -22,8 +22,9 @@ export default async function RelatedArticles({ currentSlug, tags = [], lang = "
   // Fetch published articles excluding current one
   const { data: rawArticles } = await supabase
     .from("articles")
-    .select("id, slug, title, title_zh, excerpt, excerpt_zh, cover_image, category, tags, published_at, reading_time, views, is_published, author, is_featured, is_premium")
+    .select("id, slug, title, title_zh, title_en, excerpt, excerpt_zh, excerpt_en, cover_image, category, tags, published_at, reading_time, views, is_published, author, is_featured, is_premium")
     .eq("is_published", true)
+    .not(lang === "zh" ? "title_zh" : "title_en", "is", null)
     .neq("slug", currentSlug)
     .order("published_at", { ascending: false })
     .limit(20);

@@ -20,6 +20,7 @@ export default async function HomePage({ params }: Props) {
     supabase
       .from("articles_public")
       .select("*")
+      .not(lang === "zh" ? "title_zh" : "title_en", "is", null)
       .order("published_at", { ascending: false })
       .limit(1),
     getJobImpactTrend(),

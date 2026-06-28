@@ -1,6 +1,6 @@
 import { NewsFeed } from "@/components/news/NewsFeed";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getUIStrings, getLocalizedContent, hasEnglishDisplayContent, type Lang } from "@/lib/i18n";
+import { getUIStrings, getLocalizedContent, type Lang } from "@/lib/i18n";
 import { DEFAULT_LANG } from "@/lib/site";
 
 const PAGE_SIZE = 12;
@@ -15,9 +15,11 @@ export default async function NewsPage({ params, searchParams }: Props) {
   const offset = (page - 1) * PAGE_SIZE;
 
   const supabase = createSupabaseServerClient();
+  const localizedTitleField = lang === "zh" ? "title_zh" : "title_en";
   const { count } = await supabase
     .from("articles_public")
-    .select("*", { count: "exact", head: true });
+    .select("*", { count: "exact", head: true })
+    .not(localizedTitleField, "is", null);
 
   const total = count ?? 0;
   const totalPages = Math.ceil(total / PAGE_SIZE);
@@ -25,13 +27,12 @@ export default async function NewsPage({ params, searchParams }: Props) {
   const { data } = await supabase
     .from("articles_public")
     .select("*")
+    .not(localizedTitleField, "is", null)
     .order("published_at", { ascending: false })
     .range(offset, offset + PAGE_SIZE - 1);
 
   const localized = (data ?? []).map((article) => getLocalizedContent(article, lang));
-  const articles = lang === "en"
-    ? localized.filter((article) => hasEnglishDisplayContent(article, ["title"]))
-    : localized;
+  const articles = localized;
 
   const categories = Array.from(new Set(articles.map((a) => a.category).filter(Boolean))).sort();
 

@@ -7,8 +7,10 @@ export type Article = {
   slug: string;
   title: string;
   title_zh?: string | null;
+  title_en?: string | null;
   excerpt: string;
   excerpt_zh?: string | null;
+  excerpt_en?: string | null;
   cover_image: string | null;
   category: string;
   tags: string[];
@@ -24,6 +26,7 @@ export type Article = {
   /** Markdown 內容 */
   content?: string | null;
   content_zh?: string | null;
+  content_en?: string | null;
   content_html?: string | null;
   summary_content?: string | null;
   summary_content_zh?: string | null;

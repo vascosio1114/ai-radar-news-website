@@ -18,12 +18,12 @@ export async function GET(req: Request) {
 
     let query = supabase
       .from("articles")
-      .select("id, slug, title, title_zh, excerpt, excerpt_zh, category, tags, author, published_at, reading_time, views, is_featured, is_published, cover_image, content, content_zh, summary_content, summary_content_zh, email_content")
+      .select("id, slug, title, title_zh, title_en, excerpt, excerpt_zh, excerpt_en, category, tags, author, published_at, reading_time, views, is_featured, is_published, cover_image, content, content_zh, content_en, summary_content, summary_content_zh, email_content")
       .order("created_at", { ascending: false })
       .limit(limit);
 
     if (search && search.length >= 2) {
-      query = query.or(`title.ilike.%${search}%,title_zh.ilike.%${search}%,slug.ilike.%${search}%,category.ilike.%${search}%`);
+      query = query.or(`title.ilike.%${search}%,title_zh.ilike.%${search}%,title_en.ilike.%${search}%,slug.ilike.%${search}%,category.ilike.%${search}%`);
     }
 
     const { data, error } = await query;

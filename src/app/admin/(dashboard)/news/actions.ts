@@ -57,9 +57,12 @@ export async function saveArticle(formData: FormData) {
   await requireAdminAction();
 
   const id = String(formData.get("id") || "");
-  const title = String(formData.get("title") || "").trim();
-  const excerpt = String(formData.get("excerpt") || "").trim();
-  const content = String(formData.get("content") || "").trim();
+  const titleZh = String(formData.get("title_zh") || "").trim();
+  const titleEn = String(formData.get("title_en") || "").trim();
+  const excerptZh = String(formData.get("excerpt_zh") || "").trim();
+  const excerptEn = String(formData.get("excerpt_en") || "").trim();
+  const contentZh = String(formData.get("content_zh") || "").trim();
+  const contentEn = String(formData.get("content_en") || "").trim();
   const category = String(formData.get("category") || "").trim();
   const tags = parseTags(formData.get("tags"));
   const approved = formData.get("review_status") === "approved";
@@ -67,12 +70,17 @@ export async function saveArticle(formData: FormData) {
   const { error } = await createSupabaseAdminClient()
     .from("articles")
     .update({
-      title,
-      title_zh: title,
-      excerpt,
-      excerpt_zh: excerpt,
-      content,
-      content_zh: content,
+      title: titleZh || titleEn,
+      title_zh: titleZh || null,
+      title_en: titleEn || null,
+      excerpt: excerptZh || excerptEn,
+      excerpt_zh: excerptZh || null,
+      excerpt_en: excerptEn || null,
+      content: contentZh || contentEn,
+      content_zh: contentZh || null,
+      content_en: contentEn || null,
+      summary_content: excerptZh || excerptEn || null,
+      summary_content_zh: excerptZh || null,
       category,
       tags,
       review_status: approved ? "approved" : "pending",

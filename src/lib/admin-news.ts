@@ -4,8 +4,14 @@ export type AdminNewsArticle = {
   id: string;
   slug: string;
   title: string;
+  title_zh: string | null;
+  title_en: string | null;
   excerpt: string | null;
+  excerpt_zh: string | null;
+  excerpt_en: string | null;
   content: string | null;
+  content_zh: string | null;
+  content_en: string | null;
   source_url: string | null;
   category: string;
   tags: string[] | null;
@@ -53,7 +59,7 @@ export async function getDraftArticles() {
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase
     .from("articles")
-    .select("id, slug, title, excerpt, content, source_url, category, tags, created_at, published_at, language, review_status")
+    .select("id, slug, title, title_zh, title_en, excerpt, excerpt_zh, excerpt_en, content, content_zh, content_en, source_url, category, tags, created_at, published_at, language, review_status")
     .eq("is_published", false)
     .order("created_at", { ascending: false });
 

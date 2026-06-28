@@ -18,7 +18,19 @@ export function getLocalizedContent<T extends Record<string, any>>(
     };
   }
   // en: use content (markdown) — content_html is optional pre-rendered cache
-  return item;
+  return {
+    ...item,
+    title: item.title_en ?? item.title,
+    excerpt: item.excerpt_en ?? item.excerpt,
+    content: item.content_en ?? item.content,
+  };
+}
+
+export function hasLocalizedArticleContent(item: Record<string, unknown>, lang: Lang): boolean {
+  if (lang === "zh") {
+    return Boolean(item.title_zh || item.title);
+  }
+  return Boolean(item.title_en);
 }
 
 export const UI_STRINGS = {

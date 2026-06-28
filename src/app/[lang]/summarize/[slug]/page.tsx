@@ -1,10 +1,9 @@
-import { NextResponse } from "next/server";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { containsCJK, getLocalizedContent, getUIStrings } from "@/lib/i18n";
+import { getLocalizedContent, getUIStrings, hasLocalizedArticleContent } from "@/lib/i18n";
 import type { Lang } from "@/lib/site";
 import { formatDate } from "@/lib/utils";
 import { MOCK_ARTICLES } from "@/data/mock";
@@ -12,6 +11,10 @@ import HtmlRenderer from "@/components/markdown/HtmlRenderer";
 import UnlockFullArticleCTA from "@/components/summarize/UnlockFullArticleCTA";
 
 type Props = { params: { lang: string; slug: string } };
+type SummaryArticleFields = {
+  summary_content?: string | null;
+  summary_content_zh?: string | null;
+};
 
 const STATIC_LANGS = ["zh", "en"] as const;
 
@@ -33,7 +36,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .eq("slug", params.slug)
     .single();
 
-  if (!article) return {};
+  if (!article || !hasLocalizedArticleContent(article, lang)) return {};
   const localized = getLocalizedContent(article, lang);
   return {
     title: `Summary: ${localized.title}`,
@@ -49,7 +52,7 @@ export default async function SummaryPage({ params }: Props) {
 
   // If authenticated, redirect to full article
   if (user) {
-    return NextResponse.redirect(`/${lang}/news/${params.slug}`);
+    redirect(`/${lang}/news/${params.slug}`);
   }
 
   // Use articles_public for auth check (gated view) - only for unauthenticated users
@@ -62,16 +65,16 @@ export default async function SummaryPage({ params }: Props) {
   // summary_content is only shown to unauthenticated users (it's in the public view)
   const rawArticle = article ?? null;
 
-  if (!rawArticle) notFound();
+  if (!rawArticle || !hasLocalizedArticleContent(rawArticle, lang)) notFound();
 
   const localized = getLocalizedContent(rawArticle, lang);
-  const englishUnavailable = lang === "en" && containsCJK([localized.title, localized.excerpt, localized.content, localized.content_html]);
+  const summaryArticle = localized as typeof localized & SummaryArticleFields;
 
   // summary_content is only available to unauthenticated users via the articles_public view
   const summaryContent =
     lang === "zh"
-      ? (localized as any).summary_content_zh ?? (localized as any).summary_content ?? null
-      : (localized as any).summary_content ?? null;
+      ? summaryArticle.summary_content_zh ?? summaryArticle.summary_content ?? null
+      : summaryArticle.summary_content ?? null;
 
   return (
     <article className="container-page section-pad">
@@ -85,13 +88,13 @@ export default async function SummaryPage({ params }: Props) {
 
       <header className="mx-auto max-w-3xl">
         <span className="rounded-full bg-accent-500/10 px-3 py-1 text-xs font-semibold text-accent-700 dark:text-accent-400">
-          {englishUnavailable ? "AI Article" : localized.category ?? rawArticle.category ?? ""}
+          {localized.category ?? rawArticle.category ?? ""}
         </span>
         <h1 className="mt-4 font-display text-3xl font-bold leading-tight md:text-5xl">
-          {englishUnavailable ? "English version unavailable" : localized.title ?? rawArticle.title ?? ""}
+          {localized.title ?? rawArticle.title ?? ""}
         </h1>
         <p className="mt-4 text-base text-ink-500 dark:text-ink-400 md:text-lg">
-          {englishUnavailable ? "This article has not been prepared in English yet." : localized.excerpt ?? rawArticle.excerpt ?? ""}
+          {localized.excerpt ?? rawArticle.excerpt ?? ""}
         </p>
         <div className="mt-6 flex flex-wrap items-center gap-6 text-xs text-ink-500 dark:text-ink-400">
           <span>{localized.author ?? rawArticle.author ?? ""}</span>
@@ -100,17 +103,7 @@ export default async function SummaryPage({ params }: Props) {
       </header>
 
       <div className="mx-auto mt-12 max-w-3xl">
-        {englishUnavailable ? (
-          <div className="rounded-2xl border border-ink-200 bg-ink-50 p-8 text-center dark:border-ink-800 dark:bg-ink-950/20">
-            <p className="text-ink-600 dark:text-ink-400">This article is not available in English yet.</p>
-            <Link
-              href={`/${lang}/news`}
-              className="mt-4 inline-block text-sm text-accent-600 hover:text-accent-700 dark:text-accent-400 dark:hover:text-accent-300"
-            >
-              Back to articles
-            </Link>
-          </div>
-        ) : summaryContent ? (
+        {summaryContent ? (
           <>
             <HtmlRenderer content={summaryContent} />
             <UnlockFullArticleCTA lang={lang} slug={params.slug} />

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, Clock } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { containsCJK, getLocalizedContent, getUIStrings } from "@/lib/i18n";
+import { getLocalizedContent, getUIStrings, hasLocalizedArticleContent } from "@/lib/i18n";
 import type { Lang } from "@/lib/site";
 import { formatDate } from "@/lib/utils";
 import { MOCK_ARTICLES } from "@/data/mock";
@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .eq("slug", params.slug)
     .single();
 
-  if (!article) return {};
+  if (!article || !hasLocalizedArticleContent(article, lang)) return {};
   const localized = getLocalizedContent(article, lang);
   return {
     title: localized.title,
@@ -85,24 +85,12 @@ export default async function ArticlePage({ params }: Props) {
     ? { ...article, ...fullArticle }
     : article ?? null;
 
-  if (!rawArticle) notFound();
+  if (!rawArticle || !hasLocalizedArticleContent(rawArticle, lang)) notFound();
 
   const localized = getLocalizedContent(rawArticle, lang);
   const articleContent = localized.content ?? null;
 
-  // For en: show "unavailable" only if there is no English title/excerpt at all
-  // (i.e. this is a Chinese-original article with no English translation)
-  // If title/en/excerpt exist and are not CJK, treat as English-available even if content has some CJK
-  const hasEnglishTitle = lang === "en"
-    ? !!rawArticle.title && !containsCJK(rawArticle.title)
-    : true;
-  const hasEnglishExcerpt = lang === "en"
-    ? !!rawArticle.excerpt && !containsCJK(rawArticle.excerpt)
-    : true;
-  const englishUnavailable =
-    lang === "en" && (!hasEnglishTitle || !hasEnglishExcerpt);
-
-  const tocItems = articleContent && !englishUnavailable ? parseMarkdownHeadings(articleContent) : [];
+  const tocItems = articleContent ? parseMarkdownHeadings(articleContent) : [];
 
   return (
     <article className="container-page section-pad">
@@ -116,13 +104,13 @@ export default async function ArticlePage({ params }: Props) {
 
       <header className="mx-auto max-w-3xl">
         <span className="rounded-full bg-accent-500/10 px-3 py-1 text-xs font-semibold text-accent-700 dark:text-accent-400">
-          {englishUnavailable ? "AI Article" : localized.category ?? rawArticle.category ?? ""}
+          {localized.category ?? rawArticle.category ?? ""}
         </span>
         <h1 className="mt-4 font-display text-3xl font-bold leading-tight md:text-5xl">
-          {englishUnavailable ? "English version unavailable" : localized.title ?? rawArticle.title ?? ""}
+          {localized.title ?? rawArticle.title ?? ""}
         </h1>
         <p className="mt-4 text-base text-ink-500 dark:text-ink-400 md:text-lg">
-          {englishUnavailable ? "This article has not been prepared in English yet." : localized.excerpt ?? rawArticle.excerpt ?? ""}
+          {localized.excerpt ?? rawArticle.excerpt ?? ""}
         </p>
         <div className="mt-6 flex flex-wrap items-center gap-6 text-xs text-ink-500 dark:text-ink-400">
           <span>{localized.author ?? rawArticle.author ?? ""}</span>
@@ -150,13 +138,7 @@ export default async function ArticlePage({ params }: Props) {
         )}
       </header>
 
-      {englishUnavailable ? (
-        <div className="mx-auto mt-10 max-w-3xl rounded-3xl border border-ink-200/70 bg-white p-8 text-sm leading-6 text-ink-600 dark:border-ink-800/70 dark:bg-ink-900 dark:text-ink-300">
-          This article is not available in English yet. Please switch to the Chinese version or return to the article list.
-        </div>
-      ) : null}
-
-      {!englishUnavailable && rawArticle.cover_image && (
+      {rawArticle.cover_image && (
         <div className="relative mx-auto mt-10 aspect-[16/9] w-full max-w-5xl overflow-hidden rounded-3xl">
           <Image
             src={rawArticle.cover_image}
@@ -172,7 +154,7 @@ export default async function ArticlePage({ params }: Props) {
       <div className="mx-auto mt-12 max-w-6xl">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_240px]">
           <div className="min-w-0">
-            {englishUnavailable ? null : localized.content_html ? (
+            {localized.content_html ? (
               <HtmlRenderer content={localized.content_html} />
             ) : articleContent ? (
               <ArticleContent content={articleContent} />
@@ -184,7 +166,7 @@ export default async function ArticlePage({ params }: Props) {
               </div>
             )}
 
-            {!englishUnavailable && <AuthorCard name={localized.author ?? rawArticle.author ?? "Editorial Team"} lang={lang} />}
+            <AuthorCard name={localized.author ?? rawArticle.author ?? "Editorial Team"} lang={lang} />
           </div>
 
           <aside className="hidden lg:block">
@@ -195,9 +177,7 @@ export default async function ArticlePage({ params }: Props) {
         </div>
 
         <div className="mt-12 border-t border-ink-200 pt-8 dark:border-ink-800">
-          {!englishUnavailable && (
-            <RelatedArticles currentSlug={params.slug} lang={lang} category={localized.category ?? ""} />
-          )}
+          <RelatedArticles currentSlug={params.slug} lang={lang} category={localized.category ?? ""} />
         </div>
       </div>
     </article>

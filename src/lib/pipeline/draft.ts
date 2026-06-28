@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import { audit, pipelineDb } from "./db";
+import { containsHan, hanRatio } from "./draft-validation";
 import { logger } from "@/lib/logger";
 
 const log = logger.child({ component: "pipeline-draft" });
@@ -23,6 +24,19 @@ type DraftResponse = {
   content: string;
   category: string;
   tags: string[];
+  reading_time: number;
+};
+
+type DraftLanguage = "zh" | "en";
+
+type ExistingArticleForDraft = {
+  id: string;
+  title_zh: string | null;
+  title_en: string | null;
+  excerpt_zh: string | null;
+  excerpt_en: string | null;
+  content_zh: string | null;
+  content_en: string | null;
 };
 
 export type DraftStats = {
@@ -60,12 +74,12 @@ function normalizeSlug(value: string) {
     .trim();
 }
 
-function createDraftSlug(title: string, url: string, publishedAt?: string | null) {
+function createDraftSlug(sourceTitle: string, url: string, publishedAt?: string | null) {
   const date = publishedAt ? new Date(publishedAt) : new Date();
   const datePart = Number.isNaN(date.getTime())
     ? new Date().toISOString().slice(0, 10)
     : date.toISOString().slice(0, 10);
-  const titlePart = normalizeSlug(title);
+  const titlePart = normalizeSlug(sourceTitle);
   const hash = crypto.createHash("sha1").update(url).digest("hex").slice(0, 8);
   return `${datePart}-${titlePart || "ai-news"}-${hash}`;
 }
@@ -93,6 +107,7 @@ function normalizeDraft(value: DraftResponse): DraftResponse {
   const tags = Array.isArray(value.tags)
     ? value.tags.map((tag) => String(tag).trim()).filter(Boolean).slice(0, 6)
     : [];
+  const readingTime = Number(value.reading_time);
 
   return {
     title: String(value.title || "").trim(),
@@ -100,15 +115,62 @@ function normalizeDraft(value: DraftResponse): DraftResponse {
     content: String(value.content || "").trim(),
     category: String(value.category || "AI News").trim(),
     tags,
+    reading_time: Number.isFinite(readingTime) && readingTime > 0 ? Math.ceil(readingTime) : 0,
   };
 }
 
-async function generateDraft(rawItem: RawItemForDraft): Promise<DraftResponse> {
+function validateDraftLanguage(draft: DraftResponse, language: DraftLanguage) {
+  if (language !== "en") return;
+  validateEnglishDraft(draft);
+}
+
+function validateEnglishDraft(draft: DraftResponse) {
+  const tagsText = (draft.tags ?? []).join(" ");
+  const invalid =
+    hanRatio(draft.title) !== 0 ||
+    hanRatio(draft.excerpt) !== 0 ||
+    hanRatio(draft.content) >= 0.01 ||
+    containsHan(draft.category) ||
+    containsHan(tagsText);
+
+  if (invalid) {
+    throw new Error("ENGLISH_OUTPUT_CONTAINS_CHINESE");
+  }
+}
+
+function getLanguageInstructions(language: DraftLanguage) {
+  if (language === "zh") {
+    return {
+      language,
+      languageName: "Traditional Chinese",
+      languageInstruction:
+        "Write title, excerpt, content, category, and tags in Traditional Chinese. Keep section headings exactly as specified in English.",
+      categoryInstruction:
+        "category must be one of: AI 新聞, AI 研究, AI 工具, AI 商業, AI 政策, AI 安全, 開源 AI.",
+    };
+  }
+
+  return {
+    language,
+    languageName: "English",
+    languageInstruction:
+      "Write title, excerpt, content, category, and tags in polished English. Keep section headings exactly as specified.",
+    categoryInstruction:
+      "category must be one of: AI News, AI Research, AI Tools, AI Business, AI Policy, AI Safety, Open Source AI.",
+  };
+}
+
+async function generateDraftOnce(
+  rawItem: RawItemForDraft,
+  language: DraftLanguage,
+  retryReason?: string
+): Promise<DraftResponse> {
   const { baseUrl, apiKey, model } = requireOpenAIConfig();
   const sourceName = String(rawItem.raw_metadata?.source_name || "Unknown source");
   const sourceTags = Array.isArray(rawItem.raw_metadata?.source_tags)
     ? rawItem.raw_metadata?.source_tags
     : [];
+  const languageInstructions = getLanguageInstructions(language);
 
   const response = await fetch(`${baseUrl}/chat/completions`, {
     method: "POST",
@@ -118,19 +180,84 @@ async function generateDraft(rawItem: RawItemForDraft): Promise<DraftResponse> {
     },
     body: JSON.stringify({
       model,
-      temperature: 0.4,
+      temperature: 0.35,
       response_format: { type: "json_object" },
       messages: [
         {
           role: "system",
           content:
-            "你是 AI Radar Hub 的資深 AI 新聞編輯。請只輸出 JSON，不要 Markdown fence。文字必須使用繁體中文，語氣清晰、專業、有洞察，但不可捏造原文沒有的事實。",
+            language === "en"
+              ? [
+                  "You are an English-language technology journalist.",
+                  "You must write only in English.",
+                  "Chinese characters are forbidden.",
+                  "If the source contains Chinese, translate and rewrite it into natural English.",
+                  "Return valid JSON only.",
+                  "Every value in title, excerpt, content, category, and tags must be English.",
+                ].join("\n")
+              : [
+                  "You are the senior AI news editor for AI Radar Hub.",
+                  "Return valid JSON only. Do not wrap the JSON in Markdown fences.",
+                  "Write in a professional magazine style that is SEO friendly.",
+                  "The article content field must contain Markdown.",
+                  "Do not hallucinate facts. If the source does not provide a detail, do not invent it.",
+                  "Keep citations, named sources, links, and attribution that appear in the source material.",
+                  "This is the zh prompt. Every generated field must be Traditional Chinese, except the required Markdown section headings.",
+                  languageInstructions.languageInstruction,
+                ].join(" "),
         },
         {
           role: "user",
           content: JSON.stringify({
-            task:
-              "根據來源資料產生一篇可由人工審核的新聞草稿。請輸出欄位：title, excerpt, content, category, tags。content 用 Markdown，包含 3-5 個小標，文末附上來源連結。",
+            task: "Create one AI Radar Hub article draft from this source item.",
+            target_language_code: languageInstructions.language,
+            target_language: languageInstructions.languageName,
+            output_json_schema: {
+              title: "",
+              excerpt: "",
+              content: "",
+              category: "",
+              tags: [],
+              reading_time: 0,
+            },
+            content_markdown_format: [
+              "# {title}",
+              "",
+              "## TL;DR",
+              "",
+              "Provide a one-sentence summary.",
+              "",
+              "---",
+              "",
+              "## Why it matters",
+              "",
+              "Explain why this development matters.",
+              "",
+              "---",
+              "",
+              "## What happened",
+              "",
+              "Summarize the factual event.",
+              "",
+              "---",
+              "",
+              "## AI Radar Analysis",
+              "",
+              "Provide our own interpretation and implications.",
+              "",
+              "---",
+              "",
+              "## Key Takeaways",
+              "",
+              "* item 1",
+              "* item 2",
+              "* item 3",
+              "",
+              "---",
+              "",
+              "Source:",
+              "{original source url}",
+            ].join("\n"),
             source: {
               name: sourceName,
               tags: sourceTags,
@@ -144,14 +271,22 @@ async function generateDraft(rawItem: RawItemForDraft): Promise<DraftResponse> {
               published_at: rawItem.published_at,
               external_id: rawItem.external_id,
             },
-            constraints: {
-              title: "32 字以內，繁體中文",
-              excerpt: "80-140 字，繁體中文",
-              content: "800-1200 字，繁體中文 Markdown",
-              category:
-                "從 AI 新聞, AI 研究, AI 工具, AI 商業, AI 政策, AI 安全, 開源 AI 中選一個",
-              tags: "3-6 個短標籤",
-            },
+            requirements: [
+              retryReason || "",
+              "Output exactly the JSON object described by output_json_schema.",
+              "content must follow content_markdown_format exactly, including headings, separators, bullet list, and Source section.",
+              "The first Markdown heading must be # {title}, where {title} equals the JSON title.",
+              "The Markdown content must include ## TL;DR, ## Why it matters, ## What happened, ## AI Radar Analysis, ## Key Takeaways, and Source sections.",
+              language === "en"
+                ? "English validation requirement: title, excerpt, content, category, and tags must be English, not Chinese."
+                : "Traditional Chinese validation requirement: title, excerpt, content, category, and tags must be Traditional Chinese.",
+              "The Source section must include the original source URL exactly.",
+              "Keep any citations, links, named reports, publications, companies, people, and dates provided in the source item.",
+              "Do not add facts, numbers, quotes, product claims, dates, or citations that are not supported by the source item.",
+              languageInstructions.categoryInstruction,
+              "tags must contain 3-6 concise SEO-friendly tags.",
+              "reading_time must be an integer number of minutes based on the Markdown content length.",
+            ],
           }),
         },
       ],
@@ -171,7 +306,76 @@ async function generateDraft(rawItem: RawItemForDraft): Promise<DraftResponse> {
   if (!draft.title || !draft.excerpt || !draft.content) {
     throw new Error("Draft response is missing title, excerpt, or content");
   }
+  validateDraftLanguage(draft, language);
   return draft;
+}
+
+async function generateDraft(rawItem: RawItemForDraft, language: DraftLanguage): Promise<DraftResponse> {
+  try {
+    return await generateDraftOnce(rawItem, language);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (language !== "en" || message !== "ENGLISH_OUTPUT_CONTAINS_CHINESE") {
+      throw error;
+    }
+
+    log.warn({ rawItemId: rawItem.id, language, reason: message }, "retrying invalid English draft");
+    return generateDraftOnce(
+      rawItem,
+      language,
+      "Your previous output contained Chinese. Rewrite the same article in English only."
+    );
+  }
+}
+
+async function generateZhDraft(rawItem: RawItemForDraft) {
+  return generateDraft(rawItem, "zh");
+}
+
+async function generateEnglishDraft(rawItem: RawItemForDraft) {
+  return generateDraft(rawItem, "en");
+}
+
+function hasDraftLanguage(article: ExistingArticleForDraft | null, language: DraftLanguage) {
+  if (!article) return false;
+  if (language === "zh") {
+    return Boolean(article.title_zh && article.excerpt_zh && article.content_zh);
+  }
+  if (!article.title_en || !article.excerpt_en || !article.content_en) return false;
+  try {
+    validateEnglishDraft({
+      title: article.title_en,
+      excerpt: article.excerpt_en,
+      content: article.content_en,
+      category: "AI News",
+      tags: [],
+      reading_time: 1,
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function mergeTags(...tagSets: Array<string[] | null | undefined>) {
+  const seen = new Set<string>();
+  const tags: string[] = [];
+
+  for (const tagSet of tagSets) {
+    for (const tag of tagSet ?? []) {
+      const normalized = String(tag).trim();
+      const key = normalized.toLowerCase();
+      if (!normalized || seen.has(key)) continue;
+      seen.add(key);
+      tags.push(normalized);
+    }
+  }
+
+  return tags.slice(0, 8);
+}
+
+function preview(value: string | null | undefined) {
+  return String(value || "").replace(/\s+/g, " ").slice(0, 120);
 }
 
 async function markProcessed(id: string, status: "drafted" | "skipped" | "failed") {
@@ -203,54 +407,133 @@ export async function runDraftGeneration(limit = Number(process.env.NEWS_DRAFT_L
 
   for (const item of items) {
     try {
-      const { data: existing, error: existingError } = await pipelineDb()
+      const { data: existingRows, error: existingError } = await pipelineDb()
         .from("articles")
-        .select("id")
+        .select("id, title_zh, title_en, excerpt_zh, excerpt_en, content_zh, content_en")
         .eq("source_url", item.url)
-        .maybeSingle();
+        .order("created_at", { ascending: true })
+        .limit(1);
 
       if (existingError) throw existingError;
-      if (existing) {
+
+      const existingArticle = ((existingRows ?? [])[0] ?? null) as ExistingArticleForDraft | null;
+      const missingLanguages: DraftLanguage[] = (["zh", "en"] as const).filter(
+        (language) => !hasDraftLanguage(existingArticle, language)
+      );
+
+      if (missingLanguages.length === 0) {
         await markProcessed(item.id, "skipped");
         skipped += 1;
         continue;
       }
 
-      const draft = await generateDraft(item);
       const publishedAt = item.published_at || new Date().toISOString();
-      const slug = createDraftSlug(draft.title, item.url, publishedAt);
+      const drafts: Partial<Record<DraftLanguage, DraftResponse>> = {};
 
-      const { data: article, error: insertError } = await pipelineDb()
-        .from("articles")
-        .insert({
-          slug,
-          title: draft.title,
-          title_zh: draft.title,
-          excerpt: draft.excerpt,
-          excerpt_zh: draft.excerpt,
-          content: draft.content,
-          content_zh: draft.content,
-          summary_content: draft.excerpt,
-          summary_content_zh: draft.excerpt,
-          category: draft.category,
-          tags: draft.tags,
-          author: "AI Radar",
-          source_url: item.url,
-          source_name: String(item.raw_metadata?.source_name || "RSS"),
-          language: "zh-Hant",
-          review_status: "pending",
-          is_ai_generated: true,
-          is_published: false,
-          is_featured: false,
-          is_premium: false,
-          published_at: publishedAt,
-          reading_time: estimateReadingTime(draft.content),
-          views: 0,
-        })
-        .select("id")
-        .single();
+      if (missingLanguages.includes("zh")) {
+        drafts.zh = await generateZhDraft(item);
+      }
 
-      if (insertError) throw insertError;
+      if (missingLanguages.includes("en")) {
+        drafts.en = await generateEnglishDraft(item);
+      }
+
+      const zhDraft = drafts.zh;
+      const enDraft = drafts.en;
+      const readingTime = Math.max(
+        zhDraft?.reading_time || (zhDraft ? estimateReadingTime(zhDraft.content) : 0),
+        enDraft?.reading_time || (enDraft ? estimateReadingTime(enDraft.content) : 0),
+        1
+      );
+      const sharedCategory = enDraft?.category || zhDraft?.category || "AI News";
+      const sharedTags = enDraft?.tags?.length ? enDraft.tags : mergeTags(zhDraft?.tags, enDraft?.tags);
+      const finalTitleZh = zhDraft?.title ?? existingArticle?.title_zh ?? null;
+      const finalTitleEn = enDraft?.title ?? existingArticle?.title_en ?? null;
+      const finalExcerptEn = enDraft?.excerpt ?? existingArticle?.excerpt_en ?? null;
+      const finalContentEn = enDraft?.content ?? existingArticle?.content_en ?? null;
+
+      const debugPayload = {
+        rawItemId: item.id,
+        title_zh_preview: preview(finalTitleZh),
+        title_en_preview: preview(finalTitleEn),
+        chineseRatio_title_en: hanRatio(finalTitleEn || ""),
+        chineseRatio_content_en: hanRatio(finalContentEn || ""),
+      };
+      console.info("[pipeline-draft] before save", debugPayload);
+      log.info(debugPayload, "before saving bilingual draft");
+      await audit("system:draft", "item.before_save", "raw_item", item.id, debugPayload);
+
+      if (!finalTitleEn || !finalExcerptEn || !finalContentEn) {
+        throw new Error("ENGLISH_OUTPUT_MISSING");
+      }
+
+      validateEnglishDraft({
+        title: finalTitleEn,
+        excerpt: finalExcerptEn,
+        content: finalContentEn,
+        category: sharedCategory,
+        tags: sharedTags,
+        reading_time: 1,
+      });
+
+      const payload = {
+        ...(zhDraft
+          ? {
+              title: zhDraft.title,
+              title_zh: zhDraft.title,
+              excerpt: zhDraft.excerpt,
+              excerpt_zh: zhDraft.excerpt,
+              content: zhDraft.content,
+              content_zh: zhDraft.content,
+              summary_content: zhDraft.excerpt,
+              summary_content_zh: zhDraft.excerpt,
+            }
+          : {}),
+        ...(enDraft
+          ? {
+              title_en: enDraft.title,
+              excerpt_en: enDraft.excerpt,
+              content_en: enDraft.content,
+            }
+          : {}),
+        category: sharedCategory,
+        tags: sharedTags,
+        author: "AI Radar",
+        source_url: item.url,
+        source_name: String(item.raw_metadata?.source_name || "RSS"),
+        language: "zh-Hant,en",
+        review_status: "pending",
+        is_ai_generated: true,
+        is_published: false,
+        is_featured: false,
+        is_premium: false,
+        published_at: publishedAt,
+        reading_time: readingTime,
+        views: 0,
+        updated_at: new Date().toISOString(),
+      };
+
+      const { data: article, error: articleError } = existingArticle
+        ? await pipelineDb()
+            .from("articles")
+            .update(payload)
+            .eq("id", existingArticle.id)
+            .select("id")
+            .single()
+        : await pipelineDb()
+            .from("articles")
+            .insert({
+              slug: createDraftSlug(item.title, item.url, publishedAt),
+              title: zhDraft?.title || enDraft?.title || item.title,
+              excerpt: zhDraft?.excerpt || enDraft?.excerpt || item.summary || "",
+              content: zhDraft?.content || enDraft?.content || null,
+              summary_content: zhDraft?.excerpt || enDraft?.excerpt || item.summary || null,
+              ...payload,
+            })
+            .select("id")
+            .single();
+
+      if (articleError) throw articleError;
 
       const { error: updateError } = await pipelineDb()
         .from("raw_items")
@@ -265,14 +548,20 @@ export async function runDraftGeneration(limit = Number(process.env.NEWS_DRAFT_L
         .eq("id", item.id);
 
       if (updateError) throw updateError;
-      drafted += 1;
-      log.info({ rawItemId: item.id, articleId: article?.id }, "draft created");
+      drafted += article?.id ? 1 : 0;
+      log.info({ rawItemId: item.id, articleId: article?.id }, "bilingual draft saved");
     } catch (error) {
       failed += 1;
-      log.warn({ err: error, rawItemId: item.id }, "draft generation failed");
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (errorMessage === "ENGLISH_OUTPUT_CONTAINS_CHINESE") {
+        console.error("ENGLISH_OUTPUT_CONTAINS_CHINESE", { rawItemId: item.id });
+        log.error({ err: error, rawItemId: item.id }, "ENGLISH_OUTPUT_CONTAINS_CHINESE");
+      } else {
+        log.warn({ err: error, rawItemId: item.id }, "draft generation failed");
+      }
       await markProcessed(item.id, "failed");
       await audit("system:draft", "item.error", "raw_item", item.id, {
-        error: error instanceof Error ? error.message : String(error),
+        error: errorMessage,
       });
     }
   }

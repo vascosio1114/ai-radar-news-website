@@ -9,8 +9,10 @@ type Article = {
   slug: string;
   title: string;
   title_zh: string | null;
+  title_en: string | null;
   excerpt: string | null;
   excerpt_zh: string | null;
+  excerpt_en: string | null;
   cover_image: string | null;
   category: string;
   tags: string[];
@@ -22,6 +24,7 @@ type Article = {
   is_published: boolean;
   content?: string | null;
   content_zh?: string | null;
+  content_en?: string | null;
   summary_content?: string | null;
   summary_content_zh?: string | null;
 };
@@ -69,6 +72,7 @@ export default function AdminArticlesPage() {
     const matchSearch = search === "" ||
       article.title.toLowerCase().includes(search.toLowerCase()) ||
       (article.title_zh || "").toLowerCase().includes(search.toLowerCase()) ||
+      (article.title_en || "").toLowerCase().includes(search.toLowerCase()) ||
       article.slug.toLowerCase().includes(search.toLowerCase()) ||
       article.category.toLowerCase().includes(search.toLowerCase());
     const matchCategory = filterCategory === "" || article.category === filterCategory;
@@ -187,7 +191,7 @@ export default function AdminArticlesPage() {
                     <div className="font-medium text-ink-900 dark:text-ink-50">{article.title_zh || "—"}</div>
                   </td>
                   <td className="px-4 py-3">
-                    <div className="font-medium text-ink-900 dark:text-ink-50">{article.title || "—"}</div>
+                    <div className="font-medium text-ink-900 dark:text-ink-50">{article.title_en || "—"}</div>
                     <div className="text-xs text-ink-500">{article.slug}</div>
                   </td>
                   <td className="px-4 py-3 text-sm text-ink-600 dark:text-ink-400">{article.category}</td>

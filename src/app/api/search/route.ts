@@ -32,6 +32,7 @@ export async function GET(req: Request) {
       .select("*")
       .textSearch("search_vector", tsquery)
       .eq("is_published", true)
+      .not(lang === "zh" ? "title_zh" : "title_en", "is", null)
       .order("published_at", { ascending: false })
       .limit(50);
 
