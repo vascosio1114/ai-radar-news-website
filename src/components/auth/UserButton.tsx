@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { Loader2, LogOut, Settings, User as UserIcon } from "lucide-react";
+import { useRouter, usePathname } from "next/navigation";
+import { LogOut, User as UserIcon, Settings, Loader2 } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { SUPPORTED_LANGS } from "@/lib/site";
 
@@ -23,23 +23,13 @@ export function UserButton({ initialUser }: Props) {
   const [loading, setLoading] = React.useState(false);
   const [user, setUser] = React.useState(initialUser);
   const menuRef = React.useRef<HTMLDivElement>(null);
+  const supabase = React.useMemo(() => createSupabaseBrowserClient(), []);
 
-  const lang = SUPPORTED_LANGS.find((item) => pathname.startsWith(`/${item}`)) ?? "zh";
-  const hasSupabaseConfig = Boolean(
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  );
-  const supabase = React.useMemo(
-    () => (hasSupabaseConfig ? createSupabaseBrowserClient() : null),
-    [hasSupabaseConfig]
-  );
+  const lang = SUPPORTED_LANGS.find((l) => pathname.startsWith(`/${l}`)) ?? "zh";
 
+  // Listen for browser-side auth changes so navbar reflects login/logout immediately
   React.useEffect(() => {
-    if (!supabase) return;
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         setUser({
           id: session.user.id,
@@ -51,15 +41,13 @@ export function UserButton({ initialUser }: Props) {
         setUser(null);
       }
     });
-
     return () => subscription.unsubscribe();
   }, [supabase, initialUser]);
 
+  // Also fetch session on mount to sync with any server-side cookies
   React.useEffect(() => {
-    if (!hasSupabaseConfig) return;
-
     fetch("/api/auth/session")
-      .then((response) => response.json())
+      .then((r) => r.json())
       .then((data) => {
         if (data.user) {
           setUser({
@@ -68,31 +56,30 @@ export function UserButton({ initialUser }: Props) {
             display_name: initialUser?.display_name ?? null,
             avatar_url: initialUser?.avatar_url ?? null,
           });
-        } else {
+        } else if (user !== null) {
           setUser(null);
         }
       })
       .catch(() => {});
-  }, [hasSupabaseConfig, initialUser]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   React.useEffect(() => {
-    function onClick(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+    function onClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setOpen(false);
       }
     }
-
     document.addEventListener("mousedown", onClick);
-    return () => document.removeEventListener("mousedown", onClick);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+    };
   }, []);
 
   async function onLogout() {
     setLoading(true);
     try {
-      if (hasSupabaseConfig) {
-        const client = createSupabaseBrowserClient();
-        await client.auth.signOut();
-      }
+      const supabase = createSupabaseBrowserClient();
+      await supabase.auth.signOut();
       setUser(null);
       router.push(`/${lang}`);
       router.refresh();
@@ -102,6 +89,7 @@ export function UserButton({ initialUser }: Props) {
     }
   }
 
+  // 未登入 → 顯示 Login / Signup
   if (!user) {
     return (
       <div className="flex items-center gap-1">
@@ -121,30 +109,41 @@ export function UserButton({ initialUser }: Props) {
     );
   }
 
+  // 已登入 → avatar + dropdown
   const displayUser = user.display_name ?? user.email;
-  const initial = displayUser.slice(0, 1).toUpperCase();
+  const initial = displayUser
+    .slice(0, 1)
+    .toUpperCase();
 
   return (
     <div className="relative" ref={menuRef}>
       <button
         type="button"
-        onClick={() => setOpen((value) => !value)}
+        onClick={() => setOpen((v) => !v)}
         className="flex h-9 w-9 items-center justify-center rounded-full border border-ink-200 bg-white/70 text-sm font-bold text-ink-700 transition hover:border-accent-400 dark:border-ink-800 dark:bg-ink-900/70 dark:text-ink-200"
         aria-label="User menu"
       >
         {user.avatar_url ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={user.avatar_url} alt="" className="h-full w-full rounded-full object-cover" />
+          <img
+            src={user.avatar_url}
+            alt=""
+            className="h-full w-full rounded-full object-cover"
+          />
         ) : (
           initial
         )}
       </button>
 
-      {open ? (
-        <div className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-lg border border-ink-200/70 bg-white shadow-soft dark:border-ink-800/70 dark:bg-ink-900">
+      {open && (
+        <div className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-ink-200/70 bg-white shadow-soft dark:border-ink-800/70 dark:bg-ink-900">
           <div className="border-b border-ink-200/70 px-4 py-3 dark:border-ink-800/70">
-            <div className="truncate text-sm font-semibold">{displayUser.split("@")[0]}</div>
-            <div className="truncate text-xs text-ink-500 dark:text-ink-400">{user.email}</div>
+            <div className="truncate text-sm font-semibold">
+              {displayUser.split("@")[0]}
+            </div>
+            <div className="truncate text-xs text-ink-500 dark:text-ink-400">
+              {user.email}
+            </div>
           </div>
           <div className="py-1">
             <Link
@@ -171,12 +170,16 @@ export function UserButton({ initialUser }: Props) {
               disabled={loading}
               className="flex w-full items-center gap-2 px-4 py-2 text-sm text-rose-600 hover:bg-rose-50 disabled:opacity-50 dark:text-rose-400 dark:hover:bg-rose-500/10"
             >
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
+              {loading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <LogOut className="h-4 w-4" />
+              )}
               {lang === "zh" ? "登出" : "Log out"}
             </button>
           </div>
         </div>
-      ) : null}
+      )}
     </div>
   );
 }

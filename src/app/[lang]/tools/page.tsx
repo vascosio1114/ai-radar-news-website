@@ -2,38 +2,11 @@ import type { Metadata } from "next";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ToolsPageClient } from "@/components/tools/ToolsPageClient";
 import { getUIStrings, hasEnglishDisplayContent, type Lang } from "@/lib/i18n";
-import { DEFAULT_LANG, SITE_URL } from "@/lib/site";
+import { DEFAULT_LANG } from "@/lib/site";
 
 const PAGE_SIZE = 12;
 
 type Props = { params: { lang: string }; searchParams: { page?: string } };
-
-export function generateMetadata({ params }: Props): Metadata {
-  const lang = (params.lang as Lang) ?? DEFAULT_LANG;
-  const title = lang === "zh" ? "AI 工具" : "AI Tools";
-  const description =
-    lang === "zh"
-      ? "探索熱門 AI 工具目錄，按寫作、設計、影片、編程與生產力等類別比較不同工具。"
-      : "Explore a curated AI tools directory across writing, design, video, coding, productivity, and more.";
-  const path = `/${lang}/tools`;
-
-  return {
-    title,
-    description,
-    alternates: {
-      canonical: `${SITE_URL}${path}`,
-      languages: {
-        "zh-Hant": `${SITE_URL}/zh/tools`,
-        en: `${SITE_URL}/en/tools`,
-      },
-    },
-    openGraph: { title, description, url: `${SITE_URL}${path}` },
-  };
-}
-
-function hasSupabaseConfig() {
-  return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
-}
 
 export default async function ToolsPage({ params, searchParams }: Props) {
   const lang = (params.lang as Lang) ?? DEFAULT_LANG;
@@ -42,28 +15,21 @@ export default async function ToolsPage({ params, searchParams }: Props) {
   const page = Math.max(1, parseInt(searchParams.page ?? "1", 10));
   const offset = (page - 1) * PAGE_SIZE;
 
-  const { total, filteredTools } = hasSupabaseConfig()
-    ? await (async () => {
-        const supabase = createSupabaseServerClient();
-        const { count, data: tools } = await supabase
-          .from("tools")
-          .select("*", { count: "exact" })
-          .range(offset, offset + PAGE_SIZE - 1)
-          .order("is_trending", { ascending: false })
-          .order("rating", { ascending: false });
+  const supabase = createSupabaseServerClient();
+  const { count, data: tools } = await supabase
+    .from("tools")
+    .select("*", { count: "exact" })
+    .range(offset, offset + PAGE_SIZE - 1)
+    .order("is_trending", { ascending: false })
+    .order("rating", { ascending: false });
 
-        const allTools = tools ?? [];
-        return {
-          total: count ?? 0,
-          filteredTools:
-            lang === "en"
-              ? allTools.filter((tool) => hasEnglishDisplayContent(tool, ["name", "tagline", "description"]))
-              : allTools,
-        };
-      })()
-    : { total: 0, filteredTools: [] };
-
+  const total = count ?? 0;
   const totalPages = Math.ceil(total / PAGE_SIZE);
+
+  const allTools = tools ?? [];
+  const filteredTools = lang === "en"
+    ? allTools.filter((tool) => hasEnglishDisplayContent(tool, ["name", "tagline", "description"]))
+    : allTools;
 
   const start = total > 0 ? offset + 1 : 0;
   const end = Math.min(offset + PAGE_SIZE, total);

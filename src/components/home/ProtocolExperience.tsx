@@ -1,4 +1,4 @@
-import { Bot, DatabaseZap, Radio, ShieldCheck } from "lucide-react";
+import { ArrowUpRight, Bot, DatabaseZap, Radio, ShieldCheck } from "lucide-react";
 import type { Lang } from "@/lib/site";
 
 const DEFAULT_SIGNALS = [
@@ -15,44 +15,45 @@ const DEFAULT_SIGNALS = [
 ];
 
 const cardCopies = {
+  // ... (keep cardCopies as is)
   zh: [
     {
       icon: Radio,
-      label: "訊號收集",
-      title: "追蹤 AI 實驗室與開發者社群",
-      body: "我們持續觀察官方 blog、研究社群、開發者平台與科技媒體，將零散更新整理成可閱讀的 AI 訊號。",
+      label: "訊號擷取",
+      title: "10 個來源／每 12 小時更新",
+      body: "系統會持續監測 AI 實驗室、研究社群、開發者平台與科技媒體，將分散資訊整理成可讀、可追蹤的核心訊號。",
     },
     {
       icon: DatabaseZap,
-      label: "知識整理",
-      title: "由原始資料變成文章洞察",
-      body: "每條來源都會先被分類、篩選和排序，再轉化成趨勢文章、工具介紹和實用教學。",
+      label: "知識層",
+      title: "原始資料 → Blog 洞察",
+      body: "每筆來源資料都會先進入資料庫，方便後續排序、篩選，並整理成具備脈絡與觀點的中文專題文章。",
     },
     {
       icon: ShieldCheck,
-      label: "編輯判斷",
-      title: "保留人的觀點與取捨",
-      body: "Radar AI Studio 不只是自動搬運新聞，我們重視背景、影響和實際用途，讓內容更有判斷力。",
+      label: "編輯把關",
+      title: "在擴張前保留人工判斷",
+      body: "現階段會保留人工編輯判斷，確保內容具備觀點、脈絡與品質，而不是單純進行自動化資訊轉載。",
     },
   ],
   en: [
     {
       icon: Radio,
       label: "Signal Intake",
-      title: "Tracking AI labs and builder communities",
-      body: "We monitor official blogs, research communities, developer platforms and technology media, turning noisy updates into readable AI signals.",
+      title: "10 sources / 12h cycle",
+      body: "The agent continuously scans AI labs, research communities, developer platforms and technology media, turning noisy updates into readable signals.",
     },
     {
       icon: DatabaseZap,
       label: "Knowledge Layer",
-      title: "Raw items become editorial insight",
-      body: "Every source item is classified, filtered and ranked before becoming trend analysis, tool coverage or practical tutorials.",
+      title: "Raw items → blog intelligence",
+      body: "Every source item is stored first, making it easier to rank, filter and transform signals into opinionated blog intelligence.",
     },
     {
       icon: ShieldCheck,
       label: "Editorial Control",
       title: "Human judgment before scale",
-      body: "Radar AI Studio is not just automated reposting. We care about context, impact and practical usefulness.",
+      body: "We keep an editorial layer in the loop so the content has taste, context and point of view — not just automated news reposting.",
     },
   ],
 } satisfies Record<Lang, Array<{ icon: typeof Radio; label: string; title: string; body: string }>>;
@@ -71,67 +72,45 @@ export function ProtocolExperience({
     lang === "zh"
       ? {
           eyebrow: "AI Intelligence Protocol",
-          title: "當 AI 世界持續更新，我們幫你整理真正重要的訊號。",
-          desc: "Radar AI Studio 追蹤模型更新、工具發佈、研究進展與產業變化，將資訊整理成清晰、可信、可行動的內容。",
-          sources: "追蹤來源",
-          cycle: "更新節奏",
-          cycleValue: "每日",
+          title: "你睡覺的時候，AI 世界已經發生了這些事",
+          desc: "我們的系統 24/7 自動追蹤全球每一個實驗室、每一個社群、每一個部落格——讓你醒來時，世界已經在你手裡。",
+          cta: "查看 Blog 文章",
         }
       : {
           eyebrow: "AI Intelligence Protocol",
-          title: "When the AI world keeps moving, we surface the signals that matter.",
-          desc: "Radar AI Studio tracks model updates, tool launches, research progress and industry shifts, then turns them into clear, trusted and useful content.",
-          sources: "Tracked sources",
-          cycle: "Update cycle",
-          cycleValue: "Daily",
+          title: "While you slept, the AI world already changed",
+          desc: "Our system runs 24/7 across every AI lab, community and blog worldwide — so when you wake up, you're already caught up.",
+          cta: "Read the blog",
         };
 
   return (
     <section className="relative overflow-hidden bg-white py-20 text-ink-950 dark:bg-black dark:text-white md:py-28">
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,#fff,rgba(248,250,252,.96),#fff)] dark:bg-[linear-gradient(180deg,#000,rgba(2,6,23,.94),#000)]" />
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(15,23,42,.055)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,.055)_1px,transparent_1px)] bg-[size:42px_42px] opacity-35 [mask-image:radial-gradient(circle_at_center,black,transparent_74%)] dark:bg-[linear-gradient(rgba(255,255,255,.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.035)_1px,transparent_1px)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_12%,rgba(37,99,235,.08),transparent_34%),radial-gradient(circle_at_12%_70%,rgba(59,130,246,.06),transparent_28%),linear-gradient(180deg,#fff,rgba(248,250,252,.96),#fff)] dark:bg-[radial-gradient(circle_at_50%_12%,rgba(37,99,235,.2),transparent_34%),radial-gradient(circle_at_12%_70%,rgba(59,130,246,.12),transparent_28%),linear-gradient(180deg,#000,rgba(2,6,23,.94),#000)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(15,23,42,.055)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,.055)_1px,transparent_1px)] bg-[size:42px_42px] opacity-40 [mask-image:radial-gradient(circle_at_center,black,transparent_74%)] dark:bg-[linear-gradient(rgba(255,255,255,.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.035)_1px,transparent_1px)] dark:opacity-30" />
+
+      <div className="protocol-orbit absolute left-1/2 top-28 h-[520px] w-[520px] -translate-x-1/2 rounded-full border border-blue-400/20 dark:border-blue-400/10" />
+      <div className="protocol-orbit protocol-orbit-slow absolute left-1/2 top-36 h-[380px] w-[380px] -translate-x-1/2 rounded-full border border-ink-200 dark:border-white/10" />
 
       <div className="container-page relative z-10">
         <div className="mx-auto max-w-3xl text-center">
-          <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.28em] text-blue-700 backdrop-blur dark:border-white/10 dark:bg-white/[0.06] dark:text-blue-200/80">
+          <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.34em] text-blue-700 backdrop-blur dark:border-white/10 dark:bg-white/[0.06] dark:text-blue-200/80">
             <Bot className="h-3.5 w-3.5" />
             {copy.eyebrow}
           </div>
-          <h2 className="font-display text-3xl font-bold tracking-tight text-ink-950 dark:text-white md:text-5xl">
+          <h2 className="font-display text-3xl font-bold tracking-tight text-ink-950 dark:text-white md:text-6xl">
             {copy.title}
           </h2>
-          <p className="mx-auto mt-5 max-w-2xl text-sm leading-7 text-ink-600 dark:text-white/60 md:text-base">
+          <p className="mx-auto mt-5 max-w-2xl text-sm leading-7 text-ink-600 dark:text-white/58 md:text-base">
             {copy.desc}
           </p>
         </div>
 
-        <div className="mt-12 grid gap-4 md:grid-cols-3">
-          {cardCopies[lang].map((card) => {
-            const Icon = card.icon;
-            return (
-              <div
-                key={card.title}
-                className="rounded-lg border border-ink-200 bg-white/80 p-5 shadow-soft backdrop-blur dark:border-white/10 dark:bg-white/[0.035]"
-              >
-                <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-400/10 dark:text-blue-300">
-                  <Icon className="h-5 w-5" />
-                </div>
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-ink-500 dark:text-white/40">
-                  {card.label}
-                </p>
-                <h3 className="mt-2 font-display text-lg font-semibold">{card.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-ink-600 dark:text-white/58">{card.body}</p>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="mt-10 overflow-hidden rounded-lg border border-ink-200 bg-white/70 py-4 shadow-soft backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.035]">
+        <div className="mt-14 overflow-hidden rounded-[2rem] border border-ink-200 bg-white/70 py-4 shadow-soft backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.035] dark:shadow-[0_0_80px_rgba(37,99,235,.12)]">
           <div className="protocol-rail flex w-max gap-3 px-4">
             {[...displaySources, ...displaySources].map((signal, index) => (
               <span
                 key={`${signal}-${index}`}
-                className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-600 shadow-sm dark:border-blue-300/10 dark:bg-black/45 dark:text-white/62"
+                className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.28em] text-ink-600 shadow-sm dark:border-blue-300/10 dark:bg-black/45 dark:text-white/62"
               >
                 <span className="h-1.5 w-1.5 rounded-full bg-blue-400 shadow-[0_0_14px_rgba(96,165,250,.9)]" />
                 {signal}
@@ -140,10 +119,6 @@ export function ProtocolExperience({
           </div>
         </div>
 
-        <div className="mx-auto mt-6 grid max-w-md grid-cols-2 gap-3">
-          <Metric label={copy.sources} value={`${sourceCount}+`} />
-          <Metric label={copy.cycle} value={copy.cycleValue} />
-        </div>
       </div>
     </section>
   );
@@ -151,10 +126,8 @@ export function ProtocolExperience({
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-ink-200 bg-white/70 px-5 py-4 text-center dark:border-white/10 dark:bg-white/[0.035]">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-500 dark:text-white/35">
-        {label}
-      </p>
+    <div className="rounded-2xl border border-ink-200 bg-white/70 px-5 py-4 dark:border-white/10 dark:bg-white/[0.035]">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-ink-500 dark:text-white/35">{label}</p>
       <p className="mt-2 font-display text-3xl font-bold text-ink-950 dark:text-white">{value}</p>
     </div>
   );

@@ -1,10 +1,6 @@
-export const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "Radar AI Studio";
+export const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "AI Radar";
 export const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://www.radaraistudio.com";
-export const SITE_DESCRIPTION =
-  "Radar AI Studio publishes AI news, AI tool directories, tutorials, resources, and trend analysis for builders, creators, operators, and professionals who want to understand artificial intelligence.";
-export const SITE_EMAIL =
-  process.env.NEXT_PUBLIC_CONTACT_EMAIL || "airadar.team@gmail.com";
+  process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 export const SUPPORTED_LANGS = ["zh", "en"] as const;
 export type Lang = (typeof SUPPORTED_LANGS)[number];
@@ -26,7 +22,7 @@ export const NAV_ITEMS = [
   { href: "/tools", label: "AI 工具" },
   { href: "/tutorials", label: "教學" },
   { href: "/resources", label: "資源" },
-  { href: "/trends", label: "趨勢" },
+  { href: "/trends", label: "趨勢分析" },
 ] as const;
 
 export const TOOL_CATEGORIES = [
