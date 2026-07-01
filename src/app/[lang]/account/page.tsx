@@ -8,10 +8,6 @@ import { LogoutButton } from "@/components/auth/LogoutButton";
 export function generateMetadata({ params }: { params: { lang: string } }): Metadata {
   return {
     title: params.lang === "en" ? "My Account" : "我的帳戶",
-    robots: {
-      index: false,
-      follow: false,
-    },
   };
 }
 
@@ -37,10 +33,10 @@ export default async function AccountPage({
           {lang === "zh" ? "我的帳戶" : "My Account"}
         </h1>
         <p className="mt-2 text-sm text-ink-500 dark:text-ink-400">
-          {lang === "zh" ? "管理你的個人資料和帳戶設定。" : "Manage your profile and preferences."}
+          {lang === "zh" ? "管理您的個人資料與偏好設定。" : "Manage your profile and preferences."}
         </p>
 
-        <div className="mt-8 rounded-lg border border-ink-200/70 bg-white p-6 dark:border-ink-800/70 dark:bg-ink-900">
+        <div className="mt-8 rounded-2xl border border-ink-200/70 bg-white p-6 dark:border-ink-800/70 dark:bg-ink-900">
           <div className="flex items-center gap-4">
             <div className="grid h-16 w-16 place-items-center rounded-full bg-gradient-to-br from-accent-500 to-accent-700 text-2xl font-bold text-white">
               {profile?.avatar_url ? (
@@ -68,26 +64,30 @@ export default async function AccountPage({
             <Row
               icon={<User className="h-4 w-4" />}
               label="Display name"
-              value={profile?.display_name ?? "Not set"}
+              value={profile?.display_name ?? "—"}
             />
             <Row
               icon={<Mail className="h-4 w-4" />}
               label="Email"
-              value={user.email ?? "Not set"}
+              value={user.email ?? "—"}
             />
             <Row
               icon={<Calendar className="h-4 w-4" />}
               label="Joined"
-              value={user.created_at ? formatDate(user.created_at) : "Not available"}
+              value={
+                user.created_at
+                  ? formatDate(user.created_at)
+                  : "—"
+              }
             />
           </div>
         </div>
 
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-ink-200/70 bg-white p-5 dark:border-ink-800/70 dark:bg-ink-900">
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-ink-200/70 bg-white p-5 dark:border-ink-800/70 dark:bg-ink-900">
           <div>
             <div className="font-semibold">{lang === "zh" ? "登出" : "Log out"}</div>
             <div className="text-xs text-ink-500 dark:text-ink-400">
-              {lang === "zh" ? "結束目前登入狀態，下次使用需要重新登入。" : "End this session. You will need to log in again next time."}
+              {lang === "zh" ? "結束目前工作階段，下次進入網站時需要重新登入。" : "End this session. You will need to log in again next time."}
             </div>
           </div>
           <LogoutButton lang={lang} />

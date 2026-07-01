@@ -7,33 +7,6 @@ const log = logger.child({ component: "middleware" });
 
 const SUPPORTED_LANGS = ["zh", "en"];
 const DEFAULT_LANG = "zh";
-const NOINDEX_SEGMENTS = new Set([
-  "account",
-  "dashboard",
-  "demo",
-  "framer-motion",
-  "globe",
-  "login",
-  "signup",
-]);
-
-function shouldNoIndex(pathname: string) {
-  const segments = pathname.split("/").filter(Boolean);
-  const first = segments[0];
-  const hasLocale = SUPPORTED_LANGS.includes(first);
-  const routeSegment = hasLocale ? segments[1] : segments[0];
-
-  if (!routeSegment) return false;
-  if (NOINDEX_SEGMENTS.has(routeSegment)) return true;
-  return routeSegment === "community" && segments.length > (hasLocale ? 2 : 1);
-}
-
-function withNoIndexHeader(response: NextResponse, pathname: string) {
-  if (shouldNoIndex(pathname)) {
-    response.headers.set("X-Robots-Tag", "noindex, nofollow");
-  }
-  return response;
-}
 
 function createAdminAuthClient(request: NextRequest) {
   const cookieStore = {
@@ -74,12 +47,12 @@ export async function middleware(request: NextRequest) {
 
   // Skip if it's a file with an extension (e.g. .svg, .png, .ico)
   if (pathname.includes(".")) {
-    return withNoIndexHeader(NextResponse.next(), pathname);
+    return NextResponse.next();
   }
 
   // Admin login/setup are public and should not be locale-prefixed.
   if (pathname.startsWith("/admin/login") || pathname.startsWith("/admin/setup")) {
-    return withNoIndexHeader(NextResponse.next(), pathname);
+    return NextResponse.next();
   }
 
   // Admin routes — require admin authentication.
@@ -89,13 +62,13 @@ export async function middleware(request: NextRequest) {
 
     if (error || !user) {
       log.warn({ pathname, reason: "no_session" }, "Admin access denied - no session");
-      return withNoIndexHeader(NextResponse.redirect(new URL("/admin/login", request.url)), pathname);
+      return NextResponse.redirect(new URL("/admin/login", request.url));
     }
 
     // Note: is_admin is checked in the admin layout server-side via profiles.is_admin.
     // We still require a valid session here to block completely anonymous users.
 
-    const response = withNoIndexHeader(NextResponse.next(), pathname);
+    const response = NextResponse.next();
     log.info({
       method: request.method,
       pathname,
@@ -112,7 +85,7 @@ export async function middleware(request: NextRequest) {
   );
 
   if (pathnameHasLocale) {
-    const response = withNoIndexHeader(NextResponse.next(), pathname);
+    const response = NextResponse.next();
     log.info({
       method: request.method,
       pathname,
@@ -123,11 +96,8 @@ export async function middleware(request: NextRequest) {
   }
 
   // Redirect to default locale
-  const response = withNoIndexHeader(
-    NextResponse.redirect(
-      new URL(`/${DEFAULT_LANG}${pathname === "/" ? "" : pathname}`, request.url)
-    ),
-    pathname
+  const response = NextResponse.redirect(
+    new URL(`/${DEFAULT_LANG}${pathname === "/" ? "" : pathname}`, request.url)
   );
   log.info({
     method: request.method,

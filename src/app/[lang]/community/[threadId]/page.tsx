@@ -8,12 +8,8 @@ export function generateMetadata({ params }: Props): Metadata {
   return {
     title: isEn ? `Community thread ${params.threadId.slice(0, 8)}` : `社群討論 ${params.threadId.slice(0, 8)}`,
     description: isEn
-      ? "View this discussion in the Radar AI Studio community."
-      : "查看 Radar AI Studio 社群中的討論。",
-    robots: {
-      index: false,
-      follow: false,
-    },
+      ? "View this discussion in the AI Radar community."
+      : "查看 AI Radar 社群中的此項討論。",
   };
 }
 
