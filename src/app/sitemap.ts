@@ -38,7 +38,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const articlePaths = (articles ?? []).flatMap((article) =>
     ["zh", "en"].map((lang) => ({
-      url: `${SITE_URL}/${lang}/news/${article.slug}`,
+      url: `${SITE_URL}/${lang}/summarize/${article.slug}`,
       lastModified: new Date(article.updated_at ?? Date.now()),
       changeFrequency: "weekly" as const,
       priority: 0.7,

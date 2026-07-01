@@ -4,7 +4,8 @@ import { notFound, redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getLocalizedContent, getUIStrings, hasLocalizedArticleContent } from "@/lib/i18n";
-import type { Lang } from "@/lib/site";
+import { SITE_NAME, SITE_URL, type Lang } from "@/lib/site";
+import { absoluteUrl, articleJsonLd, breadcrumbJsonLd } from "@/lib/seo";
 import { formatDate } from "@/lib/utils";
 import { MOCK_ARTICLES } from "@/data/mock";
 import HtmlRenderer from "@/components/markdown/HtmlRenderer";
@@ -38,9 +39,43 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!article || !hasLocalizedArticleContent(article, lang)) return {};
   const localized = getLocalizedContent(article, lang);
+  const path = `/${lang}/summarize/${params.slug}`;
+  const url = `${SITE_URL}${path}`;
+  const title =
+    lang === "zh"
+      ? `${localized.title}｜文章摘要`
+      : `Summary: ${localized.title}`;
+  const description = localized.excerpt ?? article.excerpt ?? "";
+  const image = absoluteUrl(article.cover_image) ?? `${SITE_URL}/images/radar-ai-studio-bg.jpeg`;
+
   return {
-    title: `Summary: ${localized.title}`,
-    description: localized.excerpt,
+    title,
+    description,
+    alternates: {
+      canonical: url,
+      languages: {
+        "zh-HK": `${SITE_URL}/zh/summarize/${params.slug}`,
+        en: `${SITE_URL}/en/summarize/${params.slug}`,
+      },
+    },
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: SITE_NAME,
+      images: [{ url: image }],
+      type: "article",
+      publishedTime: article.published_at,
+      modifiedTime: article.updated_at ?? article.published_at,
+      authors: [localized.author ?? article.author ?? "Radar AI Studio Editorial Team"],
+      tags: localized.tags ?? article.tags ?? undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [image],
+    },
   };
 }
 
@@ -75,9 +110,32 @@ export default async function SummaryPage({ params }: Props) {
     lang === "zh"
       ? summaryArticle.summary_content_zh ?? summaryArticle.summary_content ?? null
       : summaryArticle.summary_content ?? null;
+  const summaryUrl = `${SITE_URL}/${lang}/summarize/${params.slug}`;
+  const structuredData = [
+    articleJsonLd({
+      lang,
+      url: summaryUrl,
+      title: localized.title ?? rawArticle.title ?? SITE_NAME,
+      description: localized.excerpt ?? rawArticle.excerpt,
+      image: rawArticle.cover_image,
+      author: localized.author ?? rawArticle.author,
+      publishedAt: localized.published_at ?? rawArticle.published_at,
+      modifiedAt: localized.updated_at ?? rawArticle.updated_at,
+      tags: localized.tags ?? rawArticle.tags,
+    }),
+    breadcrumbJsonLd([
+      { name: SITE_NAME, url: `${SITE_URL}/${lang}` },
+      { name: lang === "zh" ? "AI 文章" : "AI Blog", url: `${SITE_URL}/${lang}/news` },
+      { name: localized.title ?? rawArticle.title ?? params.slug, url: summaryUrl },
+    ]),
+  ];
 
   return (
     <article className="container-page section-pad">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
       <Link
         href={`/${params.lang}/news`}
         className="mb-6 inline-flex items-center gap-1 text-sm text-ink-500 transition hover:text-accent-600 dark:text-ink-400 dark:hover:text-accent-400"

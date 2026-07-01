@@ -12,29 +12,36 @@ function escapeXml(value: string) {
     .replace(/'/g, "&apos;");
 }
 
+function hasSupabaseConfig() {
+  return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+}
+
 export async function GET() {
-  const supabase = createSupabaseServerClient();
-  const { data: articles } = await supabase
-    .from("articles_public")
-    .select("slug,title,excerpt,published_at,updated_at")
-    .eq("is_published", true)
-    .order("published_at", { ascending: false })
-    .limit(30);
+  const articles = hasSupabaseConfig()
+    ? (
+        await createSupabaseServerClient()
+          .from("articles_public")
+          .select("slug,title,title_zh,excerpt,excerpt_zh,published_at,updated_at")
+          .eq("is_published", true)
+          .order("published_at", { ascending: false })
+          .limit(30)
+      ).data
+    : [];
 
   const items = (articles ?? [])
     .map((article) => {
-      const url = `${SITE_URL}/zh/news/${article.slug}`;
+      const url = `${SITE_URL}/zh/summarize/${article.slug}`;
       const pubDate = new Date(
         article.published_at ?? article.updated_at ?? Date.now()
       ).toUTCString();
 
       return `
         <item>
-          <title>${escapeXml(article.title ?? "AI Radar Article")}</title>
+          <title>${escapeXml(article.title_zh ?? article.title ?? "Radar AI Studio Article")}</title>
           <link>${escapeXml(url)}</link>
           <guid>${escapeXml(url)}</guid>
           <pubDate>${pubDate}</pubDate>
-          <description>${escapeXml(article.excerpt ?? "")}</description>
+          <description>${escapeXml(article.excerpt_zh ?? article.excerpt ?? "")}</description>
         </item>`;
     })
     .join("");
