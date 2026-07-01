@@ -28,10 +28,10 @@ function buildPath(values: number[], width: number, height: number, pad = 18) {
   const max = Math.max(...values);
   const range = Math.max(1, max - min);
   return values
-    .map((v, i) => {
-      const x = pad + (i / Math.max(1, values.length - 1)) * (width - pad * 2);
-      const y = pad + (1 - (v - min) / range) * (height - pad * 2);
-      return `${i === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`;
+    .map((value, index) => {
+      const x = pad + (index / Math.max(1, values.length - 1)) * (width - pad * 2);
+      const y = pad + (1 - (value - min) / range) * (height - pad * 2);
+      return `${index === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`;
     })
     .join(" ");
 }
@@ -43,12 +43,10 @@ export function JobImpactTicker({
   trend: JobImpactTrend;
   lang?: Lang;
 }) {
-  const values = trend.points.map((p) => p.estimated_affected_roles);
-  const indexValues = trend.points.map((p) => p.index);
+  const values = trend.points.map((point) => point.estimated_affected_roles);
   const width = 860;
   const height = 260;
   const line = buildPath(values, width, height);
-  const indexLine = buildPath(indexValues, width, height);
   const latest = trend.latest;
   const isUp = trend.change_pct >= 0;
   const max = Math.max(1, ...values);
@@ -59,30 +57,28 @@ export function JobImpactTicker({
   const copy =
     lang === "zh"
       ? {
-          badge: "AI 就業影響觀察",
-          title: "AI 對就業人數的影響估算",
+          badge: "AI Workforce Exposure Watch",
+          title: "AI 對工作流程的影響正在擴大",
           description:
-            "此圖以 Goldman Sachs、IMF、McKinsey 與 World Economic Forum 等公開研究為參考，呈現 AI 可能影響或重塑的職位規模。數字代表「受影響／曝險」估算，並不等同裁員或失業人數。",
-          affectedRoles: "估算受影響人數",
+            "這張圖用公開研究作為參考，估算受 AI 工作流程改變影響的職位規模。它不是裁員或失業數字，而是用來觀察 AI 對工作的長期影響。",
+          affectedRoles: "估算受影響工作者",
           people: "人",
           monthlyChange: "月度變化",
-          signalTotal: "研究訊號累計",
-          impactIndex: "曝險指數",
-          now: "目前",
-          range: "估算區間",
-          chartLabel: "AI 對就業人數影響估算曲線",
-          firstLabel: "2023",
-          secondLabel: "生成式 AI 普及",
-          thirdLabel: "企業導入",
-          affectedCurve: "估算受影響人數曲線",
-          indexLine: "AI 就業曝險指數",
-          modelNote: "研究參考模型，非官方失業統計",
+          impactIndex: "影響指數",
+          now: "現在",
+          range: "範圍",
+          chartLabel: "AI 對工作流程影響的估算趨勢圖",
+          firstLabel: "2026",
+          secondLabel: "生成式 AI 採用",
+          thirdLabel: "企業流程落地",
+          affectedCurve: "估算受影響工作者趨勢",
+          modelNote: "研究參考模型，並非官方就業數據",
           methodology:
-            "方法說明：曲線以公開研究作為錨點，再以編輯模型平滑呈現趨勢。Goldman Sachs 估計全球約 3 億個全職等值職位可能受 AI 自動化影響；IMF 指出接近 40% 的全球就業暴露於 AI；McKinsey 估計生成式 AI 與既有技術可自動化佔員工時間 60–70% 的工作活動；WEF 則預測至 2030 年將有 9,200 萬個職位被取代、1.7 億個新職位被創造。",
-          sources: "參考：Goldman Sachs Research、IMF、McKinsey Global Institute、World Economic Forum。",
+            "方法說明：此趨勢用 Goldman Sachs、IMF、McKinsey 與 World Economic Forum 的公開研究作為參考點，再整理成編輯模型，用來觀察 AI 對工作流程的潛在影響。",
+          sources: "參考來源：Goldman Sachs Research、IMF、McKinsey Global Institute、World Economic Forum。",
           referenceCap: "研究參考上限",
           globalExposure: "全球職位曝險",
-          labourShift: "2030 勞動轉型",
+          labourShift: "2030 勞動市場變化",
           referenceCapValue: "3億+",
           globalExposureValue: "約 40%",
           labourShiftValue: "9,200萬 / 1.7億",
@@ -91,23 +87,21 @@ export function JobImpactTicker({
           badge: "AI Workforce Exposure Watch",
           title: "Estimated workforce exposure to AI",
           description:
-            "This chart uses public research from Goldman Sachs, the IMF, McKinsey and the World Economic Forum as reference anchors. The numbers estimate roles affected or exposed to AI-driven workflow change; they are not layoff or unemployment figures.",
+            "This chart uses public research as reference anchors. It estimates roles exposed to AI-driven workflow change; it is not a layoff or unemployment figure.",
           affectedRoles: "Estimated affected workers",
           people: "workers",
           monthlyChange: "Monthly change",
-          signalTotal: "Research signals",
           impactIndex: "Exposure index",
           now: "Now",
           range: "Range",
           chartLabel: "Estimated workforce exposure to AI line chart",
-          firstLabel: "2023",
+          firstLabel: "2026",
           secondLabel: "GenAI adoption",
           thirdLabel: "Enterprise rollout",
           affectedCurve: "Estimated affected workers curve",
-          indexLine: "AI workforce exposure index",
           modelNote: "Research-informed model, not official unemployment data",
           methodology:
-            "Methodology: the curve uses public research as anchor points, then smooths them into an editorial trend model. Goldman Sachs estimates that roughly 300 million full-time-equivalent jobs globally could be exposed to AI automation; the IMF says nearly 40% of global employment is exposed to AI; McKinsey estimates that generative AI and existing technologies could automate work activities absorbing 60–70% of employee time; WEF projects 92 million jobs displaced and 170 million created by 2030.",
+            "Methodology: the trend uses public research from Goldman Sachs, the IMF, McKinsey and the World Economic Forum as reference anchors, then smooths them into an editorial model for observing AI workflow exposure.",
           sources: "Sources: Goldman Sachs Research, IMF, McKinsey Global Institute, World Economic Forum.",
           referenceCap: "Research exposure estimate",
           globalExposure: "Global job exposure",
@@ -119,11 +113,8 @@ export function JobImpactTicker({
 
   return (
     <section className="container-page section-pad pt-0">
-      <div className="overflow-hidden rounded-3xl border border-emerald-200 bg-white shadow-soft dark:border-emerald-400/25 dark:bg-black dark:shadow-[0_24px_90px_rgba(0,0,0,0.65)]">
+      <div className="overflow-hidden rounded-lg border border-emerald-200 bg-white shadow-soft dark:border-emerald-400/25 dark:bg-black">
         <div className="relative p-6 md:p-8">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_0%,rgba(34,197,94,0.10),transparent_34%),radial-gradient(circle_at_86%_18%,rgba(16,185,129,0.08),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0),rgba(236,253,245,.52))] dark:bg-[radial-gradient(circle_at_15%_0%,rgba(34,197,94,0.18),transparent_34%),radial-gradient(circle_at_86%_18%,rgba(16,185,129,0.14),transparent_34%),linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.28))]" />
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,.08)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,.08)_1px,transparent_1px)] bg-[size:28px_28px] dark:bg-[linear-gradient(rgba(34,197,94,.045)_1px,transparent_1px),linear-gradient(90deg,rgba(34,197,94,.045)_1px,transparent_1px)]" />
-
           <div className="relative z-10">
             <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
               <div>
@@ -147,13 +138,18 @@ export function JobImpactTicker({
               </div>
             </div>
 
-            <div className="mt-7 rounded-2xl border border-emerald-100 bg-white/80 p-4 dark:border-emerald-400/15 dark:bg-black/70">
+            <div className="mt-7 rounded-lg border border-emerald-100 bg-white/80 p-4 dark:border-emerald-400/15 dark:bg-black/70">
               <div className="mb-3 flex flex-col gap-1 text-xs text-ink-500 dark:text-emerald-50/55 sm:flex-row sm:items-center sm:justify-between">
-                <span>{startLabel ? formatMonth(startLabel.day, lang) : "2023"} → {lastLabel ? formatMonth(lastLabel.day, lang) : copy.now}</span>
-                <span>{copy.range} {formatLargeNumber(min, lang)} – {formatLargeNumber(max, lang)}</span>
+                <span>
+                  {startLabel ? formatMonth(startLabel.day, lang) : "2026"} -{" "}
+                  {lastLabel ? formatMonth(lastLabel.day, lang) : copy.now}
+                </span>
+                <span>
+                  {copy.range} {formatLargeNumber(min, lang)} - {formatLargeNumber(max, lang)}
+                </span>
               </div>
 
-              <div className="relative h-[280px] overflow-hidden rounded-xl bg-gradient-to-b from-white to-emerald-50/50 dark:from-black dark:to-[#020403]">
+              <div className="relative h-[280px] overflow-hidden rounded-lg bg-gradient-to-b from-white to-emerald-50/50 dark:from-black dark:to-[#020403]">
                 <svg viewBox={`0 0 ${width} ${height}`} className="h-full w-full" role="img" aria-label={copy.chartLabel}>
                   <defs>
                     <linearGradient id="jobImpactStrokeGreen" x1="0" x2="1" y1="0" y2="0">
@@ -165,13 +161,6 @@ export function JobImpactTicker({
                       <stop offset="0%" stopColor="#22c55e" stopOpacity="0.26" />
                       <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
                     </linearGradient>
-                    <filter id="greenGlow">
-                      <feGaussianBlur stdDeviation="4" result="coloredBlur" />
-                      <feMerge>
-                        <feMergeNode in="coloredBlur" />
-                        <feMergeNode in="SourceGraphic" />
-                      </feMerge>
-                    </filter>
                   </defs>
 
                   {[0.2, 0.4, 0.6, 0.8].map((y) => (
@@ -181,21 +170,9 @@ export function JobImpactTicker({
                   {line && (
                     <>
                       <path d={`${line} L ${width - 18} ${height - 18} L 18 ${height - 18} Z`} fill="url(#jobImpactFillGreen)" />
-                      <path d={indexLine} fill="none" stroke="#a3e635" strokeOpacity="0.22" strokeWidth="2" strokeDasharray="7 8" />
-                      <path d={line} fill="none" stroke="url(#jobImpactStrokeGreen)" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" filter="url(#greenGlow)" />
+                      <path d={line} fill="none" stroke="url(#jobImpactStrokeGreen)" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" />
                     </>
                   )}
-
-                  {trend.points.map((p, i) => {
-                    const range = Math.max(1, max - min);
-                    const x = 18 + (i / Math.max(1, trend.points.length - 1)) * (width - 36);
-                    const y = 18 + (1 - (p.estimated_affected_roles - min) / range) * (height - 36);
-                    const month = Number(p.day.slice(5, 7));
-                    const isMilestone = month === 1 || p.day === "2023-03" || p.day === "2024-01" || p.day === "2025-01";
-                    return isMilestone ? (
-                      <circle key={p.day} cx={x} cy={y} r="3.5" fill="#020403" stroke="#86efac" strokeWidth="2" />
-                    ) : null;
-                  })}
                 </svg>
 
                 <div className="pointer-events-none absolute bottom-3 left-4 right-4 flex justify-between text-[10px] font-medium text-ink-400 dark:text-emerald-50/35">
@@ -206,14 +183,10 @@ export function JobImpactTicker({
                 </div>
               </div>
 
-              <div className="mt-4 grid gap-2 text-xs text-ink-500 dark:text-emerald-50/55 md:grid-cols-3">
+              <div className="mt-4 grid gap-2 text-xs text-ink-500 dark:text-emerald-50/55 md:grid-cols-2">
                 <div className="inline-flex items-center gap-2">
                   <span className="h-2 w-6 rounded-full bg-gradient-to-r from-lime-400 to-emerald-400" />
                   {copy.affectedCurve}
-                </div>
-                <div className="inline-flex items-center gap-2">
-                  <span className="h-px w-6 border-t border-dashed border-lime-300" />
-                  {copy.indexLine}
                 </div>
                 <div className="inline-flex items-center gap-1 md:justify-end">
                   <Info className="h-3.5 w-3.5" />
@@ -223,11 +196,11 @@ export function JobImpactTicker({
             </div>
 
             <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_0.8fr]">
-              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-xs leading-6 text-emerald-900 dark:border-emerald-500/15 dark:bg-emerald-500/10 dark:text-emerald-100/78">
+              <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-xs leading-6 text-emerald-900 dark:border-emerald-500/15 dark:bg-emerald-500/10 dark:text-emerald-100/78">
                 <p>{copy.methodology}</p>
                 <p className="mt-2 text-emerald-700/75 dark:text-emerald-100/45">{copy.sources}</p>
               </div>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Metric label={copy.labourShift} value={copy.labourShiftValue} />
                 <Metric label={copy.impactIndex} value={latest.index.toLocaleString(lang === "zh" ? "zh-Hant-HK" : "en-US")} />
               </div>
@@ -251,7 +224,7 @@ function Metric({
   tone?: "up" | "down";
 }) {
   return (
-    <div className="rounded-2xl border border-ink-200/70 bg-white/75 p-4 backdrop-blur dark:border-emerald-400/15 dark:bg-zinc-950/80">
+    <div className="rounded-lg border border-ink-200/70 bg-white/75 p-4 backdrop-blur dark:border-emerald-400/15 dark:bg-zinc-950/80">
       <div className="text-[11px] font-semibold uppercase tracking-widest text-ink-500 dark:text-emerald-50/45">
         {label}
       </div>

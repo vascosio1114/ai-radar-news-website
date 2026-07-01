@@ -2,58 +2,61 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { SITE_NAME, SITE_URL, SUPPORTED_LANGS, DEFAULT_LANG, type Lang } from "@/lib/site";
+import { DEFAULT_LANG, SITE_NAME, SITE_URL, SUPPORTED_LANGS, type Lang } from "@/lib/site";
+import {
+  collectionJsonLd,
+  localizedSiteDescription,
+  organizationJsonLd,
+  seoKeywords,
+  websiteJsonLd,
+} from "@/lib/seo";
 
 type Props = { children: React.ReactNode; params: { lang: string } };
 
 export function generateMetadata({ params }: { params: { lang: string } }): Metadata {
   const lang = params.lang === "en" ? "en" : "zh";
-
-  if (lang === "en") {
-    return {
-      metadataBase: new URL(SITE_URL),
-      title: {
-        default: `${SITE_NAME} — AI Intelligence Platform`,
-        template: `%s · ${SITE_NAME}`,
-      },
-      description: "AI articles, tools, tutorials and trend analysis for people building with artificial intelligence.",
-      keywords: ["AI", "Artificial Intelligence", "ChatGPT", "AI tools", "AI blog", "AI tutorials", "AI trends"],
-      openGraph: {
-        title: `${SITE_NAME} — AI Intelligence Platform`,
-        description: "AI articles, tools, tutorials and trend analysis.",
-        url: `${SITE_URL}/en`,
-        siteName: SITE_NAME,
-        locale: "en_US",
-        type: "website",
-      },
-      twitter: {
-        card: "summary_large_image",
-        title: SITE_NAME,
-        description: "AI articles, tools, tutorials and trend analysis.",
-      },
-    };
-  }
+  const description = localizedSiteDescription(lang);
+  const title =
+    lang === "zh"
+      ? "AI 文章、工具、教學與趨勢"
+      : "AI News, Tools, Tutorials and Trends";
 
   return {
     metadataBase: new URL(SITE_URL),
     title: {
-      default: `${SITE_NAME} — 中文 AI 智能資訊平台`,
-      template: `%s · ${SITE_NAME}`,
+      default: title,
+      template: `%s | ${SITE_NAME}`,
     },
-    description: "AI 文章、AI 工具評測、AI 教學與趨勢分析，協助讀者掌握人工智能的最新發展。",
-    keywords: ["AI", "人工智能", "ChatGPT", "AI 工具", "AI 文章", "AI 教學", "AI 趨勢"],
+    description,
+    keywords: seoKeywords,
+    alternates: {
+      canonical: `${SITE_URL}/${lang}`,
+      languages: {
+        "zh-HK": `${SITE_URL}/zh`,
+        en: `${SITE_URL}/en`,
+      },
+    },
     openGraph: {
-      title: `${SITE_NAME} — 中文 AI 智能資訊平台`,
-      description: "AI 文章、工具、教學與趨勢分析。",
-      url: `${SITE_URL}/zh`,
+      title: `${title} | ${SITE_NAME}`,
+      description,
+      url: `${SITE_URL}/${lang}`,
       siteName: SITE_NAME,
-      locale: "zh_HK",
+      locale: lang === "zh" ? "zh_HK" : "en_US",
       type: "website",
+      images: [
+        {
+          url: "/images/radar-ai-studio-bg.jpeg",
+          width: 1536,
+          height: 1024,
+          alt: `${SITE_NAME} AI intelligence platform`,
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
-      title: SITE_NAME,
-      description: "AI 文章、工具、教學與趨勢分析。",
+      title: `${title} | ${SITE_NAME}`,
+      description,
+      images: ["/images/radar-ai-studio-bg.jpeg"],
     },
   };
 }
@@ -63,8 +66,19 @@ export default function LangLayout({ children, params }: Props) {
     redirect(`/${DEFAULT_LANG}`);
   }
 
+  const lang = params.lang as Lang;
+  const graph = [
+    organizationJsonLd(),
+    websiteJsonLd(lang),
+    collectionJsonLd(lang),
+  ];
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(graph) }}
+      />
       <Navbar />
       {children}
       <Footer />

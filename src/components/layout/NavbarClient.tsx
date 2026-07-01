@@ -9,7 +9,7 @@ import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { UserButton } from "@/components/auth/UserButton";
 import { cn } from "@/lib/utils";
-import { SITE_NAME, SUPPORTED_LANGS } from "@/lib/site";
+import { getLangNavItems, SITE_NAME, SUPPORTED_LANGS } from "@/lib/site";
 
 type Props = {
   initialUser: {
@@ -25,7 +25,11 @@ export function NavbarClient({ initialUser }: Props) {
   const [open, setOpen] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
 
-  const lang = SUPPORTED_LANGS.find((l) => pathname.startsWith(`/${l}`)) ?? "zh";
+  const lang = SUPPORTED_LANGS.find((item) => pathname.startsWith(`/${item}`)) ?? "zh";
+  const navItems = [
+    ...getLangNavItems(lang),
+    { href: `/${lang}/community`, label: lang === "zh" ? "社群" : "Community" },
+  ] as const;
 
   React.useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -35,15 +39,6 @@ export function NavbarClient({ initialUser }: Props) {
   }, []);
 
   React.useEffect(() => setOpen(false), [pathname]);
-
-  const navItems = [
-    { href: `/${lang}`, label: lang === "zh" ? "首頁" : "Home" },
-    { href: `/${lang}/news`, label: lang === "zh" ? "AI 文章" : "AI Blog" },
-    { href: `/${lang}/tools`, label: lang === "zh" ? "AI 工具" : "AI Tools" },
-    { href: `/${lang}/tutorials`, label: lang === "zh" ? "教學" : "Tutorials" },
-    { href: `/${lang}/resources`, label: lang === "zh" ? "資源" : "Resources" },
-    { href: `/${lang}/community`, label: lang === "zh" ? "社群" : "Community" },
-  ] as const;
 
   return (
     <header
@@ -66,9 +61,7 @@ export function NavbarClient({ initialUser }: Props) {
               priority
             />
           </span>
-          <span className="text-lg font-semibold tracking-tight">
-            {SITE_NAME}
-          </span>
+          <span className="text-lg font-semibold tracking-tight">{SITE_NAME}</span>
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
@@ -88,9 +81,9 @@ export function NavbarClient({ initialUser }: Props) {
                 )}
               >
                 {item.label}
-                {active && (
+                {active ? (
                   <span className="absolute inset-x-3 -bottom-px h-px bg-gradient-to-r from-transparent via-accent-500 to-transparent" />
-                )}
+                ) : null}
               </Link>
             );
           })}
@@ -105,7 +98,7 @@ export function NavbarClient({ initialUser }: Props) {
           <button
             type="button"
             aria-label={lang === "zh" ? "開啟選單" : "Open menu"}
-            onClick={() => setOpen((v) => !v)}
+            onClick={() => setOpen((value) => !value)}
             className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-ink-200 bg-white/70 text-ink-700 transition dark:border-ink-800 dark:bg-ink-900/70 dark:text-ink-200 md:hidden"
           >
             {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
@@ -113,7 +106,7 @@ export function NavbarClient({ initialUser }: Props) {
         </div>
       </div>
 
-      {open && (
+      {open ? (
         <div className="md:hidden">
           <nav className="container-page flex flex-col gap-1 pb-4">
             {navItems.map((item) => {
@@ -140,7 +133,7 @@ export function NavbarClient({ initialUser }: Props) {
             </div>
           </nav>
         </div>
-      )}
+      ) : null}
     </header>
   );
 }
