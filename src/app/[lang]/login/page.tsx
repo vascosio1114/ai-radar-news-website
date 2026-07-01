@@ -13,8 +13,12 @@ export function generateMetadata({ params }: { params: { lang: string } }): Meta
   return {
     title: isEn ? "Log in" : "登入",
     description: isEn
-      ? "Log in to AI Radar to unlock full articles and premium content."
-      : "登入 AI Radar，以解鎖文章全文與 premium 內容。",
+      ? "Log in to Radar AI Studio to unlock full articles and premium content."
+      : "登入 Radar AI Studio，解鎖完整文章與會員內容。",
+    robots: {
+      index: false,
+      follow: false,
+    },
   };
 }
 

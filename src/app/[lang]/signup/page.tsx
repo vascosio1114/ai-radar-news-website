@@ -13,8 +13,12 @@ export function generateMetadata({ params }: { params: { lang: string } }): Meta
   return {
     title: isEn ? "Sign up" : "註冊",
     description: isEn
-      ? "Create a free AI Radar account to unlock full articles and premium content."
-      : "免費註冊 AI Radar，以解鎖文章全文與 premium 內容。",
+      ? "Create a free Radar AI Studio account to unlock full articles and premium content."
+      : "免費註冊 Radar AI Studio 帳戶，解鎖完整文章與會員內容。",
+    robots: {
+      index: false,
+      follow: false,
+    },
   };
 }
 
